@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}{% endblock title %}</title>
+{% block styles %}{% endblock styles %}
+{% block javascript %}{% endblock javascript %}
+
+<!-- Llamado a Tailwind CSS -->
+<script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+</head>
+<script>
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eye-icon');
+    
+    if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    eyeIcon.classList.remove('fa-eye');
+    eyeIcon.classList.add('fa-eye-slash');
+    } else {
+    passwordInput.type = 'password';
+    eyeIcon.classList.remove('fa-eye-slash');
+    eyeIcon.classList.add('fa-eye');
+    }
+}
+</script>
+
+<body>
+
+{% comment %}    {% include 'components/header.html' %} {%  endcomment %}
+{% block content %}{% endblock content %}
+{% comment %} {% include 'components/footer.html' %}{%  endcomment %}
+
+</body>
+</html>

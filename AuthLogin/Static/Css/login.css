@@ -1,0 +1,17 @@
+/* Estilos adicionales para el login (opcionales) */
+.login-container {
+background-image: linear-gradient(to right, #39bfb2, #F2CE16);
+}
+
+.input-field:focus {
+box-shadow: 0 0 0 3px rgba(57, 191, 178, 0.3);
+}
+
+/* Animación para el botón */
+.login-btn {
+transition: all 0.3s ease;
+}
+.login-btn:hover {
+transform: translateY(-2px);
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
