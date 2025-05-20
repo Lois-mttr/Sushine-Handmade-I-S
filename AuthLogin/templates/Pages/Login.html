@@ -1,59 +1,65 @@
-{% extends "pages/base.html" %}
+{% extends 'layouts/base.html' %}
 {% load static %}
 
-{% block title %}Iniciar Sesión{% endblock %}
+{% block title %}Iniciar Sesión - Sistema{% endblock %}
 
 {% block content %}
 <div class="login-container">
     <div class="login-image">
         <img src="{% static 'images/Login.png' %}" alt="Login image">
     </div>
-    
     <div class="login-form">
         <h1>Iniciar Sesión</h1>
         
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="message {{ message.tags }}">{{ message }}</div>
-            {% endfor %}
+        <div class="form-group">
+            <label for="username">Usuario</label>
+            <input type="text" id="username" class="form-control" placeholder="Usuario">
+            <span class="error-message" id="username-error"></span>
         </div>
-        {% endif %}
         
-        <form method="post" action="{% url 'login' %}">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="username">Usuario</label>
-                <input type="text" id="username" name="username" class="form-control dynamic-input" placeholder="Usuario" required>
+        <div class="form-group">
+            <label for="password">Contraseña</label>
+            <div class="password-container">
+                <input type="password" id="password" class="form-control" placeholder="Contraseña">
+                <span class="password-toggle" id="password-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="eye-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                        <path d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="eye-off-icon active" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 3l18 18" />
+                        <path d="M10.584 10.587a2 2 0 0 0 2.828 2.83" />
+                        <path d="M9.363 5.365a9.466 9.466 0 0 1 2.637 -.365c4 0 7.333 2.333 10 7c-.778 1.361 -1.612 2.524 -2.503 3.488m-2.14 1.861c-1.631 1.1 -3.415 1.651 -5.357 1.651c-4 0 -7.333 -2.333 -10 -7c1.369 -2.395 2.913 -4.175 4.632 -5.341" />
+                    </svg>
+                </span>
             </div>
-            
-            <div class="form-group">
-                <label for="password">Contraseña</label>
-                <div class="password-container">
-                    <input type="password" id="password" name="password" class="form-control dynamic-input" placeholder="Contraseña" required>
-                    <button type="button" class="toggle-password" aria-label="Toggle password visibility">
-                        <span class="eye-icon"></span>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="forgot-password flex justify-center">
-                <a href="{% url 'forgot_password' %}">¿Has olvidado la contraseña?</a>
-            </div>
-            
-            <div class="button-container">
-                <button type="submit" class="login-button">
-                    <span class="icon-user"></span>
-                    Iniciar Sesión
-                </button>
-            </div>
-        </form>
+            <span class="error-message" id="password-error"></span>
+        </div>
+        
+        <div class="forgot-password">
+            <a href="#">¿Has olvidado la contraseña?</a>
+        </div>
+        
+        <div class="login-attempts-message" id="login-attempts-message"></div>
+        
+        <div class="timer-container" id="timer-container">
+            <p>Cuenta bloqueada. Intente nuevamente en <span id="timer">30</span> segundos.</p>
+        </div>
+        
+        <button type="button" id="login-button" class="login-button">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
+                <path d="M20 12h-13l3 -3m0 6l-3 -3" />
+            </svg>
+            Iniciar Sesión
+        </button>
     </div>
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script src="{% static 'js/login.js' %}"></script>
-{% endblock scripts %}
-
+{% block extra_js %}
+<script src="/static/js/login.js"></script>
+{% endblock %}
