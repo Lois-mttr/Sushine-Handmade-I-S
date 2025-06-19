@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}{% endblock %}</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Sistema de Inventario y Ventas NEXO - Gestión integral de inventarios, ventas y producción">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4ECDC4',
+                        'primary-dark': '#39bfb2',
+                        secondary: '#eaeef3',
+                        accent: '#f2ce16',
+                        orange: '#f28627',
+                        'orange-light': '#f29d35',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    
+    <!-- Block for additional CSS -->
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+</head>
+<body class="h-full bg-gray-50">
+    {% block body_content %}
+        <!-- Header Component -->
+        {% block header %}
+            {% include 'components/header.html' %}
+        {% endblock %}
+        
+        <!-- Main Content -->
+        <main class="{% block main_classes %}{% endblock %}">
+            {% block content %}{% endblock %}
+        </main>
+        
+        <!-- Footer Component -->
+        {% block footer %}
+            {% include 'components/footer.html' %}
+        {% endblock %}
+    {% endblock %}
+    
+    <!-- Base JavaScript -->
+    <script src="{% static 'js/base.js' %}"></script>
+    
+    <!-- Block for additional JavaScript -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

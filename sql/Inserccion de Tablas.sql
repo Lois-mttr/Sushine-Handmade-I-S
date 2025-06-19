@@ -1,0 +1,41 @@
+use nexodb
+-- INSERCCION TABLA CATEGORIA
+INSERT INTO Categoria (nombreCategoria, descripcionCategoria, estadoCategoria) 
+VALUES 
+('Carteras', 'Productos de cuero, hecho a mano', 1),
+('Bolsos', 'Productos de cuero y tela', 1),
+('Billeteras', 'Productos de cuero pequeños de tela', 1);
+-- INSERCCION TABLA UBICACION
+Insert into Ubicacion (nombreUbicacion, direccion) values 
+('Taller','ubicada en el km21 carretera masaya -managua' ), 
+('Sucursal','ubicada en Galeria piso 2');
+-- INSERCCION TABLA PRODUCTO
+INSERT INTO Producto (id_producto, idUbicacionPro, nombreProducto, descripcionProducto, existenciaProducto, imagenProductoRuta, idCategoriaPro, precioProducto, estado, existenciaMinima)
+VALUES 
+('PROD001', 1, 'Bolso Cuero', 'bolso hecho a mano con tela canvaa', 10, NULL, 2, 29.79, 1, 5),
+('PROD001', 2, 'Bolso Cuero', 'bolso hecho a mano con tela canvaa', 25, NULL, 2, 29.79, 1, 5),
+('PROD002', 1, 'Billetera Zure', 'billetera de color co ziper', 15, NULL, 3, 79.99, 1, 5),
+('PROD002', 2, 'Billetera Zure', 'billetera de color co ziper', 8, NULL, 3, 79.99, 1, 5);
+-- INSERCCION TABLA PERSONA
+INSERT INTO Persona (cedula, primerNombre, segundoNombre, primerApellido, segundoApellido, direccion, estadoPersona)
+VALUES 
+('123-456789-0001X', 'Campary', NULL, 'Ramirez', NULL, 'Carretera Masaya Nic.', 1),
+('0012345678901234', 'Juan', 'Carlos', 'González', 'Martínez', 'Av. Central #123, Managua', 1),
+('0023456789012345', 'María', NULL, 'Fernández', 'Ruiz', 'Calle 5, Masaya', 1),
+('0034567890123456', 'Pedro', 'José', 'Rodríguez', NULL, 'Colonia Los Robles, Granada', 1),
+('0045678901234567', 'Ana', 'Lucía', 'Mendoza', 'Torres', 'Barrio San Antonio, León', 1),
+('0056789012345678', 'Luis', NULL, 'Ramírez', 'Castillo', 'Residencial Altamira, Estelí', 1);
+-- INSERCCION TABLA CLIENTE
+INSERT INTO Cliente (correo, idPersonaCliente, estadoCliente)
+VALUES 
+('juan.gonzalez@email.com', '0012345678901234', 1),
+('maria.fernandez@email.com', '0023456789012345', 1);
+-- INSERCCION TABLA EMPLEADO
+INSERT INTO Empleado (rolEmpleado, fechaContratacion, salario, correo, idPersonaEmp, estadoEmpleado)
+VALUES 
+('Obrero', '2025-05-01 09:00:00', 2000.00, 'lui.ksdkj', '0056789012345678', 1),
+('Gerente', '2025-05-01 09:00:00', 2500.00, 'camparyramirez@gmail.com', '123-456789-0001X', 1),
+('Responsable Sucursal', '2024-11-15 08:30:00', 1500.00, 'maria.fernandez@email.com', '0045678901234567', 1);
+
+
+-- Insertar Campary

@@ -1,0 +1,482 @@
+/* Enhanced Custom Styles for NEXO Login System */
+
+/* Import Inter font for better typography */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+/* CSS Variables for consistent theming */
+:root {
+  --primary: #39bfb2;
+  --primary-dark: #2da89e;
+  --primary-light: #4dd0c4;
+  --secondary: #eaeef3;
+  --accent: #f2ce16;
+  --orange: #f28627;
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+
+  /* Shadows */
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --shadow-strong: 0 20px 60px rgba(0, 0, 0, 0.15);
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow: 0.3s ease;
+}
+
+/* Base styles with enhanced typography */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow,
+    transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+body {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Enhanced scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+}
+
+/* Enhanced focus styles for accessibility */
+.focus-visible:focus,
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Form enhancements */
+.form-input {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.form-input:focus {
+  box-shadow: 0 0 0 3px rgba(57, 191, 178, 0.1);
+  transform: translateY(-1px);
+}
+
+.form-input.error {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  animation: shake 0.4s ease-in-out;
+}
+
+.form-group.focused .form-input {
+  transform: translateY(-1px);
+}
+
+.form-group.error {
+  animation: shake 0.4s ease-in-out;
+}
+
+/* Enhanced animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-50px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) translateY(-10px);
+  }
+  70% {
+    transform: scale(0.9) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Animation classes */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.6s ease-out;
+}
+
+/* Loading spinner with enhanced styling */
+.loading-spinner {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Enhanced notification styles */
+.notification-message.success {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.notification-message.error {
+  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.notification-message.warning {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.notification-message.info {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.notification-toast {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Enhanced button styles */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--orange) 0%, #e07420 100%);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Enhanced modal styles */
+.modal-backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Error message animations */
+.error-message {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.error-message.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive enhancements */
+@media (max-width: 1024px) {
+  .lg\:flex-row {
+    flex-direction: column;
+  }
+
+  .lg\:w-1\/2 {
+    width: 100%;
+  }
+
+  /* Adjust image section height on tablets */
+  .lg\:w-1\/2:first-child {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Mobile-specific adjustments */
+  .rounded-3xl {
+    border-radius: 1.5rem;
+  }
+
+  .p-8 {
+    padding: 1.5rem;
+  }
+
+  .lg\:p-16 {
+    padding: 2rem;
+  }
+
+  /* Adjust form spacing on mobile */
+  .space-y-6 > * + * {
+    margin-top: 1.25rem;
+  }
+
+  /* Improve touch targets */
+  .form-input {
+    min-height: 48px;
+  }
+
+  button {
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Small mobile adjustments */
+  .max-w-5xl {
+    margin: 0 1rem;
+  }
+
+  .text-3xl {
+    font-size: 1.875rem;
+  }
+
+  /* Stack notifications on small screens */
+  #notificationsContainer {
+    left: 1rem;
+    right: 1rem;
+    top: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small mobile adjustments */
+  .p-8 {
+    padding: 1rem;
+  }
+
+  .lg\:p-16 {
+    padding: 1.5rem;
+  }
+
+  .space-y-6 > * + * {
+    margin-top: 1rem;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 600px) and (orientation: landscape) {
+  .min-h-\[650px\] {
+    min-height: auto;
+  }
+
+  .py-8 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .lg\:w-1\/2:first-child {
+    min-height: 200px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .border {
+    border-width: 2px;
+  }
+
+  .focus\:ring-2:focus {
+    --tw-ring-width: 4px;
+  }
+
+  .shadow-soft,
+  .shadow-medium,
+  .shadow-strong {
+    box-shadow: 0 0 0 2px currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-fade-in,
+  .animate-shake,
+  .animate-bounce-in {
+    animation: none;
+  }
+}
+
+/* Dark mode support (for future implementation) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #4dd0c4;
+    --primary-dark: #39bfb2;
+  }
+
+  .bg-white {
+    background-color: #1f2937;
+    color: #f9fafb;
+  }
+
+  .text-gray-900 {
+    color: #f9fafb;
+  }
+
+  .text-gray-700 {
+    color: #d1d5db;
+  }
+
+  .text-gray-600 {
+    color: #9ca3af;
+  }
+
+  .text-gray-500 {
+    color: #6b7280;
+  }
+
+  .border-gray-200 {
+    border-color: #374151;
+  }
+
+  .bg-gray-50 {
+    background-color: #111827;
+  }
+}
+
+/* Print styles */
+@media print {
+  .fixed,
+  #notificationsContainer,
+  #lockoutModal {
+    display: none !important;
+  }
+
+  .shadow-soft,
+  .shadow-medium,
+  .shadow-strong {
+    box-shadow: none !important;
+  }
+
+  * {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* Performance optimizations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* GPU acceleration for smooth animations */
+.form-input,
+.btn-primary,
+.notification-toast {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
