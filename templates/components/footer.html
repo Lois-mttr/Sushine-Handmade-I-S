@@ -1,14 +1,200 @@
-<footer class="bg-white border-t border-gray-200 mt-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-            <div class="text-sm text-gray-500">
-                © 2025 NEXO - Sistema de Inventario y Ventas. Todos los derechos reservados.
+<footer class="nexo-footer">
+    <div class="nexo-footer-content">
+        <div class="nexo-footer-info">
+            <div class="nexo-footer-brand">
+                <div class="nexo-footer-logo">
+                    <div class="nexo-footer-icon">N</div>
+                    <span>© 2025 NEXO - Sistema de Inventario y Ventas</span>
+                </div>
+                <p class="nexo-footer-subtitle">Sunshine Handmade - Todos los derechos reservados.</p>
             </div>
-            <div class="flex space-x-6 mt-4 md:mt-0">
-                <a href="#" class="text-sm text-gray-500 hover:text-primary transition-colors">Soporte</a>
-                <a href="#" class="text-sm text-gray-500 hover:text-primary transition-colors">Documentación</a>
-                <a href="#" class="text-sm text-gray-500 hover:text-primary transition-colors">Contacto</a>
+            
+            <div class="nexo-footer-links">
+                <a href="#" class="nexo-footer-link">
+                    <i class="fas fa-life-ring"></i>
+                    Soporte
+                </a>
+                <a href="#" class="nexo-footer-link">
+                    <i class="fas fa-book"></i>
+                    Documentación
+                </a>
+                <a href="#" class="nexo-footer-link">
+                    <i class="fas fa-envelope"></i>
+                    Contacto
+                </a>
+            </div>
+        </div>
+        
+        <div class="nexo-footer-status">
+            <div class="nexo-footer-tech">
+                <span>Versión 1.0.0</span>
+                <span>•</span>
+                <span>Django 4.2</span>
+                <span>•</span>
+                <span id="server-time">{{ current_datetime|date:"d/m/Y" }}</span>
+            </div>
+            <div class="nexo-footer-online">
+                <div class="nexo-status-dot"></div>
+                <span>Sistema operativo</span>
             </div>
         </div>
     </div>
 </footer>
+
+<style>
+/* ===== FOOTER MEJORADO ===== */
+.nexo-footer {
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    margin-top: auto;
+    padding: 24px;
+}
+
+.nexo-footer-content {
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.nexo-footer-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.nexo-footer-brand {
+    flex: 1;
+}
+
+.nexo-footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.nexo-footer-icon {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.nexo-footer-logo span {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.nexo-footer-subtitle {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.nexo-footer-links {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.nexo-footer-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #6b7280;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.nexo-footer-link:hover {
+    color: #4ecdc4;
+}
+
+.nexo-footer-link i {
+    font-size: 12px;
+}
+
+.nexo-footer-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid #f3f4f6;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.nexo-footer-tech {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.nexo-footer-online {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.nexo-status-dot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nexo-footer-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .nexo-footer-links {
+        gap: 16px;
+    }
+    
+    .nexo-footer-status {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+</style>
+
+<script>
+// Actualizar hora del servidor cada minuto
+setInterval(() => {
+    const serverTimeElement = document.getElementById('server-time');
+    if (serverTimeElement) {
+        const now = new Date();
+        const timeString = now.toLocaleDateString('es-ES');
+        serverTimeElement.textContent = timeString;
+    }
+}, 60000);
+</script>

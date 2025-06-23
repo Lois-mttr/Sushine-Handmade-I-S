@@ -19,15 +19,26 @@ logger = logging.getLogger('nexo.auth')
 @require_http_methods(["GET", "POST"])
 def login_view(request):
     """
-    Vista principal para el inicio de sesión
+    Vista principal para el inicio de sesión - COMPLETAMENTE CORREGIDA
     """
-    # Verificar si el usuario ya está autenticado
-    if request.session.get('user_id'):
-        logger.info(f"Usuario ya autenticado redirigido: {request.session.get('username')}")
-        return redirect('/dashboard/')
+    logger.debug(f"Login view called - Method: {request.method}, Path: {request.path}")
+    
+    # IMPORTANTE: Verificar si el usuario ya está autenticado
+    user_id = request.session.get('user_id')
+    if user_id:
+        try:
+            # Verificar que el usuario aún existe y está activo
+            user = Usuario.objects.get(idusuario=user_id, activo=True)
+            logger.info(f"Usuario ya autenticado redirigido: {user.nombreusuario}")
+            return redirect('/dashboard/')
+        except Usuario.DoesNotExist:
+            # Usuario no existe, limpiar sesión
+            request.session.flush()
+            logger.warning(f"Sesión limpiada para usuario inexistente: {user_id}")
     
     if request.method == 'GET':
         # Mostrar formulario de login
+        logger.debug("Mostrando formulario de login")
         form = LoginForm()
         context = {
             'form': form,
@@ -38,11 +49,13 @@ def login_view(request):
         return render(request, 'AuthLogin/login.html', context)
     
     elif request.method == 'POST':
+        logger.debug("Procesando POST de login")
         # Verificar si es una petición AJAX
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return process_ajax_login(request)
         else:
             return process_traditional_login(request)
+
 
 def process_ajax_login(request):
     """

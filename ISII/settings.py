@@ -75,6 +75,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ISII.wsgi.application'
 
+## AGREGADAS RECIENTEMENTE
+
+LOGIN_URL = 'auth:login'  # Usando el namespace
+LOGIN_REDIRECT_URL = 'dashboard:home'  # Ruta después de login exitoso
+LOGOUT_REDIRECT_URL = 'auth:login'  # Ruta después de logout
+
+# Configuración de cache para el sistema de bloqueo de IPs
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'nexo-cache',
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
