@@ -1,8 +1,4 @@
-import { Chart } from "@/components/ui/chart"
-/**
- * NEXO Dashboard - Sistema JavaScript Mejorado
- * Funcionalidades completas para el dashboard con comentarios en español
- */
+
 
 // ===== CONFIGURACIÓN GLOBAL =====
 const NEXO_CONFIG = {

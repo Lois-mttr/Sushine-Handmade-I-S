@@ -17,8 +17,9 @@
         <!-- Información del usuario -->
         <div class="nexo-header-user">
             <div class="nexo-user-info">
-                <div class="nexo-user-avatar">
-                    {{ user_initials|default:"U" }}
+                <!-- Avatar del usuario -->
+                <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold text-sm cursor-pointer hover:bg-primary-dark transition-colors duration-200">
+                    {{ user.iniciales|default:user.nombreusuario|slice:":2"|upper }}
                 </div>
                 <div class="nexo-user-details">
                     <span class="nexo-user-name">{{ user.nombreusuario|default:user.nombreusuario }}</span>

@@ -117,8 +117,8 @@
                         </div>
                         <div>
                             <div class="font-medium text-gray-900">
-                                {% if user.empleado_nombre %}
-                                    {{ user.empleado_nombre }}
+                                {% if user.nombreusuario %}
+                                    {{ user.nombreusuario }}
                                 {% else %}
                                     {{ user.nombreusuario }}
                                 {% endif %}
@@ -152,7 +152,7 @@
                 id: '{{ user.idusuario|default:"" }}',
                 username: '{{ user.nombreusuario|default:"" }}',
                 role: '{{ user.rol|default:"" }}',
-                name: '{% if user.empleado_nombre %}{{ user.empleado_nombre }}{% else %}{{ user.nombreusuario }}{% endif %}',
+                name: '{% if user.nombreusuario %}{{ user.nombreusuario}}{% endif %}',
                 iniciales: '{{ user.iniciales|default:user.nombreusuario|slice:":2"|upper }}',
                 ultimo_acceso: '{% if user.ultimo_acceso %}{{ user.ultimo_acceso|date:"c" }}{% endif %}'
             },
@@ -166,41 +166,37 @@
         };
         
         // Función para mostrar notificaciones
-        function showNotification(message, type = 'info', duration = 5000) {
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 translate-x-full`;
-            
-            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
-            notification.classList.add(bgColor, 'text-white');
-            
-            notification.innerHTML = `
-                <div class="flex items-center space-x-2">
-                    <span>${message}</span>
-                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Mostrar notificación
-            setTimeout(() => {
-                notification.classList.remove('translate-x-full');
-            }, 100);
-            
-            // Auto-remover después del tiempo especificado
-            setTimeout(() => {
-                notification.classList.add('translate-x-full');
-                setTimeout(() => {
-                    if (notification.parentElement) {
-                        notification.remove();
-                    }
-                }, 300);
-            }, duration);
-        }
+function showNotification(message, type = 'info', duration = 5000) {
+    const notification = document.createElement('div');
+    // Aumenta el z-index a 1000 para asegurar que esté sobre el header (100)
+    notification.className = `fixed top-20 right-4 z-[1000] p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 translate-x-full`;
+    
+    const bgColor = type === 'success' ? 'bg-green-500' : 
+                    type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+    notification.classList.add(bgColor, 'text-white');
+    
+    notification.innerHTML = `
+        <div class="flex items-center space-x-2">
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => notification.remove(), 300);
+    }, duration);
+}
         
         // Auto-ocultar mensajes después de 5 segundos
         document.addEventListener('DOMContentLoaded', function() {
@@ -222,62 +218,5 @@
     <!-- Block for additional JavaScript -->
     {% block extra_js %}{% endblock %}
     
-    <style>
-    /* ===== ESTILOS GLOBALES MEJORADOS ===== */
-    .nexo-main-content {
-        margin-left: 240px;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .nexo-content {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    /* Responsive */
-    @media (max-width: 1024px) {
-        .nexo-main-content {
-            margin-left: 0;
-        }
-    }
-    
-    /* Scrollbar personalizado */
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-    }
-    
-    /* Animaciones suaves */
-    * {
-        transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    
-    /* Focus states mejorados */
-    button:focus, 
-    input:focus, 
-    select:focus, 
-    textarea:focus {
-        outline: 2px solid #4ECDC4;
-        outline-offset: 2px;
-    }
-    </style>
 </body>
 </html>
