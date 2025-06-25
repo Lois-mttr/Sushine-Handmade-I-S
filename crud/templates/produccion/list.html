@@ -1,5 +1,6 @@
 {% extends 'layouts/base.html' %}
-{% load static %} <!-- Para cargar archivos estáticos -->
+{% load static %}
+{% load humanize %}
 
 {% block title %}Lista de Producciones - NEXO{% endblock %}
 
@@ -12,255 +13,583 @@
 {% endblock %}
 
 {% block extra_css %}
-    <!-- Puedes añadir CSS específico para esta página si es necesario -->
-    <style>
-        .table th, .table td {
-            vertical-align: middle;
+<style>
+    .table-responsive {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .badge-activo {
+        background: linear-gradient(135deg, {{ colores.success }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .badge-inactivo {
+        background: linear-gradient(135deg, {{ colores.danger }} 0%, #d07010 100%);
+        color: {{ colores.white }};
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .filtros-card {
+        background: {{ colores.white }};
+        border: 1px solid {{ colores.bg_light }};
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(57, 191, 178, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .filtros-card:hover {
+        box-shadow: 0 8px 15px -3px rgba(57, 191, 178, 0.15);
+    }
+    
+    .btn-nexo-primary {
+        background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-nexo-primary:hover {
+        background: linear-gradient(135deg, #2da89e 0%, #258a7f 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(57, 191, 178, 0.3);
+    }
+    
+    .action-btn {
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+    }
+    
+    .action-btn:hover {
+        transform: scale(1.1);
+        text-decoration: none;
+    }
+    
+    .action-btn-view {
+        color: {{ colores.info }};
+    }
+    
+    .action-btn-view:hover {
+        background: rgba(39, 82, 242, 0.1);
+        color: #1e40af;
+    }
+    
+    .action-btn-edit {
+        color: {{ colores.warning }};
+    }
+    
+    .action-btn-edit:hover {
+        background: rgba(242, 206, 22, 0.1);
+        color: #d97706;
+    }
+    
+    .action-btn-delete {
+        color: {{ colores.danger }};
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .action-btn-delete:hover {
+        background: rgba(242, 134, 39, 0.1);
+        color: #dc2626;
+    }
+    
+    .action-btn-disabled {
+        color: #9ca3af;
+        cursor: not-allowed;
+    }
+    
+    .action-btn-disabled:hover {
+        background: rgba(156, 163, 175, 0.1);
+        transform: none;
+    }
+    
+    .pagination-btn {
+        background: {{ colores.white }};
+        border: 1px solid {{ colores.bg_light }};
+        color: {{ colores.text_medium }};
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .pagination-btn:hover {
+        background: {{ colores.primary }};
+        border-color: {{ colores.primary }};
+        color: {{ colores.white }};
+        text-decoration: none;
+    }
+    
+    .pagination-btn.active {
+        background: {{ colores.primary }};
+        border-color: {{ colores.primary }};
+        color: {{ colores.white }};
+    }
+    
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+        background: {{ colores.white }};
+        border-radius: 0.75rem;
+        border: 2px dashed {{ colores.bg_light }};
+    }
+    
+    .row-inactive {
+        opacity: 0.6;
+        background-color: #f9fafb;
+    }
+    
+    @media (max-width: 768px) {
+        .table-responsive {
+            font-size: 0.875rem;
         }
-        .badge-activo {
-            background-color: {{ colores.success }}; /* Usar color de éxito */
-            color: {{ colores.white }};
-            padding: 0.3em 0.6em;
-            font-size: 0.75em;
-            border-radius: 0.25rem;
+        
+        .action-btn {
+            padding: 0.375rem;
         }
-        .badge-inactivo {
-            background-color: {{ colores.danger }}; /* Usar color de peligro */
-            color: {{ colores.white }};
-            padding: 0.3em 0.6em;
-            font-size: 0.75em;
-            border-radius: 0.25rem;
+        
+        .badge-activo, .badge-inactivo {
+            font-size: 0.625rem;
+            padding: 0.125rem 0.5rem;
         }
-        .filtros-card {
-            background-color: {{ colores.white }};
-            border: 1px solid {{ colores.bg_light }};
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .btn-nexo-primary {
-            background-color: {{ colores.primary }};
-            color: {{ colores.white }};
-            border: none;
-        }
-        .btn-nexo-primary:hover {
-            background-color: #2c9a8e; /* Un tono más oscuro de primary */
-        }
-        .btn-nexo-secondary {
-            background-color: {{ colores.secondary_yellow }};
-            color: {{ colores.text_dark }};
-             border: none;
-        }
-        .btn-nexo-secondary:hover {
-            background-color: #e0b800; /* Un tono más oscuro de yellow */
-        }
-         .btn-nexo-danger {
-            background-color: {{ colores.danger }};
-            color: {{ colores.white }};
-             border: none;
-        }
-        .btn-nexo-danger:hover {
-            background-color: #d07010; /* Un tono más oscuro de danger */
-        }
-    </style>
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-
-    <!-- Mensajes de Django -->
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} p-4 mb-4 rounded-md shadow-sm border-l-4 {% if message.tags == 'error' %}border-red-500 bg-red-100 text-red-700{% elif message.tags == 'success' %}border-green-500 bg-green-100 text-green-700{% else %}border-blue-500 bg-blue-100 text-blue-700{% endif %}" role="alert">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-
-    <!-- Botón para Nueva Producción -->
-    <div class="mb-6 text-right">
-        <a href="{% url 'crud:produccion_create' %}" class="btn-nexo-primary inline-flex items-center px-6 py-2.5 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow">
-            <i class="fas fa-plus mr-2"></i>Nueva Producción
-        </a>
-    </div>
-
-    <!-- Filtros de Búsqueda -->
-    <div class="filtros-card p-6 mb-6">
-        <h3 class="text-lg font-semibold mb-4 text-gray-700"><i class="fas fa-filter mr-2" style="color: {{ colores.primary }};"></i>Filtrar Producciones</h3>
-        <form method="get" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-            <div>
-                <label for="{{ filtro_form.fecha_desde.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ filtro_form.fecha_desde.label }}</label>
-                {{ filtro_form.fecha_desde }}
-            </div>
-            <div>
-                <label for="{{ filtro_form.fecha_hasta.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ filtro_form.fecha_hasta.label }}</label>
-                {{ filtro_form.fecha_hasta }}
-            </div>
-            <div>
-                <label for="{{ filtro_form.usuario.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ filtro_form.usuario.label }}</label>
-                {{ filtro_form.usuario }}
-            </div>
-            <div>
-                <label for="{{ filtro_form.estado.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ filtro_form.estado.label }}</label>
-                {{ filtro_form.estado }}
-            </div>
-            <div class="flex space-x-2">
-                <button type="submit" class="btn-nexo-primary w-full md:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium">
-                    <i class="fas fa-search mr-2"></i>Buscar
-                </button>
-                <a href="{% url 'crud:produccion_list' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 w-full md:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium" title="Limpiar filtros">
-                    <i class="fas fa-times"></i>
-                </a>
-            </div>
-        </form>
-    </div>
-
-    <!-- Tabla de Resultados -->
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 class="text-lg font-semibold text-gray-700">
-                <i class="fas fa-list-ul mr-2" style="color: {{ colores.primary }};"></i>
-                Registros de Producción ({{ total_count }})
-            </h3>
-        </div>
+<div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
+    <div class="max-w-7xl mx-auto">
         
-        {% if page_obj.object_list %}
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Entrada</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"># Productos</th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cant. Total</th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Costo Total</th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for produccion_item in page_obj.object_list %} {# Iterar sobre page_obj.object_list #}
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ produccion_item.idProduccion }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ produccion_item.fechaEntrada|date:"d/m/Y" }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ produccion_item.nombreUsuario|default:"N/A" }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ produccion_item.total_productos|default:0 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">{{ produccion_item.total_cantidad|default:0 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right font-semibold" style="color: {{ colores.success }};">
-                                C$ {{ produccion_item.total_costo|floatformat:2|default:"0.00" }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <span class="badge-activo">Activo</span>
-                                {% comment %} {% if produccion_item.EstadoRegistro == 1 %}
-                                    <span class="badge-activo">Activo</span>
-                                {% else %}
-                                    <span class="badge-inactivo">Inactivo</span>
-                                {% endif %} {% endcomment %}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <a href="{% url 'crud:produccion_detail' produccion_item.idProduccion %}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Ver Detalle">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                {% if produccion_item.EstadoRegistro %} {# Solo permitir editar si está activo #}
-                                <a href="{% url 'crud:produccion_edit' produccion_item.idProduccion %}" class="text-yellow-500 hover:text-yellow-700 mr-3" title="Editar">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <!-- El botón de "Dar de Baja" se manejará en la vista de detalle o con un modal de confirmación aquí -->
-                                <form method="post" action="{% url 'crud:produccion_delete' produccion_item.idProduccion %}" class="inline" onsubmit="return confirm('¿Está seguro de que desea dar de baja esta producción? Esta acción revertirá el stock y no se puede deshacer.');">
-                                    {% csrf_token %}
-                                    <button type="submit" class="text-red-500 hover:text-red-700" title="Dar de Baja">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </form>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Paginación -->
-            {% if page_obj.has_other_pages %}
-            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                <div class="flex-1 flex justify-between sm:hidden">
-                    {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        Anterior
-                    </a>
-                    {% endif %}
-                    {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        Siguiente
-                    </a>
-                    {% endif %}
-                </div>
-                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-sm text-gray-700">
-                            Mostrando <span class="font-medium">{{ page_obj.start_index }}</span>
-                            a <span class="font-medium">{{ page_obj.end_index }}</span>
-                            de <span class="font-medium">{{ page_obj.paginator.count }}</span> resultados
-                        </p>
+        <!-- Mensajes de Django -->
+        {% if messages %}
+            <div class="mb-6 space-y-2">
+                {% for message in messages %}
+                    <div class="alert p-4 rounded-lg shadow-sm border-l-4 flex items-start space-x-3 
+                        {% if message.tags == 'error' %}border-red-500 bg-red-50 text-red-800
+                        {% elif message.tags == 'success' %}border-green-500 bg-green-50 text-green-800
+                        {% elif message.tags == 'warning' %}border-yellow-500 bg-yellow-50 text-yellow-800
+                        {% else %}border-blue-500 bg-blue-50 text-blue-800{% endif %}" 
+                        role="alert">
+                        <div class="flex-shrink-0">
+                            <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle
+                                {% elif message.tags == 'success' %}fa-check-circle
+                                {% elif message.tags == 'warning' %}fa-exclamation-triangle
+                                {% else %}fa-info-circle{% endif %}"></i>
+                        </div>
+                        <div class="flex-1">{{ message }}</div>
                     </div>
-                    <div>
-                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                            {% if page_obj.has_previous %}
-                            <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                <span class="sr-only">Anterior</span>
-                                <i class="fas fa-chevron-left h-5 w-5"></i>
-                            </a>
-                            {% endif %}
-                            
-                            {% for num in page_obj.paginator.page_range %}
-                                {% if page_obj.number == num %}
-                                    <span aria-current="page" class="relative z-10 inline-flex items-center px-4 py-2 border text-sm font-medium" style="border-color: {{ colores.primary }}; background-color: {{ colores.primary }}; color: {{ colores.white }};">
-                                        {{ num }}
-                                    </span>
-                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                    <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        {{ num }}
-                                    </a>
-                                {% elif num == page_obj.paginator.page_range.0 or num == page_obj.paginator.page_range|last %}
-                                     <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>
-                                {% endif %}
-                            {% endfor %}
-
-                            {% if page_obj.has_next %}
-                            <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                <span class="sr-only">Siguiente</span>
-                                <i class="fas fa-chevron-right h-5 w-5"></i>
-                            </a>
-                            {% endif %}
-                        </nav>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-        {% else %}
-            <div class="text-center py-12">
-                <i class="fas fa-box-open fa-4x text-gray-400 mb-4"></i>
-                <h4 class="text-lg font-medium text-gray-700">No se encontraron registros de producción.</h4>
-                <p class="text-gray-500 mt-1">Intenta ajustar los filtros o registra una nueva producción.</p>
-                <a href="{% url 'crud:produccion_create' %}" class="btn-nexo-primary inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium mt-4">
-                    <i class="fas fa-plus mr-2"></i>Registrar Primera Producción
-                </a>
+                {% endfor %}
             </div>
         {% endif %}
+
+        <!-- Botón para Nueva Producción -->
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Producciones</h1>
+                <p class="text-gray-600 mt-1">Total: {{ total_count }} registro{{ total_count|pluralize }}</p>
+            </div>
+            <a href="{% url 'crud:produccion_create' %}" 
+               class="btn-nexo-primary inline-flex items-center px-6 py-3 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200">
+                <i class="fas fa-plus mr-2"></i>Nueva Producción
+            </a>
+        </div>
+
+        <!-- Filtros de Búsqueda (SIN filtro de estado) -->
+        <div class="filtros-card p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-filter mr-2" style="color: {{ colores.primary }};"></i>
+                    Filtrar Producciones
+                </h3>
+                <button type="button" id="toggleFilters" class="text-sm text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-chevron-up" id="filterIcon"></i>
+                </button>
+            </div>
+            
+            <form method="get" id="filterForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                <div>
+                    <label for="{{ filtro_form.fecha_desde.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ filtro_form.fecha_desde.label }}
+                    </label>
+                    {{ filtro_form.fecha_desde }}
+                    {% if filtro_form.fecha_desde.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ filtro_form.fecha_desde.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ filtro_form.fecha_hasta.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ filtro_form.fecha_hasta.label }}
+                    </label>
+                    {{ filtro_form.fecha_hasta }}
+                    {% if filtro_form.fecha_hasta.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ filtro_form.fecha_hasta.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ filtro_form.usuario.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ filtro_form.usuario.label }}
+                    </label>
+                    {{ filtro_form.usuario }}
+                </div>
+                <div class="flex space-x-2">
+                    <button type="submit" class="btn-nexo-primary flex-1 inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium">
+                        <i class="fas fa-search mr-2"></i>Buscar
+                    </button>
+                    <a href="{% url 'crud:produccion_list' %}" 
+                       class="bg-gray-300 hover:bg-gray-400 text-gray-800 inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors" 
+                       title="Limpiar filtros">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabla de Resultados -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden table-responsive">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center" style="background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);">
+                <h3 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fas fa-list-ul mr-2"></i>
+                    Registros de Producción
+                </h3>
+                <span class="text-white text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">
+                    {{ total_count }} registro{{ total_count|pluralize }}
+                </span>
+            </div>
+            
+            {% if page_obj.object_list %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <i class="fas fa-hashtag mr-1"></i>ID
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <i class="fas fa-calendar mr-1"></i>Fecha
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <i class="fas fa-user mr-1"></i>Usuario
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <i class="fas fa-boxes mr-1"></i>Productos
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <i class="fas fa-cubes mr-1"></i>Cantidad
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <i class="fas fa-dollar-sign mr-1"></i>Costo Total
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <i class="fas fa-toggle-on mr-1"></i>Estado
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <i class="fas fa-cogs mr-1"></i>Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for produccion_item in page_obj.object_list %}
+                            <tr class="hover:bg-gray-50 transition-colors duration-150 {% if not produccion_item.EstadoRegistro %}row-inactive{% endif %}">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    #{{ produccion_item.idProduccion }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ produccion_item.fechaEntrada|date:"d/m/Y" }}
+                                    <div class="text-xs text-gray-400">
+                                        {{ produccion_item.fechaEntrada|date:"l" }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-2">
+                                            <i class="fas fa-user text-gray-500 text-xs"></i>
+                                        </div>
+                                        {{ produccion_item.nombreUsuario|default:"N/A" }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ produccion_item.total_productos|default:0 }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right font-medium">
+                                    {{ produccion_item.total_cantidad|default:0|intcomma }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold" style="color: {{ colores.success }};">
+                                    C$ {{ produccion_item.total_costo|floatformat:2|default:"0.00"|intcomma }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    {% if produccion_item.EstadoRegistro %}
+                                        <span class="badge-activo">
+                                            <i class="fas fa-check-circle mr-1"></i>Activo
+                                        </span>
+                                    {% else %}
+                                        <span class="badge-inactivo">
+                                            <i class="fas fa-times-circle mr-1"></i>Inactivo
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <div class="flex items-center justify-center space-x-2">
+                                        <!-- Ver siempre disponible -->
+                                        <a href="{% url 'crud:produccion_detail' produccion_item.idProduccion %}" 
+                                           class="action-btn action-btn-view" 
+                                           title="Ver Detalle">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        
+                                        <!-- Editar y Eliminar solo si está activo -->
+                                        {% if produccion_item.EstadoRegistro %}
+                                            <a href="{% url 'crud:produccion_edit' produccion_item.idProduccion %}" 
+                                               class="action-btn action-btn-edit" 
+                                               title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    class="action-btn action-btn-delete" 
+                                                    title="Dar de Baja"
+                                                    onclick="confirmarEliminacion({{ produccion_item.idProduccion }})">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        {% else %}
+                                            <span class="action-btn action-btn-disabled" title="Producción inactiva - No editable">
+                                                <i class="fas fa-edit"></i>
+                                            </span>
+                                            <span class="action-btn action-btn-disabled" title="Producción inactiva - No eliminable">
+                                                <i class="fas fa-ban"></i>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginación -->
+                {% if page_obj.has_other_pages %}
+                <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                           class="pagination-btn relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md">
+                            <i class="fas fa-chevron-left mr-1"></i>Anterior
+                        </a>
+                        {% endif %}
+                        {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                           class="pagination-btn ml-3 relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md">
+                            Siguiente<i class="fas fa-chevron-right ml-1"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Mostrando <span class="font-medium">{{ page_obj.start_index }}</span>
+                                a <span class="font-medium">{{ page_obj.end_index }}</span>
+                                de <span class="font-medium">{{ page_obj.paginator.count }}</span> resultados
+                            </p>
+                        </div>
+                        <div>
+                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                {% if page_obj.has_previous %}
+                                <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                   class="pagination-btn relative inline-flex items-center px-2 py-2 rounded-l-md text-sm font-medium">
+                                    <span class="sr-only">Anterior</span>
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <span aria-current="page" class="pagination-btn active relative z-10 inline-flex items-center px-4 py-2 text-sm font-medium">
+                                            {{ num }}
+                                        </span>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                           class="pagination-btn relative inline-flex items-center px-4 py-2 text-sm font-medium">
+                                            {{ num }}
+                                        </a>
+                                    {% elif num == page_obj.paginator.page_range.0 or num == page_obj.paginator.page_range|last %}
+                                         <span class="pagination-btn relative inline-flex items-center px-4 py-2 text-sm font-medium">...</span>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                   class="pagination-btn relative inline-flex items-center px-2 py-2 rounded-r-md text-sm font-medium">
+                                    <span class="sr-only">Siguiente</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                                {% endif %}
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-box-open fa-4x text-gray-400 mb-4"></i>
+                    <h4 class="text-lg font-medium text-gray-700 mb-2">No se encontraron registros de producción</h4>
+                    <p class="text-gray-500 mb-4">
+                        {% if request.GET %}
+                            Intenta ajustar los filtros de búsqueda o 
+                            <a href="{% url 'crud:produccion_list' %}" class="text-blue-600 hover:text-blue-800 underline">limpiar todos los filtros</a>.
+                        {% else %}
+                            Comienza registrando tu primera producción.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'crud:produccion_create' %}" 
+                       class="btn-nexo-primary inline-flex items-center px-6 py-3 rounded-lg text-sm font-medium">
+                        <i class="fas fa-plus mr-2"></i>Registrar Primera Producción
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación para Eliminar -->
+<div id="confirmDeleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+    <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full" style="background-color: rgba(242,134,39,0.1);">
+                <i class="fas fa-exclamation-triangle fa-2x" style="color: {{ colores.danger }};"></i>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Confirmar Acción</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">
+                    ¿Está seguro de que desea dar de baja esta producción? Esta acción revertirá el stock de los productos asociados y marcará el registro como inactivo. No se podrá deshacer.
+                </p>
+            </div>
+            <div class="items-center px-4 py-3 space-x-2">
+                <button id="cancelDeleteButton" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-sm transition-colors">
+                    Cancelar
+                </button>
+                <form method="post" id="deleteForm" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="px-4 py-2 rounded-md text-white text-sm transition-colors" style="background-color: {{ colores.danger }};">
+                        Sí, Dar de Baja
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Script para inicializar tooltips o cualquier otra funcionalidad JS específica de la lista
-    document.addEventListener('DOMContentLoaded', function() {
-        // Ejemplo: Inicializar tooltips de Bootstrap si se usan
-        // var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        // var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        //   return new bootstrap.Tooltip(tooltipTriggerEl)
-        // })
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle de filtros
+    const toggleFilters = document.getElementById('toggleFilters');
+    const filterForm = document.getElementById('filterForm');
+    const filterIcon = document.getElementById('filterIcon');
+
+    if (toggleFilters && filterForm) {
+        toggleFilters.addEventListener('click', function() {
+            if (filterForm.style.display === 'none') {
+                filterForm.style.display = 'grid';
+                filterIcon.className = 'fas fa-chevron-up';
+            } else {
+                filterForm.style.display = 'none';
+                filterIcon.className = 'fas fa-chevron-down';
+            }
+        });
+    }
+
+    // Función para confirmar eliminación
+    window.confirmarEliminacion = function(produccionId) {
+        const modal = document.getElementById('confirmDeleteModal');
+        const deleteForm = document.getElementById('deleteForm');
+        
+        if (modal && deleteForm) {
+            deleteForm.action = `/crud/produccion/${produccionId}/eliminar/`;
+            modal.classList.remove('hidden');
+        }
+    };
+
+    // Cerrar modal
+    const cancelButton = document.getElementById('cancelDeleteButton');
+    const modal = document.getElementById('confirmDeleteModal');
+
+    if (cancelButton && modal) {
+        cancelButton.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+        
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape" && !modal.classList.contains('hidden')) {
+                modal.classList.add('hidden');
+            }
+        });
+        
+        // Cerrar modal al hacer clic fuera
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+
+    // Validación de fechas en tiempo real
+    const fechaDesde = document.querySelector('input[name="fecha_desde"]');
+    const fechaHasta = document.querySelector('input[name="fecha_hasta"]');
+    
+    function validarFechas() {
+        if (fechaDesde && fechaHasta && fechaDesde.value && fechaHasta.value) {
+            const desde = new Date(fechaDesde.value);
+            const hasta = new Date(fechaHasta.value);
+            
+            if (desde > hasta) {
+                fechaHasta.setCustomValidity('La fecha hasta no puede ser anterior a la fecha desde');
+                fechaHasta.reportValidity();
+            } else {
+                fechaHasta.setCustomValidity('');
+            }
+        }
+    }
+    
+    if (fechaDesde) {
+        fechaDesde.addEventListener('change', validarFechas);
+    }
+    
+    if (fechaHasta) {
+        fechaHasta.addEventListener('change', validarFechas);
+    }
+
+    // Animaciones de entrada para las filas de la tabla
+    const tableRows = document.querySelectorAll('tbody tr');
+    tableRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(10px)';
+        setTimeout(() => {
+            row.style.transition = 'all 0.3s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateY(0)';
+        }, index * 50);
     });
+});
 </script>
 {% endblock %}

@@ -12,240 +12,471 @@
 {% endblock %}
 
 {% block extra_css %}
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <style>
+    .form-container {
+        background: {{ colores.white }};
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(57, 191, 178, 0.1);
+        border: 1px solid {{ colores.bg_light }};
+        transition: all 0.3s ease;
+    }
+    
+    .form-container:hover {
+        box-shadow: 0 8px 15px -3px rgba(57, 191, 178, 0.15);
+    }
+    
     .formset-row {
-        padding: 1.25rem; /* Aumentar padding */
+        padding: 1.5rem;
         margin-bottom: 1rem;
         border: 1px solid {{ colores.bg_light }};
-        border-radius: 0.5rem;
-        background-color: {{ colores.white }};
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        transition: box-shadow 0.2s ease-in-out;
-        position: relative; /* Para el botón de eliminar absoluto si es necesario */
+        border-radius: 0.75rem;
+        background: {{ colores.white }};
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        position: relative;
     }
+    
     .formset-row:hover {
-        box-shadow: 0 4px 8px rgba(0,0,0,0.07);
+        box-shadow: 0 4px 8px rgba(57, 191, 178, 0.1);
+        border-color: {{ colores.primary }};
     }
-    .form-label {
-        display: block;
-        text-sm font-medium text-gray-700 mb-1; /* Tailwind classes */
-    }
-    .form-input, .form-select, .form-textarea {
-        /* Clases de Tailwind aplicadas directamente en el widget del form */
-    }
-    .btn-add-detail {
-        background-color: {{ colores.primary }};
-        color: {{ colores.white }};
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        font-weight: 500;
-        transition: background-color 0.2s ease;
-    }
-    .btn-add-detail:hover {
-        background-color: #2c9a8e; /* Darken primary */
-    }
-    .btn-remove-detail {
-        background-color: {{ colores.danger }};
-        color: {{ colores.white }};
-        padding: 0.375rem 0.75rem; /* Más pequeño */
-        border-radius: 0.375rem;
-        font-size: 0.875rem;
-        transition: background-color 0.2s ease;
-    }
-    .btn-remove-detail:hover {
-        background-color: #d07010; /* Darken danger */
-    }
-    .btn-submit-form {
-        background-color: {{ colores.success }};
-        color: {{ colores.white }};
-    }
-    .btn-submit-form:hover {
-        background-color: #2c9a8e; /* Darken success/primary */
-    }
-    .btn-cancel-form {
-        background-color: {{ colores.text_medium }};
-        color: {{ colores.white }};
-    }
-    .btn-cancel-form:hover {
-        background-color: {{ colores.text_dark }};
-    }
-    .form-error-message {
-        color: {{ colores.danger }};
-        font-size: 0.875em;
-        margin-top: 0.25rem;
-    }
-    .alert-django-error {
-        border-left-width: 4px;
-        border-left-color: {{ colores.danger }};
-        background-color: #fdecea; /* Rojo muy claro */
-        color: #932c2c; /* Rojo oscuro para texto */
-    }
+    
     .formset-row-header {
         color: {{ colores.primary }};
         font-weight: 600;
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
         padding-bottom: 0.5rem;
-        border-bottom: 1px dashed {{ colores.bg_light }};
+        border-bottom: 2px dashed {{ colores.bg_light }};
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: {{ colores.text_dark }};
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .form-input, .form-select, .form-textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid {{ colores.bg_light }};
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        background: {{ colores.white }};
+    }
+    
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+        outline: none;
+        border-color: {{ colores.primary }};
+        box-shadow: 0 0 0 3px rgba(57, 191, 178, 0.1);
+    }
+    
+    .form-input:invalid, .form-select:invalid, .form-textarea:invalid {
+        border-color: {{ colores.danger }};
+    }
+    
+    .btn-add-detail {
+        background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-add-detail:hover {
+        background: linear-gradient(135deg, #2da89e 0%, #258a7f 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(57, 191, 178, 0.3);
+    }
+    
+    .btn-remove-detail {
+        background: linear-gradient(135deg, {{ colores.danger }} 0%, #d07010 100%);
+        color: {{ colores.white }};
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+    }
+    
+    .btn-remove-detail:hover {
+        background: linear-gradient(135deg, #d07010 0%, #b85c0a 100%);
+        transform: scale(1.05);
+    }
+    
+    .btn-submit-form {
+        background: linear-gradient(135deg, {{ colores.success }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-submit-form:hover {
+        background: linear-gradient(135deg, #2da89e 0%, #258a7f 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(57, 191, 178, 0.3);
+    }
+    
+    .btn-cancel-form {
+        background: {{ colores.text_medium }};
+        color: {{ colores.white }};
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .btn-cancel-form:hover {
+        background: {{ colores.text_dark }};
+        color: {{ colores.white }};
+        text-decoration: none;
+    }
+    
+    .form-error-message {
+        color: {{ colores.danger }};
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-error-message i {
+        margin-right: 0.25rem;
+    }
+    
+    .alert-django-error {
+        border-left: 4px solid {{ colores.danger }};
+        background: #fef2f2;
+        color: #991b1b;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .alert-django-success {
+        border-left: 4px solid {{ colores.success }};
+        background: #f0fdfa;
+        color: #065f46;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .required-field::after {
+        content: " *";
+        color: {{ colores.danger }};
+        font-weight: bold;
+    }
+    
+    .form-help-text {
+        font-size: 0.75rem;
+        color: {{ colores.text_medium }};
+        margin-top: 0.25rem;
+        font-style: italic;
+    }
+    
+    .product-counter {
+        background: linear-gradient(135deg, {{ colores.secondary_yellow }} 0%, {{ colores.accent_orange }} 100%);
+        color: {{ colores.text_dark }};
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    @media (max-width: 768px) {
+        .formset-row {
+            padding: 1rem;
+        }
+        
+        .btn-remove-detail {
+            position: static;
+            margin-top: 1rem;
+            width: 100%;
+        }
+        
+        .formset-row-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8" style="background-color: {{ colores.bg_very_light }};">
-    
-    {% if messages or form.errors or detalle_formset.non_form_errors %}
-        <div class="mb-6">
-        {% if messages %}
-            {% for message in messages %}
-            <div class="p-4 mb-2 rounded-md shadow-sm alert-django-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} {% if message.tags == 'error' %}alert-django-error{% endif %}" role="alert">
-                {{ message }}
-            </div>
-            {% endfor %}
-        {% endif %}
-        {% if form.non_field_errors %}
-            <div class="p-4 mb-2 rounded-md shadow-sm alert-django-error" role="alert">
-                {{ form.non_field_errors }}
-            </div>
-        {% endif %}
-        {% if detalle_formset.non_form_errors %}
-            <div class="p-4 mb-2 rounded-md shadow-sm alert-django-error" role="alert">
-                {{ detalle_formset.non_form_errors }}
-            </div>
-        {% endif %}
-        </div>
-    {% endif %}
-
-    <form method="post" id="produccionForm" novalidate>
-        {% csrf_token %}
+<div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
+    <div class="max-w-6xl mx-auto">
         
-        <!-- Sección de Cabecera de Producción -->
-        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-            <h2 class="text-xl font-semibold mb-4 pb-2 border-b border-gray-200" style="color: {{ colores.primary }};">
-                <i class="fas fa-file-alt mr-2"></i>Datos Generales de la Producción
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                <div>
-                    <label for="{{ form.fechaEntrada.id_for_label }}" class="form-label">{{ form.fechaEntrada.label }} <span class="text-red-500">*</span></label>
-                    {{ form.fechaEntrada }}
-                    {% if form.fechaEntrada.errors %}<p class="form-error-message">{{ form.fechaEntrada.errors|join:", " }}</p>{% endif %}
-                    <p class="text-xs text-gray-500 mt-1">{{ form.fechaEntrada.help_text }}</p>
+        <!-- Mensajes de Django -->
+        {% if messages or form.errors or detalle_formset.non_form_errors %}
+            <div class="mb-6 space-y-2">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert-django-{{ message.tags|default:'info' }} flex items-start space-x-3" role="alert">
+                        <div class="flex-shrink-0">
+                            <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
+                        </div>
+                        <div class="flex-1">{{ message }}</div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert-django-error flex items-start space-x-3" role="alert">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="flex-1">{{ form.non_field_errors }}</div>
+                    </div>
+                {% endif %}
+                
+                {% if detalle_formset.non_form_errors %}
+                    <div class="alert-django-error flex items-start space-x-3" role="alert">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="flex-1">{{ detalle_formset.non_form_errors }}</div>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <form method="post" id="produccionForm" novalidate class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Sección de Cabecera de Producción -->
+            <div class="form-container p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold flex items-center" style="color: {{ colores.primary }};">
+                        <i class="fas fa-file-alt mr-2"></i>Datos Generales de la Producción
+                    </h2>
+                    <div class="text-sm text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>Campos obligatorios marcados con <span class="text-red-500">*</span>
+                    </div>
                 </div>
-                <div>
-                    <label for="{{ form.id_usuario.id_for_label }}" class="form-label">{{ form.id_usuario.label }} <span class="text-red-500">*</span></label>
-                    {{ form.id_usuario }}
-                    {% if form.id_usuario.errors %}<p class="form-error-message">{{ form.id_usuario.errors|join:", " }}</p>{% endif %}
-                    <p class="text-xs text-gray-500 mt-1">{{ form.id_usuario.help_text }}</p>
-                </div>
-                <div class="md:col-span-2">
-                    <label for="{{ form.observacion.id_for_label }}" class="form-label">{{ form.observacion.label }}</label>
-                    {{ form.observacion }}
-                    {% if form.observacion.errors %}<p class="form-error-message">{{ form.observacion.errors|join:", " }}</p>{% endif %}
-                    <p class="text-xs text-gray-500 mt-1">{{ form.observacion.help_text }}</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.fechaEntrada.id_for_label }}" class="form-label required-field">
+                            <i class="fas fa-calendar mr-1"></i>{{ form.fechaEntrada.label }}
+                        </label>
+                        {{ form.fechaEntrada }}
+                        {% if form.fechaEntrada.errors %}
+                            <p class="form-error-message">
+                                <i class="fas fa-exclamation-triangle"></i>{{ form.fechaEntrada.errors|join:", " }}
+                            </p>
+                        {% endif %}
+                        {% if form.fechaEntrada.help_text %}
+                            <p class="form-help-text">{{ form.fechaEntrada.help_text }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.id_usuario.id_for_label }}" class="form-label required-field">
+                            <i class="fas fa-user mr-1"></i>{{ form.id_usuario.label }}
+                        </label>
+                        {{ form.id_usuario }}
+                        {% if form.id_usuario.errors %}
+                            <p class="form-error-message">
+                                <i class="fas fa-exclamation-triangle"></i>{{ form.id_usuario.errors|join:", " }}
+                            </p>
+                        {% endif %}
+                        {% if form.id_usuario.help_text %}
+                            <p class="form-help-text">{{ form.id_usuario.help_text }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label for="{{ form.observacion.id_for_label }}" class="form-label">
+                            <i class="fas fa-sticky-note mr-1"></i>{{ form.observacion.label }}
+                        </label>
+                        {{ form.observacion }}
+                        {% if form.observacion.errors %}
+                            <p class="form-error-message">
+                                <i class="fas fa-exclamation-triangle"></i>{{ form.observacion.errors|join:", " }}
+                            </p>
+                        {% endif %}
+                        {% if form.observacion.help_text %}
+                            <p class="form-help-text">{{ form.observacion.help_text }}</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Sección de Detalles de Producción (Formset) -->
-        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-            <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
-                <h2 class="text-xl font-semibold" style="color: {{ colores.primary }};">
-                    <i class="fas fa-boxes mr-2"></i>Productos Fabricados
-                </h2>
-                <button type="button" id="add-detalle-form" class="btn-add-detail">
-                    <i class="fas fa-plus mr-1"></i> Agregar Producto
+            <!-- Sección de Detalles de Producción (Formset) -->
+            <div class="form-container p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold flex items-center" style="color: {{ colores.primary }};">
+                        <i class="fas fa-boxes mr-2"></i>Productos Fabricados
+                        <span class="product-counter ml-3" id="productCounter">1 producto</span>
+                    </h2>
+                    <button type="button" id="add-detalle-form" class="btn-add-detail">
+                        <i class="fas fa-plus mr-2"></i>Agregar Producto
+                    </button>
+                </div>
+
+                {{ detalle_formset.management_form }}
+                <div id="detalle-forms-container" class="space-y-4">
+                    {% for form_item in detalle_formset %}
+                    <div class="formset-row detalle-form fade-in" id="detalle-form-{{ forloop.counter0 }}">
+                        <div class="formset-row-header">
+                            <span class="flex items-center">
+                                <i class="fas fa-box mr-2"></i>
+                                Producto #<span class="form-counter">{{ forloop.counter }}</span>
+                            </span>
+                            {% if not forloop.first %}
+                                <button type="button" class="btn-remove-detail remove-new-form-btn">
+                                    <i class="fas fa-trash-alt mr-1"></i>Quitar
+                                </button>
+                            {% endif %}
+                        </div>
+                        
+                        {{ form_item.id }}
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label for="{{ form_item.id_producto.id_for_label }}" class="form-label required-field">
+                                    <i class="fas fa-cube mr-1"></i>{{ form_item.id_producto.label }}
+                                </label>
+                                {{ form_item.id_producto }}
+                                {% if form_item.id_producto.errors %}
+                                    <p class="form-error-message">
+                                        <i class="fas fa-exclamation-triangle"></i>{{ form_item.id_producto.errors|join:", " }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            
+                            <div>
+                                <label for="{{ form_item.cantidad.id_for_label }}" class="form-label required-field">
+                                    <i class="fas fa-sort-numeric-up mr-1"></i>{{ form_item.cantidad.label }}
+                                </label>
+                                {{ form_item.cantidad }}
+                                {% if form_item.cantidad.errors %}
+                                    <p class="form-error-message">
+                                        <i class="fas fa-exclamation-triangle"></i>{{ form_item.cantidad.errors|join:", " }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            
+                            <div>
+                                <label for="{{ form_item.costo_unitario.id_for_label }}" class="form-label required-field">
+                                    <i class="fas fa-dollar-sign mr-1"></i>{{ form_item.costo_unitario.label }}
+                                </label>
+                                {{ form_item.costo_unitario }}
+                                {% if form_item.costo_unitario.errors %}
+                                    <p class="form-error-message">
+                                        <i class="fas fa-exclamation-triangle"></i>{{ form_item.costo_unitario.errors|join:", " }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            
+                            <div>
+                                <label for="{{ form_item.idFabricante.id_for_label }}" class="form-label required-field">
+                                    <i class="fas fa-user-hard-hat mr-1"></i>{{ form_item.idFabricante.label }}
+                                </label>
+                                {{ form_item.idFabricante }}
+                                {% if form_item.idFabricante.errors %}
+                                    <p class="form-error-message">
+                                        <i class="fas fa-exclamation-triangle"></i>{{ form_item.idFabricante.errors|join:", " }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Plantilla para nuevos formularios (oculta) -->
+                <div id="empty-form-template" class="hidden">
+                    <div class="formset-row detalle-form fade-in" id="detalle-form-__prefix__">
+                        <div class="formset-row-header">
+                            <span class="flex items-center">
+                                <i class="fas fa-box mr-2"></i>
+                                Producto #<span class="form-counter">__prefix_display__</span>
+                            </span>
+                            <button type="button" class="btn-remove-detail remove-new-form-btn">
+                                <i class="fas fa-trash-alt mr-1"></i>Quitar
+                            </button>
+                        </div>
+                        
+                        {{ detalle_formset.empty_form.id }}
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label for="{{ detalle_formset.empty_form.id_producto.id_for_label }}" class="form-label required-field">
+                                    <i class="fas fa-cube mr-1"></i>{{ detalle_formset.empty_form.id_producto.label }}
+                                </label>
+                                {{ detalle_formset.empty_form.id_producto }}
+                            </div>
+                            
+                            <div>
+                                <label for="{{ detalle_formset.empty_form.cantidad.id_for_label }}" class="form-label required-field">
+                                    <i class="fas fa-sort-numeric-up mr-1"></i>{{ detalle_formset.empty_form.cantidad.label }}
+                                </label>
+                                {{ detalle_formset.empty_form.cantidad }}
+                            </div>
+                            
+                            <div>
+                                <label for="{{ detalle_formset.empty_form.costo_unitario.id_for_label }}" class="form-label required-field">
+                                    <i class="fas fa-dollar-sign mr-1"></i>{{ detalle_formset.empty_form.costo_unitario.label }}
+                                </label>
+                                {{ detalle_formset.empty_form.costo_unitario }}
+                            </div>
+                            
+                            <div>
+                                <label for="{{ detalle_formset.empty_form.idFabricante.id_for_label }}" class="form-label required-field">
+                                    <i class="fas fa-user-hard-hat mr-1"></i>{{ detalle_formset.empty_form.idFabricante.label }}
+                                </label>
+                                {{ detalle_formset.empty_form.idFabricante }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex justify-end space-x-4 pt-6">
+                <a href="{% url 'crud:produccion_list' %}" class="btn-cancel-form">
+                    <i class="fas fa-times mr-2"></i>Cancelar
+                </a>
+                <button type="submit" class="btn-submit-form" id="submitBtn">
+                    <i class="fas fa-save mr-2"></i>
+                    <span id="submitText">Guardar Producción</span>
+                    <i class="fas fa-spinner fa-spin ml-2 hidden" id="submitSpinner"></i>
                 </button>
             </div>
-
-            {{ detalle_formset.management_form }}
-            <div id="detalle-forms-container" class="space-y-4">
-                {% for form_item in detalle_formset %}
-                <div class="formset-row detalle-form" id="detalle-form-{{ forloop.counter0 }}">
-                    <h3 class="formset-row-header">Producto #<span class="form-counter">{{ forloop.counter }}</span></h3>
-                    {{ form_item.id }} {# Campo oculto para ID si es un ModelFormSet #}
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
-                        <div>
-                            <label for="{{ form_item.id_producto.id_for_label }}" class="form-label">{{ form_item.id_producto.label }} <span class="text-red-500">*</span></label>
-                            {{ form_item.id_producto }}
-                            {% if form_item.id_producto.errors %}<p class="form-error-message">{{ form_item.id_producto.errors|join:", " }}</p>{% endif %}
-                        </div>
-                        <div>
-                            <label for="{{ form_item.cantidad.id_for_label }}" class="form-label">{{ form_item.cantidad.label }} <span class="text-red-500">*</span></label>
-                            {{ form_item.cantidad }}
-                            {% if form_item.cantidad.errors %}<p class="form-error-message">{{ form_item.cantidad.errors|join:", " }}</p>{% endif %}
-                        </div>
-                        <div>
-                            <label for="{{ form_item.costo_unitario.id_for_label }}" class="form-label">{{ form_item.costo_unitario.label }} <span class="text-red-500">*</span></label>
-                            {{ form_item.costo_unitario }}
-                            {% if form_item.costo_unitario.errors %}<p class="form-error-message">{{ form_item.costo_unitario.errors|join:", " }}</p>{% endif %}
-                        </div>
-                        <div>
-                            <label for="{{ form_item.idFabricante.id_for_label }}" class="form-label">{{ form_item.idFabricante.label }} <span class="text-red-500">*</span></label>
-                            {{ form_item.idFabricante }}
-                            {% if form_item.idFabricante.errors %}<p class="form-error-message">{{ form_item.idFabricante.errors|join:", " }}</p>{% endif %}
-                        </div>
-                    </div>
-                    {% if detalle_formset.can_delete and form_item.instance.pk %} {# Mostrar solo si el form ya existe (tiene pk) #}
-                    <div class="mt-3 flex items-center justify-end">
-                        <label for="{{ form_item.DELETE.id_for_label }}" class="text-sm text-gray-600 mr-2">Marcar para eliminar:</label>
-                        {{ form_item.DELETE }}
-                    </div>
-                    {% elif not form_item.instance.pk and forloop.counter0 > 0 %} {# Botón para quitar forms nuevos, excepto el primero #}
-                     <div class="mt-3 text-right">
-                        <button type="button" class="btn-remove-detail remove-new-form-btn">
-                            <i class="fas fa-trash-alt mr-1"></i> Quitar
-                        </button>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-            
-            <!-- Plantilla para nuevos formularios de detalle (oculta) -->
-            <div id="empty-form-template" class="hidden">
-                <div class="formset-row detalle-form" id="detalle-form-__prefix__"> {# ID dinámico para el contenedor del form #}
-                    <h3 class="formset-row-header">Producto #<span class="form-counter">__prefix_display__</span></h3>
-                    {{ detalle_formset.empty_form.id }}
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
-                        <div>
-                            <label for="{{ detalle_formset.empty_form.id_producto.id_for_label }}" class="form-label">{{ detalle_formset.empty_form.id_producto.label }} <span class="text-red-500">*</span></label>
-                            {{ detalle_formset.empty_form.id_producto }}
-                        </div>
-                        <div>
-                            <label for="{{ detalle_formset.empty_form.cantidad.id_for_label }}" class="form-label">{{ detalle_formset.empty_form.cantidad.label }} <span class="text-red-500">*</span></label>
-                            {{ detalle_formset.empty_form.cantidad }}
-                        </div>
-                        <div>
-                            <label for="{{ detalle_formset.empty_form.costo_unitario.id_for_label }}" class="form-label">{{ detalle_formset.empty_form.costo_unitario.label }} <span class="text-red-500">*</span></label>
-                            {{ detalle_formset.empty_form.costo_unitario }}
-                        </div>
-                        <div>
-                            <label for="{{ detalle_formset.empty_form.idFabricante.id_for_label }}" class="form-label">{{ detalle_formset.empty_form.idFabricante.label }} <span class="text-red-500">*</span></label>
-                            {{ detalle_formset.empty_form.idFabricante }}
-                        </div>
-                    </div>
-                    {% if detalle_formset.can_delete %}
-                    <div class="mt-3 text-right">
-                        <!-- No se muestra el checkbox DELETE para forms nuevos, se quitan directamente -->
-                        <button type="button" class="btn-remove-detail remove-new-form-btn">
-                            <i class="fas fa-trash-alt mr-1"></i> Quitar
-                        </button>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Botones de Acción -->
-        <div class="mt-8 flex justify-end space-x-3">
-            <a href="{% url 'crud:produccion_list' %}" class="btn-cancel-form inline-flex items-center px-6 py-2.5 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow">
-                <i class="fas fa-times mr-2"></i>Cancelar
-            </a>
-            <button type="submit" class="btn-submit-form inline-flex items-center px-6 py-2.5 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow">
-                <i class="fas fa-save mr-2"></i>Guardar Producción
-            </button>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 {% endblock %}
 
@@ -256,8 +487,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const addButton = document.getElementById('add-detalle-form');
     const emptyFormHtml = document.getElementById('empty-form-template').innerHTML;
     const totalFormsInput = document.getElementById('id_detalles-TOTAL_FORMS');
+    const productCounter = document.getElementById('productCounter');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    const submitSpinner = document.getElementById('submitSpinner');
     
-    // Función para actualizar los números de contador visuales
+    // Función para actualizar contadores
     function updateFormCounters() {
         const visibleForms = formsContainer.querySelectorAll('.detalle-form:not([style*="display: none"])');
         visibleForms.forEach((form, index) => {
@@ -266,55 +501,215 @@ document.addEventListener('DOMContentLoaded', function() {
                 counterSpan.textContent = index + 1;
             }
         });
+        
+        // Actualizar contador de productos
+        const count = visibleForms.length;
+        productCounter.textContent = `${count} producto${count !== 1 ? 's' : ''}`;
     }
-
-    // Función para agregar un nuevo formulario de detalle
+    
+    // Función para agregar nuevo formulario
     addButton.addEventListener('click', function() {
         let currentFormCount = parseInt(totalFormsInput.value);
         const newForm = emptyFormHtml
-            .replactioce(/__prefix__/g, currentFormCount) // Reemplactizacti el prefijo pactiractivo los IDs/nactivomes de los cactivompos
-            .replactivoce(/__prefix_displactivoy__/g, currentFormCount + 1); // Pactivoractivo el contactivodor visuactivol
+            .replace(/__prefix__/g, currentFormCount)
+            .replace(/__prefix_display__/g, currentFormCount + 1);
 
-        const tempDiv = document.creactivoteElement('div');
+        const tempDiv = document.createElement('div');
         tempDiv.innerHTML = newForm;
         const newFormElement = tempDiv.firstElementChild;
-        newFormElement.id = `detactivolle-form-${currentFormCount}`; // activosignar ID al contenedor del form
+        newFormElement.id = `detalle-form-${currentFormCount}`;
 
+        // Agregar animación
+        newFormElement.style.opacity = '0';
+        newFormElement.style.transform = 'translateY(20px)';
+        
         formsContainer.appendChild(newFormElement);
+        
+        // Animar entrada
+        setTimeout(() => {
+            newFormElement.style.transition = 'all 0.3s ease';
+            newFormElement.style.opacity = '1';
+            newFormElement.style.transform = 'translateY(0)';
+        }, 10);
+        
         totalFormsInput.value = currentFormCount + 1;
         
-        // Añadir listener al botón "Quitar" del nuevo formulario
-        newFormElement.querySelector('.remove-new-form-btn').addEventListener('click', function() {
-            newFormElement.remove();
-            // No es necesario decrementar TOTAL_FORMS aquí, Django lo maneja si el form no se envía.
-            // Pero sí actualizamos los contadores visuales.
-            updateFormCounters(); 
-        });
-        updateFormCounters(); // Actualizar contadores después de agregar
-    });
-
-    // Añadir listeners a los botones "Quitar" de los formularios iniciales (si es modo edición y can_delete)
-    // y a los botones "Marcar para eliminar"
-    formsContainer.querySelectorAll('.detalle-form').forEach(formDiv => {
-        const removeButton = formDiv.querySelector('.remove-new-form-btn'); // Para forms nuevos en modo edición
+        // Añadir listener al botón quitar
+        const removeButton = newFormElement.querySelector('.remove-new-form-btn');
         if (removeButton) {
             removeButton.addEventListener('click', function() {
-                formDiv.remove();
-                updateFormCounters();
+                newFormElement.style.transition = 'all 0.3s ease';
+                newFormElement.style.opacity = '0';
+                newFormElement.style.transform = 'translateY(-20px)';
+                
+                setTimeout(() => {
+                    newFormElement.remove();
+                    updateFormCounters();
+                }, 300);
             });
         }
+        
+        updateFormCounters();
+        
+        // Scroll suave al nuevo formulario
+        newFormElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+        });
+    });
 
-        const deleteCheckbox = formDiv.querySelector('input[type="checkbox"][name$="-DELETE"]');
-        if (deleteCheckbox) {
-            // Si hay checkbox de borrado, el botón "Quitar" podría no ser necesario o
-            // podría cambiar el estado del checkbox y ocultar el form.
-            // Por ahora, el template de edición maneja esto con el checkbox.
-            // Si se quiere un botón "Quitar" que marque el checkbox:
-            // const dynamicRemoveBtn = formDiv.querySelector('.some-class-for-dynamic-remove');
-            // if(dynamicRemoveBtn) { dynamicRemoveBtn.addEventListener('click', () => { ... }); }
+    // Añadir listeners a botones quitar existentes
+    formsContainer.querySelectorAll('.remove-new-form-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const formDiv = button.closest('.detalle-form');
+            if (formDiv) {
+                formDiv.style.transition = 'all 0.3s ease';
+                formDiv.style.opacity = '0';
+                formDiv.style.transform = 'translateY(-20px)';
+                
+                setTimeout(() => {
+                    formDiv.remove();
+                    updateFormCounters();
+                }, 300);
+            }
+        });
+    });
+
+    // Validación en tiempo real
+    function setupRealTimeValidation() {
+        const inputs = document.querySelectorAll('.form-input, .form-select, .form-textarea');
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                validateField(this);
+            });
+            
+            input.addEventListener('input', function() {
+                // Limpiar errores mientras el usuario escribe
+                const errorMsg = this.parentNode.querySelector('.form-error-message');
+                if (errorMsg) {
+                    errorMsg.style.opacity = '0.5';
+                }
+            });
+        });
+    }
+    
+    function validateField(field) {
+        const errorMsg = field.parentNode.querySelector('.form-error-message');
+        
+        // Validaciones básicas
+        if (field.hasAttribute('required') && !field.value.trim()) {
+            showFieldError(field, 'Este campo es obligatorio');
+            return false;
+        }
+        
+        if (field.type === 'number' && field.value) {
+            const value = parseFloat(field.value);
+            const min = parseFloat(field.getAttribute('min'));
+            const max = parseFloat(field.getAttribute('max'));
+            
+            if (min !== null && value < min) {
+                showFieldError(field, `El valor mínimo es ${min}`);
+                return false;
+            }
+            
+            if (max !== null && value > max) {
+                showFieldError(field, `El valor máximo es ${max}`);
+                return false;
+            }
+        }
+        
+        // Limpiar errores si todo está bien
+        if (errorMsg) {
+            errorMsg.style.opacity = '1';
+        }
+        
+        return true;
+    }
+    
+    function showFieldError(field, message) {
+        let errorMsg = field.parentNode.querySelector('.form-error-message');
+        if (!errorMsg) {
+            errorMsg = document.createElement('p');
+            errorMsg.className = 'form-error-message';
+            errorMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+            field.parentNode.appendChild(errorMsg);
+        }
+        errorMsg.innerHTML = `<i class="fas fa-exclamation-triangle"></i>${message}`;
+        errorMsg.style.opacity = '1';
+    }
+
+    // Manejo del envío del formulario
+    const form = document.getElementById('produccionForm');
+    form.addEventListener('submit', function(e) {
+        // Mostrar estado de carga
+        submitBtn.disabled = true;
+        submitText.textContent = 'Guardando...';
+        submitSpinner.classList.remove('hidden');
+        
+        // Validar formulario antes del envío
+        let isValid = true;
+        const requiredFields = form.querySelectorAll('[required]');
+        
+        requiredFields.forEach(field => {
+            if (!validateField(field)) {
+                isValid = false;
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            submitBtn.disabled = false;
+            submitText.textContent = 'Guardar Producción';
+            submitSpinner.classList.add('hidden');
+            
+            // Scroll al primer error
+            const firstError = form.querySelector('.form-error-message');
+            if (firstError) {
+                firstError.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }
         }
     });
-    updateFormCounters(); // Llamada inicial para los forms existentes
+
+    // Inicializar
+    updateFormCounters();
+    setupRealTimeValidation();
+    
+    // Auto-guardar en localStorage (opcional)
+    function autoSave() {
+        const formData = new FormData(form);
+        const data = {};
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        localStorage.setItem('nexo_produccion_draft', JSON.stringify(data));
+    }
+    
+    // Auto-guardar cada 30 segundos
+    setInterval(autoSave, 30000);
+    
+    // Restaurar borrador si existe
+    const draft = localStorage.getItem('nexo_produccion_draft');
+    if (draft && confirm('Se encontró un borrador guardado. ¿Desea restaurarlo?')) {
+        try {
+            const data = JSON.parse(draft);
+            Object.keys(data).forEach(key => {
+                const field = form.querySelector(`[name="${key}"]`);
+                if (field) {
+                    field.value = data[key];
+                }
+            });
+        } catch (e) {
+            console.warn('Error al restaurar borrador:', e);
+        }
+    }
+    
+    // Limpiar borrador al enviar exitosamente
+    form.addEventListener('submit', function() {
+        localStorage.removeItem('nexo_produccion_draft');
+    });
 });
 </script>
 {% endblock %}
