@@ -1,9 +1,9 @@
-/* Enhanced Custom Styles for NEXO Login System */
+/* Enhanced Custom Styles for NEXO System with New Color Palette */
 
 /* Import Inter font for better typography */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
-/* CSS Variables for consistent theming */
+/* CSS Variables for consistent theming - NUEVA PALETA NEXO */
 :root {
   --primary: #39bfb2;
   --primary-dark: #2da89e;
@@ -11,15 +11,18 @@
   --secondary: #eaeef3;
   --accent: #f2ce16;
   --orange: #f28627;
-  --success: #10b981;
-  --error: #ef4444;
-  --warning: #f59e0b;
-  --info: #3b82f6;
+  --orange-light: #f29d35;
+  --white: #ffffff;
+  --gray-light: #f2f2f2;
+  --success: #39bfb2;
+  --error: #f28627;
+  --warning: #f2ce16;
+  --info: #39bfb2;
 
-  /* Shadows */
-  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
-  --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.12);
-  --shadow-strong: 0 20px 60px rgba(0, 0, 0, 0.15);
+  /* Shadows with new primary color */
+  --shadow-soft: 0 4px 20px rgba(57, 191, 178, 0.08);
+  --shadow-medium: 0 8px 30px rgba(57, 191, 178, 0.12);
+  --shadow-strong: 0 20px 60px rgba(57, 191, 178, 0.15);
 
   /* Transitions */
   --transition-fast: 0.15s ease;
@@ -41,6 +44,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  background-color: var(--gray-light);
 }
 
 /* Enhanced scrollbar */
@@ -50,14 +54,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--secondary);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   border-radius: 4px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--secondary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -76,16 +80,20 @@ body {
 .form-input {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
+  border: 1px solid var(--secondary);
+  background-color: var(--white);
 }
 
 .form-input:focus {
   box-shadow: 0 0 0 3px rgba(57, 191, 178, 0.1);
   transform: translateY(-1px);
+  border-color: var(--primary);
 }
 
 .form-input.error {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  box-shadow: 0 0 0 3px rgba(242, 134, 39, 0.1);
   animation: shake 0.4s ease-in-out;
+  border-color: var(--error);
 }
 
 .form-group.focused .form-input {
@@ -202,27 +210,27 @@ body {
 
 /* Enhanced notification styles */
 .notification-message.success {
-  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-  color: #065f46;
-  border: 1px solid #a7f3d0;
+  background: linear-gradient(135deg, rgba(57, 191, 178, 0.1) 0%, rgba(57, 191, 178, 0.05) 100%);
+  color: var(--primary-dark);
+  border: 1px solid var(--primary);
 }
 
 .notification-message.error {
-  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
-  color: #991b1b;
-  border: 1px solid #fca5a5;
+  background: linear-gradient(135deg, rgba(242, 134, 39, 0.1) 0%, rgba(242, 134, 39, 0.05) 100%);
+  color: var(--orange);
+  border: 1px solid var(--orange);
 }
 
 .notification-message.warning {
-  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-  color: #92400e;
-  border: 1px solid #fcd34d;
+  background: linear-gradient(135deg, rgba(242, 206, 22, 0.1) 0%, rgba(242, 206, 22, 0.05) 100%);
+  color: #b8860b;
+  border: 1px solid var(--accent);
 }
 
 .notification-message.info {
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  color: #1e40af;
-  border: 1px solid #93c5fd;
+  background: linear-gradient(135deg, rgba(57, 191, 178, 0.1) 0%, rgba(57, 191, 178, 0.05) 100%);
+  color: var(--primary);
+  border: 1px solid var(--primary);
 }
 
 .notification-toast {
@@ -235,6 +243,7 @@ body {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   position: relative;
   overflow: hidden;
+  color: var(--white);
 }
 
 .btn-primary::before {
@@ -253,7 +262,7 @@ body {
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--orange) 0%, #e07420 100%);
+  background: linear-gradient(135deg, var(--orange) 0%, var(--orange-light) 100%);
   box-shadow: var(--shadow-medium);
 }
 

@@ -1,0 +1,230 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% load humanize %} <!-- Para filtros como intcomma -->
+
+{% block title %}Detalle Producción #{{ produccion.idproduccion }} - NEXO{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-receipt mr-2" style="color: {{ colores.primary }};"></i>Detalle de Producción #{{ produccion.idproduccion }}
+{% endblock %}
+
+{% block page_subtitle %}
+    Información completa del registro de producción del {{ produccion.fechaentrada|date:"d \d\e F \d\e Y" }}.
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card {
+        background-color: {{ colores.white }};
+        border: 1px solid {{ colores.bg_light }};
+        border-radius: 0.75rem; /* 12px */
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    }
+    .info-label { color: {{ colores.text_medium }}; }
+    .info-value { color: {{ colores.text_dark }}; font-weight: 500; }
+    .status-badge-activo {
+        background-color: {{ colores.success }};
+        color: {{ colores.white }};
+    }
+    .status-badge-inactivo {
+        background-color: {{ colores.danger }};
+        color: {{ colores.white }};
+    }
+    .btn-edit { background-color: {{ colores.warning }}; color: {{ colores.text_dark }}; }
+    .btn-edit:hover { background-color: #e0b800; } /* Darken yellow */
+    .btn-delete { background-color: {{ colores.danger }}; color: {{ colores.white }}; }
+    .btn-delete:hover { background-color: #d07010; } /* Darken orange */
+    .btn-back { background-color: {{ colores.text_medium }}; color: {{ colores.white }}; }
+    .btn-back:hover { background-color: {{ colores.text_dark }}; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8" style="background-color: {{ colores.bg_very_light }};">
+
+    <!-- Mensajes -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} p-4 mb-4 rounded-md shadow-sm border-l-4 {% if message.tags == 'error' %}border-red-500 bg-red-100 text-red-700{% elif message.tags == 'success' %}border-green-500 bg-green-100 text-green-700{% else %}border-blue-500 bg-blue-100 text-blue-700{% endif %}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Acciones Principales -->
+    <div class="mb-6 flex flex-wrap gap-2 justify-end">
+        {% if produccion.estadoregistro %}
+        <a href="{% url 'crud:produccion_edit' produccion.idproduccion %}" 
+           class="btn-edit inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow">
+            <i class="fas fa-edit mr-2"></i>Editar
+        </a>
+        <button onclick="confirmarDarDeBaja()"
+                class="btn-delete inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow">
+            <i class="fas fa-trash-alt mr-2"></i>Dar de Baja
+        </button>
+        {% else %}
+        <span class="px-4 py-2 rounded-lg text-sm font-medium text-gray-500 bg-gray-200">
+            <i class="fas fa-ban mr-2"></i>Producción Inactiva (No editable)
+        </span>
+        {% endif %}
+        <a href="{% url 'crud:produccion_list' %}" 
+           class="btn-back inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow">
+            <i class="fas fa-arrow-left mr-2"></i>Volver a la Lista
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Columna de Información General y Resumen -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Información General -->
+            <div class="detail-card p-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: {{ colores.primary }};">
+                    <i class="fas fa-file-invoice mr-2"></i>Información General
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="info-label text-sm">ID Producción:</span>
+                        <span class="info-value text-sm">#{{ produccion.idproduccion }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="info-label text-sm">Fecha de Entrada:</span>
+                        <span class="info-value text-sm">{{ produccion.fechaentrada|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="info-label text-sm">Usuario Registra:</span>
+                        <span class="info-value text-sm">{{ produccion.id_usuario.nombreusuario|default:"N/A" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="info-label text-sm">Estado:</span>
+                        {% if produccion.estadoregistro %}
+                            <span class="status-badge-activo px-2 py-0.5 rounded-full text-xs font-semibold">Activo</span>
+                        {% else %}
+                            <span class="status-badge-inactivo px-2 py-0.5 rounded-full text-xs font-semibold">Inactivo</span>
+                        {% endif %}
+                    </div>
+                    {% if produccion.observacion %}
+                    <div>
+                        <span class="info-label text-sm block mb-1">Observaciones:</span>
+                        <p class="info-value text-sm p-2 bg-gray-50 rounded">{{ produccion.observacion }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Resumen de Costos y Cantidades -->
+            <div class="detail-card p-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: {{ colores.primary }};">
+                    <i class="fas fa-calculator mr-2"></i>Resumen
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center p-3 rounded-md" style="background-color: rgba(57,191,178,0.1);">
+                        <span class="text-sm font-medium" style="color: {{ colores.primary }};"><i class="fas fa-boxes mr-1"></i>Tipos de Producto:</span>
+                        <span class="text-lg font-bold" style="color: {{ colores.primary }};">{{ detalles|length }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 rounded-md" style="background-color: rgba(242,206,22,0.1);">
+                        <span class="text-sm font-medium" style="color: #cca300;"><i class="fas fa-cubes mr-1"></i>Cantidad Total Unidades:</span>
+                        <span class="text-lg font-bold" style="color: #cca300;">{{ total_cantidad_items|default:0|intcomma }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 rounded-md" style="background-color: rgba(242,134,39,0.1);">
+                        <span class="text-sm font-medium" style="color: #d07010;"><i class="fas fa-dollar-sign mr-1"></i>Costo Total Producción:</span>
+                        <span class="text-lg font-bold" style="color: #d07010;">C$ {{ total_costo_produccion|floatformat:2|intcomma }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna de Detalles de Productos -->
+        <div class="lg:col-span-2 detail-card">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold flex items-center" style="color: {{ colores.primary }};">
+                    <i class="fas fa-cogs mr-2"></i>Productos Fabricados
+                </h3>
+            </div>
+            <div class="overflow-x-auto">
+                {% if detalles %}
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto (ID)</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Costo Unit.</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fabricante</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for detalle in detalles %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ detalle.nombreProducto }}</div>
+                                <div class="text-xs text-gray-500">ID: {{ detalle.id_producto }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">{{ detalle.cantidad|intcomma }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">C$ {{ detalle.costo_unitario|floatformat:2|intcomma }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ detalle.nombreFabricante|default:'' }} {{ detalle.apellidoFabricante|default:'' }}
+                                {% if not detalle.nombreFabricante and not detalle.apellidoFabricante %}
+                                    (ID: {{ detalle.idFabricante }})
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold text-right">C$ {{ detalle.subtotal|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-6 text-center text-gray-500">
+                    <i class="fas fa-info-circle fa-2x mb-2"></i>
+                    <p>No hay productos detallados para esta producción.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación para Dar de Baja -->
+<div id="confirmDeleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+    <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full" style="background-color: rgba(242,134,39,0.1);">
+                <i class="fas fa-exclamation-triangle fa-2x" style="color: {{ colores.danger }};"></i>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Confirmar Acción</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">
+                    ¿Está seguro de que desea dar de baja esta producción? Esta acción revertirá el stock de los productos asociados y marcará el registro como inactivo. No se podrá deshacer.
+                </p>
+            </div>
+            <div class="items-center px-4 py-3 space-x-2">
+                <button id="cancelDeleteButton" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-sm">
+                    Cancelar
+                </button>
+                <form method="post" action="{% url 'crud:produccion_delete' produccion.idproduccion %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-delete px-4 py-2 rounded-md text-white text-sm">
+                        Sí, Dar de Baja
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmarDarDeBaja() {
+    document.getElementById('confirmDeleteModal').classList.remove('hidden');
+}
+document.getElementById('cancelDeleteButton').addEventListener('click', function() {
+    document.getElementById('confirmDeleteModal').classList.add('hidden');
+});
+// Cerrar modal con tecla ESC
+document.addEventListener('keydown', function(event) {
+    if (event.key === "Escape") {
+        document.getElementById('confirmDeleteModal').classList.add('hidden');
+    }
+});
+</script>
+{% endblock %}

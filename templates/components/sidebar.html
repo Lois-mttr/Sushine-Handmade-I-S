@@ -40,9 +40,9 @@
         </a>
 
         <!-- Registrar Producción -->
-        <a href="#" 
-           class="nexo-menu-item {% if request.resolver_match.url_name == 'produccion' %}nexo-menu-active{% endif %}"
-           data-tooltip="Registrar Producción">
+        <a href="{% url 'crud:produccion_list' %}" 
+        class="nexo-menu-item {% if request.resolver_match.url_name == 'produccion' %}nexo-menu-active{% endif %}"
+        data-tooltip="Registrar Producción">
             <div class="nexo-menu-icon nexo-icon-produccion">
                 <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3 3a1 1 0 100 2h.01a1 1 0 100-2H10zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H7zm2 1a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zm4-4a1 1 0 100 2h.01a1 1 0 100-2H13zM9 9a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zM7 8a1 1 0 000 2h.01a1 1 0 000-2H7z" clip-rule="evenodd"/>
@@ -53,8 +53,8 @@
 
         <!-- Reabastecimiento -->
         <a href="#" 
-           class="nexo-menu-item {% if request.resolver_match.url_name == 'reabastecimiento' %}nexo-menu-active{% endif %}"
-           data-tooltip="Reabastecimiento">
+        class="nexo-menu-item {% if request.resolver_match.url_name == 'reabastecimiento' %}nexo-menu-active{% endif %}"
+        data-tooltip="Reabastecimiento">
             <div class="nexo-menu-icon nexo-icon-reabastecimiento">
                 <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
@@ -267,38 +267,38 @@
 }
 
 .nexo-icon-inventario {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
 }
 
 .nexo-icon-produccion {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
 }
 
 .nexo-icon-reabastecimiento {
-    background: linear-gradient(135deg, #10b981, #059669);
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
 }
 
 .nexo-icon-ventas {
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
 }
 
 .nexo-icon-devolucion {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
 }
 
 .nexo-icon-clientes {
-    background: linear-gradient(135deg, #06b6d4, #0891b2);
-    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.3);
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
 }
 
 .nexo-icon-reportes {
-    background: linear-gradient(135deg, #84cc16, #65a30d);
-    box-shadow: 0 2px 8px rgba(132, 204, 22, 0.3);
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
 }
 
 .nexo-icon-config {

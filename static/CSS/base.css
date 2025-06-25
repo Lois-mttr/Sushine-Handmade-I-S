@@ -1,6 +1,6 @@
 /* ===== VARIABLES CSS PARA EL SISTEMA NEXO ===== */
 :root {
-  /* Colores principales del sistema */
+  /* Colores principales del sistema - NUEVA PALETA */
   --primary-color: #39bfb2;
   --secondary-color: #eaeef3;
   --white: #ffffff;
@@ -16,15 +16,15 @@
   --text-muted: #bdc3c7;
 
   /* Colores de estado */
-  --success-color: #27ae60;
-  --error-color: #e74c3c;
-  --warning-color: #f39c12;
-  --info-color: #3498db;
+  --success-color: #39bfb2;
+  --error-color: #f28627;
+  --warning-color: #f2ce16;
+  --info-color: #39bfb2;
 
   /* Sombras */
-  --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
-  --shadow-medium: 0 5px 20px rgba(0, 0, 0, 0.15);
-  --shadow-heavy: 0 10px 40px rgba(0, 0, 0, 0.2);
+  --shadow-light: 0 2px 10px rgba(57, 191, 178, 0.1);
+  --shadow-medium: 0 5px 20px rgba(57, 191, 178, 0.15);
+  --shadow-heavy: 0 10px 40px rgba(57, 191, 178, 0.2);
 
   /* Transiciones */
   --transition-fast: 0.2s ease;
@@ -193,63 +193,6 @@ img {
   display: flex !important;
 }
 
-/* ===== ANIMACIONES BASE ===== */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-5px);
-  }
-  75% {
-    transform: translateX(5px);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* ===== COMPONENTES REUTILIZABLES ===== */
 .btn {
   display: inline-flex;
@@ -276,12 +219,12 @@ img {
 }
 
 .btn-primary {
-  background: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--orange-dark));
   color: var(--white);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--orange-dark);
+  background: linear-gradient(135deg, var(--orange-dark), var(--orange-light));
   transform: translateY(-2px);
   box-shadow: var(--shadow-medium);
 }

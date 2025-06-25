@@ -37,9 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'core_data',
     'dashboard',
     'AuthLogin',
+    'crud',
+    'ajustes',
+    'Informes',
 ]
 
 MIDDLEWARE = [
@@ -61,6 +65,8 @@ TEMPLATES = [
             BASE_DIR / 'templates',
             BASE_DIR / 'AuthLogin' / 'templates',
             BASE_DIR / 'dashboard' / 'templates',
+            BASE_DIR / 'crud' / 'templates',
+            BASE_DIR / 'ajustes' / 'templates',
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -75,11 +81,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ISII.wsgi.application'
 
-## AGREGADAS RECIENTEMENTE
-
-LOGIN_URL = 'auth:login'  # Usando el namespace
-LOGIN_REDIRECT_URL = 'dashboard:home'  # Ruta después de login exitoso
-LOGOUT_REDIRECT_URL = 'auth:login'  # Ruta después de logout
 
 # Configuración de cache para el sistema de bloqueo de IPs
 CACHES = {

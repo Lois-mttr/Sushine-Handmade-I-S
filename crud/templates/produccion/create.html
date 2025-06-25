@@ -1,0 +1,320 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %}Registrar Producción - NEXO{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-plus-circle mr-2" style="color: {{ colores.primary }};"></i>Registrar Nueva Producción
+{% endblock %}
+
+{% block page_subtitle %}
+    Complete los datos para registrar una nueva entrada de producción al taller.
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<style>
+    .formset-row {
+        padding: 1.25rem; /* Aumentar padding */
+        margin-bottom: 1rem;
+        border: 1px solid {{ colores.bg_light }};
+        border-radius: 0.5rem;
+        background-color: {{ colores.white }};
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        transition: box-shadow 0.2s ease-in-out;
+        position: relative; /* Para el botón de eliminar absoluto si es necesario */
+    }
+    .formset-row:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.07);
+    }
+    .form-label {
+        display: block;
+        text-sm font-medium text-gray-700 mb-1; /* Tailwind classes */
+    }
+    .form-input, .form-select, .form-textarea {
+        /* Clases de Tailwind aplicadas directamente en el widget del form */
+    }
+    .btn-add-detail {
+        background-color: {{ colores.primary }};
+        color: {{ colores.white }};
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        transition: background-color 0.2s ease;
+    }
+    .btn-add-detail:hover {
+        background-color: #2c9a8e; /* Darken primary */
+    }
+    .btn-remove-detail {
+        background-color: {{ colores.danger }};
+        color: {{ colores.white }};
+        padding: 0.375rem 0.75rem; /* Más pequeño */
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        transition: background-color 0.2s ease;
+    }
+    .btn-remove-detail:hover {
+        background-color: #d07010; /* Darken danger */
+    }
+    .btn-submit-form {
+        background-color: {{ colores.success }};
+        color: {{ colores.white }};
+    }
+    .btn-submit-form:hover {
+        background-color: #2c9a8e; /* Darken success/primary */
+    }
+    .btn-cancel-form {
+        background-color: {{ colores.text_medium }};
+        color: {{ colores.white }};
+    }
+    .btn-cancel-form:hover {
+        background-color: {{ colores.text_dark }};
+    }
+    .form-error-message {
+        color: {{ colores.danger }};
+        font-size: 0.875em;
+        margin-top: 0.25rem;
+    }
+    .alert-django-error {
+        border-left-width: 4px;
+        border-left-color: {{ colores.danger }};
+        background-color: #fdecea; /* Rojo muy claro */
+        color: #932c2c; /* Rojo oscuro para texto */
+    }
+    .formset-row-header {
+        color: {{ colores.primary }};
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px dashed {{ colores.bg_light }};
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8" style="background-color: {{ colores.bg_very_light }};">
+    
+    {% if messages or form.errors or detalle_formset.non_form_errors %}
+        <div class="mb-6">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="p-4 mb-2 rounded-md shadow-sm alert-django-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} {% if message.tags == 'error' %}alert-django-error{% endif %}" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% if form.non_field_errors %}
+            <div class="p-4 mb-2 rounded-md shadow-sm alert-django-error" role="alert">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+        {% if detalle_formset.non_form_errors %}
+            <div class="p-4 mb-2 rounded-md shadow-sm alert-django-error" role="alert">
+                {{ detalle_formset.non_form_errors }}
+            </div>
+        {% endif %}
+        </div>
+    {% endif %}
+
+    <form method="post" id="produccionForm" novalidate>
+        {% csrf_token %}
+        
+        <!-- Sección de Cabecera de Producción -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4 pb-2 border-b border-gray-200" style="color: {{ colores.primary }};">
+                <i class="fas fa-file-alt mr-2"></i>Datos Generales de la Producción
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <div>
+                    <label for="{{ form.fechaEntrada.id_for_label }}" class="form-label">{{ form.fechaEntrada.label }} <span class="text-red-500">*</span></label>
+                    {{ form.fechaEntrada }}
+                    {% if form.fechaEntrada.errors %}<p class="form-error-message">{{ form.fechaEntrada.errors|join:", " }}</p>{% endif %}
+                    <p class="text-xs text-gray-500 mt-1">{{ form.fechaEntrada.help_text }}</p>
+                </div>
+                <div>
+                    <label for="{{ form.id_usuario.id_for_label }}" class="form-label">{{ form.id_usuario.label }} <span class="text-red-500">*</span></label>
+                    {{ form.id_usuario }}
+                    {% if form.id_usuario.errors %}<p class="form-error-message">{{ form.id_usuario.errors|join:", " }}</p>{% endif %}
+                    <p class="text-xs text-gray-500 mt-1">{{ form.id_usuario.help_text }}</p>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="{{ form.observacion.id_for_label }}" class="form-label">{{ form.observacion.label }}</label>
+                    {{ form.observacion }}
+                    {% if form.observacion.errors %}<p class="form-error-message">{{ form.observacion.errors|join:", " }}</p>{% endif %}
+                    <p class="text-xs text-gray-500 mt-1">{{ form.observacion.help_text }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Detalles de Producción (Formset) -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
+                <h2 class="text-xl font-semibold" style="color: {{ colores.primary }};">
+                    <i class="fas fa-boxes mr-2"></i>Productos Fabricados
+                </h2>
+                <button type="button" id="add-detalle-form" class="btn-add-detail">
+                    <i class="fas fa-plus mr-1"></i> Agregar Producto
+                </button>
+            </div>
+
+            {{ detalle_formset.management_form }}
+            <div id="detalle-forms-container" class="space-y-4">
+                {% for form_item in detalle_formset %}
+                <div class="formset-row detalle-form" id="detalle-form-{{ forloop.counter0 }}">
+                    <h3 class="formset-row-header">Producto #<span class="form-counter">{{ forloop.counter }}</span></h3>
+                    {{ form_item.id }} {# Campo oculto para ID si es un ModelFormSet #}
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+                        <div>
+                            <label for="{{ form_item.id_producto.id_for_label }}" class="form-label">{{ form_item.id_producto.label }} <span class="text-red-500">*</span></label>
+                            {{ form_item.id_producto }}
+                            {% if form_item.id_producto.errors %}<p class="form-error-message">{{ form_item.id_producto.errors|join:", " }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label for="{{ form_item.cantidad.id_for_label }}" class="form-label">{{ form_item.cantidad.label }} <span class="text-red-500">*</span></label>
+                            {{ form_item.cantidad }}
+                            {% if form_item.cantidad.errors %}<p class="form-error-message">{{ form_item.cantidad.errors|join:", " }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label for="{{ form_item.costo_unitario.id_for_label }}" class="form-label">{{ form_item.costo_unitario.label }} <span class="text-red-500">*</span></label>
+                            {{ form_item.costo_unitario }}
+                            {% if form_item.costo_unitario.errors %}<p class="form-error-message">{{ form_item.costo_unitario.errors|join:", " }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label for="{{ form_item.idFabricante.id_for_label }}" class="form-label">{{ form_item.idFabricante.label }} <span class="text-red-500">*</span></label>
+                            {{ form_item.idFabricante }}
+                            {% if form_item.idFabricante.errors %}<p class="form-error-message">{{ form_item.idFabricante.errors|join:", " }}</p>{% endif %}
+                        </div>
+                    </div>
+                    {% if detalle_formset.can_delete and form_item.instance.pk %} {# Mostrar solo si el form ya existe (tiene pk) #}
+                    <div class="mt-3 flex items-center justify-end">
+                        <label for="{{ form_item.DELETE.id_for_label }}" class="text-sm text-gray-600 mr-2">Marcar para eliminar:</label>
+                        {{ form_item.DELETE }}
+                    </div>
+                    {% elif not form_item.instance.pk and forloop.counter0 > 0 %} {# Botón para quitar forms nuevos, excepto el primero #}
+                     <div class="mt-3 text-right">
+                        <button type="button" class="btn-remove-detail remove-new-form-btn">
+                            <i class="fas fa-trash-alt mr-1"></i> Quitar
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Plantilla para nuevos formularios de detalle (oculta) -->
+            <div id="empty-form-template" class="hidden">
+                <div class="formset-row detalle-form" id="detalle-form-__prefix__"> {# ID dinámico para el contenedor del form #}
+                    <h3 class="formset-row-header">Producto #<span class="form-counter">__prefix_display__</span></h3>
+                    {{ detalle_formset.empty_form.id }}
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+                        <div>
+                            <label for="{{ detalle_formset.empty_form.id_producto.id_for_label }}" class="form-label">{{ detalle_formset.empty_form.id_producto.label }} <span class="text-red-500">*</span></label>
+                            {{ detalle_formset.empty_form.id_producto }}
+                        </div>
+                        <div>
+                            <label for="{{ detalle_formset.empty_form.cantidad.id_for_label }}" class="form-label">{{ detalle_formset.empty_form.cantidad.label }} <span class="text-red-500">*</span></label>
+                            {{ detalle_formset.empty_form.cantidad }}
+                        </div>
+                        <div>
+                            <label for="{{ detalle_formset.empty_form.costo_unitario.id_for_label }}" class="form-label">{{ detalle_formset.empty_form.costo_unitario.label }} <span class="text-red-500">*</span></label>
+                            {{ detalle_formset.empty_form.costo_unitario }}
+                        </div>
+                        <div>
+                            <label for="{{ detalle_formset.empty_form.idFabricante.id_for_label }}" class="form-label">{{ detalle_formset.empty_form.idFabricante.label }} <span class="text-red-500">*</span></label>
+                            {{ detalle_formset.empty_form.idFabricante }}
+                        </div>
+                    </div>
+                    {% if detalle_formset.can_delete %}
+                    <div class="mt-3 text-right">
+                        <!-- No se muestra el checkbox DELETE para forms nuevos, se quitan directamente -->
+                        <button type="button" class="btn-remove-detail remove-new-form-btn">
+                            <i class="fas fa-trash-alt mr-1"></i> Quitar
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="mt-8 flex justify-end space-x-3">
+            <a href="{% url 'crud:produccion_list' %}" class="btn-cancel-form inline-flex items-center px-6 py-2.5 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow">
+                <i class="fas fa-times mr-2"></i>Cancelar
+            </a>
+            <button type="submit" class="btn-submit-form inline-flex items-center px-6 py-2.5 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow">
+                <i class="fas fa-save mr-2"></i>Guardar Producción
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const formsContainer = document.getElementById('detalle-forms-container');
+    const addButton = document.getElementById('add-detalle-form');
+    const emptyFormHtml = document.getElementById('empty-form-template').innerHTML;
+    const totalFormsInput = document.getElementById('id_detalles-TOTAL_FORMS');
+    
+    // Función para actualizar los números de contador visuales
+    function updateFormCounters() {
+        const visibleForms = formsContainer.querySelectorAll('.detalle-form:not([style*="display: none"])');
+        visibleForms.forEach((form, index) => {
+            const counterSpan = form.querySelector('.form-counter');
+            if (counterSpan) {
+                counterSpan.textContent = index + 1;
+            }
+        });
+    }
+
+    // Función para agregar un nuevo formulario de detalle
+    addButton.addEventListener('click', function() {
+        let currentFormCount = parseInt(totalFormsInput.value);
+        const newForm = emptyFormHtml
+            .replactioce(/__prefix__/g, currentFormCount) // Reemplactizacti el prefijo pactiractivo los IDs/nactivomes de los cactivompos
+            .replactivoce(/__prefix_displactivoy__/g, currentFormCount + 1); // Pactivoractivo el contactivodor visuactivol
+
+        const tempDiv = document.creactivoteElement('div');
+        tempDiv.innerHTML = newForm;
+        const newFormElement = tempDiv.firstElementChild;
+        newFormElement.id = `detactivolle-form-${currentFormCount}`; // activosignar ID al contenedor del form
+
+        formsContainer.appendChild(newFormElement);
+        totalFormsInput.value = currentFormCount + 1;
+        
+        // Añadir listener al botón "Quitar" del nuevo formulario
+        newFormElement.querySelector('.remove-new-form-btn').addEventListener('click', function() {
+            newFormElement.remove();
+            // No es necesario decrementar TOTAL_FORMS aquí, Django lo maneja si el form no se envía.
+            // Pero sí actualizamos los contadores visuales.
+            updateFormCounters(); 
+        });
+        updateFormCounters(); // Actualizar contadores después de agregar
+    });
+
+    // Añadir listeners a los botones "Quitar" de los formularios iniciales (si es modo edición y can_delete)
+    // y a los botones "Marcar para eliminar"
+    formsContainer.querySelectorAll('.detalle-form').forEach(formDiv => {
+        const removeButton = formDiv.querySelector('.remove-new-form-btn'); // Para forms nuevos en modo edición
+        if (removeButton) {
+            removeButton.addEventListener('click', function() {
+                formDiv.remove();
+                updateFormCounters();
+            });
+        }
+
+        const deleteCheckbox = formDiv.querySelector('input[type="checkbox"][name$="-DELETE"]');
+        if (deleteCheckbox) {
+            // Si hay checkbox de borrado, el botón "Quitar" podría no ser necesario o
+            // podría cambiar el estado del checkbox y ocultar el form.
+            // Por ahora, el template de edición maneja esto con el checkbox.
+            // Si se quiere un botón "Quitar" que marque el checkbox:
+            // const dynamicRemoveBtn = formDiv.querySelector('.some-class-for-dynamic-remove');
+            // if(dynamicRemoveBtn) { dynamicRemoveBtn.addEventListener('click', () => { ... }); }
+        }
+    });
+    updateFormCounters(); // Llamada inicial para los forms existentes
+});
+</script>
+{% endblock %}

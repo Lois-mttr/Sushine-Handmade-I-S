@@ -21,4 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('AuthLogin.urls')),
     path('dashboard/', include('dashboard.urls')),
+    path('crud/', include('crud.urls')),
+    path('ajustes/', include('ajustes.urls')),  
 ]
