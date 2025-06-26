@@ -69,74 +69,23 @@ class ProduccionManager:
     
     @staticmethod
     def editar_produccion(id_produccion, fechaentrada, observacion, id_usuario, detalles):
-        """
-        Edita una producción existente con validaciones completas
-        """
+        import json
         try:
-            # Verificar que la producción existe y está activa ANTES de la transacción
+            detalles_json = json.dumps(detalles)
             with connection.cursor() as cursor:
-                cursor.execute(
-                    "SELECT estadoregistro FROM Productosproduccion WHERE idproduccion = %s",
-                    [id_produccion]
-                )
-                result = cursor.fetchone()
-                
-                if not result:
-                    return False, "La producción no existe"
-                
-                if not result[0]:
-                    return False, "No se puede editar una producción inactiva"
-            
-            # Usar una sola transacción atómica
-            with transaction.atomic():
-                # Validar detalles
-                if not detalles or len(detalles) == 0:
-                    return False, "Debe agregar al menos un producto a la producción"
-                
-                # Validar que todos los productos estén activos
-                for detalle in detalles:
-                    try:
-                        producto = Producto.objects.get(
-                            id_producto=detalle['id_producto'], 
-                            estado=True
-                        )
-                        if not producto.estado:
-                            return False, f"El producto {producto.nombreproducto} no está activo"
-                    except Producto.DoesNotExist:
-                        return False, f"El producto con ID {detalle['id_producto']} no existe o no está activo"
-                
-                # Convertir fecha para evitar timezone warnings
-                if isinstance(fechaentrada, date) and not isinstance(fechaentrada, datetime):
-                    fecha_datetime = timezone.make_aware(
-                        datetime.combine(fechaentrada, datetime.min.time())
-                    )
-                else:
-                    fecha_datetime = fechaentrada
-                
-                # Usar cursor directo
-                with connection.cursor() as cursor:
-                    # Convertir detalles a JSON
-                    detalles_json = json.dumps(detalles, default=str)
-                    
-                    try:
-                        # Llamar procedimiento almacenado
-                        cursor.callproc('EditarProduccion', [
-                            id_produccion,
-                            fecha_datetime,
-                            observacion or '',
-                            id_usuario,
-                            detalles_json
-                        ])
-                        
-                        logger.info(f'Producción {id_produccion} editada exitosamente')
-                        return True, f"Producción #{id_produccion} actualizada exitosamente"
-                        
-                    except Exception as db_error:
-                        logger.error(f'Error en procedimiento almacenado EditarProduccion: {str(db_error)}')
-                        return False, f"Error en base de datos: {str(db_error)}"
-                    
+                cursor.callproc('EditarProduccion', [
+                    id_produccion,
+                    fechaentrada,
+                    observacion,
+                    id_usuario,
+                    detalles_json
+                ])
+            return True, "Producción actualizada correctamente"
         except Exception as e:
-            logger.error(f'Error al editar producción {id_produccion}: {str(e)}')
+            logger.error(f"Error en editar_produccion: {str(e)}")
+            # Detectar error de duplicado MySQL
+            if "Duplicate entry" in str(e):
+                return False, "No se puede agregar productos duplicados"
             return False, f"Error al editar producción: {str(e)}"
     
     @staticmethod
@@ -310,7 +259,8 @@ class ProduccionManager:
                         (dp.cantidad * dp.costo_unitario) as subtotal,
                         dp.idfabricante as idFabricante,
                         COALESCE(per.primernombre, '') as nombreFabricante,
-                        COALESCE(per.primerapellido, '') as apellidoFabricante
+                        COALESCE(per.primerapellido, '') as apellidoFabricante,
+                        p.estado as estado_producto
                     FROM Detalleproduccion dp
                     LEFT JOIN Producto p ON dp.id_producto = p.id_producto
                     LEFT JOIN Empleado e ON dp.idfabricante = e.idempleado
@@ -321,6 +271,14 @@ class ProduccionManager:
                 
                 columns = [col[0] for col in cursor.description]
                 results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+                
+                # Convertir estado_producto a booleano
+                for r in results:
+                    estado_val = r.get('estado_producto', 0)
+                    try:
+                        r['estado_producto'] = bool(int(estado_val))
+                    except (ValueError, TypeError):
+                        r['estado_producto'] = False
                 
                 return results
                 
@@ -344,8 +302,15 @@ class ProduccionManager:
                 if not result:
                     return None, "Producción no encontrada"
                 
-                # CORREGIR: Convertir explícitamente a boolean
-                estado_activo = bool(result[0]) if result[0] is not None else False
+                # CORREGIDO: Manejar BIT como bytes
+                estado_val = result[0]
+                try:
+                    if isinstance(estado_val, (bytes, bytearray)):
+                        estado_activo = int.from_bytes(estado_val, byteorder='little') == 1
+                    else:
+                        estado_activo = int(estado_val) == 1
+                except (ValueError, TypeError):
+                    estado_activo = False
                 return estado_activo, "OK"
                 
         except Exception as e:

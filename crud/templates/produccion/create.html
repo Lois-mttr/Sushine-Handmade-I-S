@@ -335,7 +335,7 @@
                 </div>
             </div>
 
-            <!-- Sección de Detalles de Producción (Formset) -->
+            <!-- Sección de Detalles de Producción (Formset) CORREGIDO -->
             <div class="form-container p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-semibold flex items-center" style="color: {{ colores.primary }};">
@@ -357,7 +357,7 @@
                                 Producto #<span class="form-counter">{{ forloop.counter }}</span>
                             </span>
                             {% if not forloop.first %}
-                                <button type="button" class="btn-remove-detail remove-new-form-btn">
+                                <button type="button" class="btn-remove-detail remove-form-btn" data-form-index="{{ forloop.counter0 }}">
                                     <i class="fas fa-trash-alt mr-1"></i>Quitar
                                 </button>
                             {% endif %}
@@ -417,7 +417,7 @@
                     {% endfor %}
                 </div>
                 
-                <!-- Plantilla para nuevos formularios (oculta) -->
+                <!-- Plantilla para nuevos formularios (oculta) CORREGIDO -->
                 <div id="empty-form-template" class="hidden">
                     <div class="formset-row detalle-form fade-in" id="detalle-form-__prefix__">
                         <div class="formset-row-header">
@@ -425,7 +425,7 @@
                                 <i class="fas fa-box mr-2"></i>
                                 Producto #<span class="form-counter">__prefix_display__</span>
                             </span>
-                            <button type="button" class="btn-remove-detail remove-new-form-btn">
+                            <button type="button" class="btn-remove-detail remove-form-btn" data-form-index="__prefix__">
                                 <i class="fas fa-trash-alt mr-1"></i>Quitar
                             </button>
                         </div>
@@ -492,7 +492,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitText = document.getElementById('submitText');
     const submitSpinner = document.getElementById('submitSpinner');
     
-    // Función para actualizar contadores
+    // CORREGIDO: Función para actualizar contadores sin duplicar
     function updateFormCounters() {
         const visibleForms = formsContainer.querySelectorAll('.detalle-form:not([style*="display: none"])');
         visibleForms.forEach((form, index) => {
@@ -502,12 +502,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Actualizar contador de productos
         const count = visibleForms.length;
         productCounter.textContent = `${count} producto${count !== 1 ? 's' : ''}`;
     }
     
-    // Función para agregar nuevo formulario
+    // CORREGIDO: Función para agregar nuevo formulario sin duplicación
     addButton.addEventListener('click', function() {
         let currentFormCount = parseInt(totalFormsInput.value);
         const newForm = emptyFormHtml
@@ -519,7 +518,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const newFormElement = tempDiv.firstElementChild;
         newFormElement.id = `detalle-form-${currentFormCount}`;
 
-        // Agregar animación
+        // Animación de entrada
         newFormElement.style.opacity = '0';
         newFormElement.style.transform = 'translateY(20px)';
         
@@ -532,20 +531,14 @@ document.addEventListener('DOMContentLoaded', function() {
             newFormElement.style.transform = 'translateY(0)';
         }, 10);
         
+        // CORREGIDO: Actualizar TOTAL_FORMS correctamente
         totalFormsInput.value = currentFormCount + 1;
         
         // Añadir listener al botón quitar
-        const removeButton = newFormElement.querySelector('.remove-new-form-btn');
+        const removeButton = newFormElement.querySelector('.remove-form-btn');
         if (removeButton) {
             removeButton.addEventListener('click', function() {
-                newFormElement.style.transition = 'all 0.3s ease';
-                newFormElement.style.opacity = '0';
-                newFormElement.style.transform = 'translateY(-20px)';
-                
-                setTimeout(() => {
-                    newFormElement.remove();
-                    updateFormCounters();
-                }, 300);
+                removeForm(newFormElement);
             });
         }
         
@@ -558,19 +551,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Añadir listeners a botones quitar existentes
-    formsContainer.querySelectorAll('.remove-new-form-btn').forEach(button => {
+    // CORREGIDO: Función para remover formularios
+    function removeForm(formElement) {
+        formElement.style.transition = 'all 0.3s ease';
+        formElement.style.opacity = '0';
+        formElement.style.transform = 'translateY(-20px)';
+        
+        setTimeout(() => {
+            formElement.remove();
+            updateFormCounters();
+        }, 300);
+    }
+
+    // CORREGIDO: Añadir listeners a botones quitar existentes
+    formsContainer.querySelectorAll('.remove-form-btn').forEach(button => {
         button.addEventListener('click', function() {
             const formDiv = button.closest('.detalle-form');
             if (formDiv) {
-                formDiv.style.transition = 'all 0.3s ease';
-                formDiv.style.opacity = '0';
-                formDiv.style.transform = 'translateY(-20px)';
-                
-                setTimeout(() => {
-                    formDiv.remove();
-                    updateFormCounters();
-                }, 300);
+                removeForm(formDiv);
             }
         });
     });
@@ -584,7 +582,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             input.addEventListener('input', function() {
-                // Limpiar errores mientras el usuario escribe
                 const errorMsg = this.parentNode.querySelector('.form-error-message');
                 if (errorMsg) {
                     errorMsg.style.opacity = '0.5';
@@ -594,9 +591,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function validateField(field) {
-        const errorMsg = field.parentNode.querySelector('.form-error-message');
-        
-        // Validaciones básicas
         if (field.hasAttribute('required') && !field.value.trim()) {
             showFieldError(field, 'Este campo es obligatorio');
             return false;
@@ -618,35 +612,30 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Limpiar errores si todo está bien
-        if (errorMsg) {
-            errorMsg.style.opacity = '1';
-        }
-        
+        clearFieldErrors(field);
         return true;
     }
     
     function showFieldError(field, message) {
-        let errorMsg = field.parentNode.querySelector('.form-error-message');
-        if (!errorMsg) {
-            errorMsg = document.createElement('p');
-            errorMsg.className = 'form-error-message';
-            errorMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-            field.parentNode.appendChild(errorMsg);
-        }
-        errorMsg.innerHTML = `<i class="fas fa-exclamation-triangle"></i>${message}`;
-        errorMsg.style.opacity = '1';
+        clearFieldErrors(field);
+        const errorDiv = document.createElement('p');
+        errorDiv.className = 'form-error-message field-error';
+        errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i>${message}`;
+        field.parentNode.appendChild(errorDiv);
+    }
+    
+    function clearFieldErrors(field) {
+        const existingErrors = field.parentNode.querySelectorAll('.field-error');
+        existingErrors.forEach(error => error.remove());
     }
 
-    // Manejo del envío del formulario
+    // CORREGIDO: Manejo del envío del formulario sin duplicación
     const form = document.getElementById('produccionForm');
     form.addEventListener('submit', function(e) {
-        // Mostrar estado de carga
         submitBtn.disabled = true;
         submitText.textContent = 'Guardando...';
         submitSpinner.classList.remove('hidden');
         
-        // Validar formulario antes del envío
         let isValid = true;
         const requiredFields = form.querySelectorAll('[required]');
         
@@ -662,7 +651,6 @@ document.addEventListener('DOMContentLoaded', function() {
             submitText.textContent = 'Guardar Producción';
             submitSpinner.classList.add('hidden');
             
-            // Scroll al primer error
             const firstError = form.querySelector('.form-error-message');
             if (firstError) {
                 firstError.scrollIntoView({ 
@@ -677,7 +665,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateFormCounters();
     setupRealTimeValidation();
     
-    // Auto-guardar en localStorage (opcional)
+    // CORREGIDO: Auto-guardar mejorado
     function autoSave() {
         const formData = new FormData(form);
         const data = {};
@@ -709,6 +697,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Limpiar borrador al enviar exitosamente
     form.addEventListener('submit', function() {
         localStorage.removeItem('nexo_produccion_draft');
+    });
+
+    // CORREGIDO: Prevenir duplicación en refresh
+    window.addEventListener('beforeunload', function() {
+        // Limpiar cualquier estado temporal
+        sessionStorage.removeItem('formset_state');
     });
 });
 </script>

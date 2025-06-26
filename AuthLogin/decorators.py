@@ -23,12 +23,12 @@ def nexo_login_required(view_func):
                 return JsonResponse({
                     'authenticated': False,
                     'message': 'Sesión expirada. Por favor, inicia sesión nuevamente.',
-                    'redirect_url': '/auth/login/'
+                    'redirect_url': 'auth:login'
                 }, status=401)
             else:
                 # Petición normal
                 messages.warning(request, 'Debes iniciar sesión para acceder a esta página.')
-                return redirect('/auth/login/')
+                return redirect('auth:login')
         
         # Agregar usuario al request
         request.nexo_user = user
@@ -53,10 +53,10 @@ def nexo_role_required(allowed_roles):
                     return JsonResponse({
                         'authenticated': False,
                         'message': 'Sesión expirada.',
-                        'redirect_url': '/auth/login/'
+                        'redirect_url': 'auth:login'
                     }, status=401)
                 else:
-                    return redirect('/auth/login/')
+                    return redirect('auth:login')
             
             # Verificar rol
             user_role = user.rol or 'empleado'
@@ -110,7 +110,7 @@ def ajax_login_required(view_func):
             return JsonResponse({
                 'authenticated': False,
                 'message': 'Sesión expirada. Por favor, inicia sesión nuevamente.',
-                'redirect_url': '/auth/login/'
+                'redirect_url': 'auth:login'
             }, status=401)
         
         request.nexo_user = user

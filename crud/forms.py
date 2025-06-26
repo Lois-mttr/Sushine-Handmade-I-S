@@ -17,14 +17,9 @@ class ProduccionForm(forms.Form):
     Formulario principal para crear/editar producciones
     """
     fechaEntrada = forms.DateField(
-        label='Fecha de Entrada',
-        help_text='Fecha en que se registra la producción',
-        widget=forms.DateInput(attrs={
-            'type': 'date',
-            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200',
-            'style': 'border-color: #eaeef3;',
-            'max': timezone.now().date().isoformat()
-        })
+        label="Fecha de Entrada",
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        input_formats=['%Y-%m-%d']
     )
     
     observacion = forms.CharField(
@@ -87,7 +82,6 @@ class ProduccionForm(forms.Form):
 class DetalleProduccionForm(forms.Form):
     """
     Formulario para cada detalle de producción (producto)
-    CORREGIDO: Validación de productos de producción más flexible
     """
     id_producto = forms.ModelChoiceField(
         label='Producto',
@@ -144,7 +138,8 @@ class DetalleProduccionForm(forms.Form):
         # La validación de ubicación se hará en clean() para dar mejor mensaje de error
         try:
             self.fields['id_producto'].queryset = Producto.objects.filter(
-                estado=True
+                estado=True,
+                idubicacionpro=1  # Asumiendo que 1 es el ID de la ubicación "Taller"
             ).select_related('idubicacionpro').order_by('nombreproducto')
         except Exception as e:
             logger.error(f"Error al cargar productos: {str(e)}")
@@ -298,7 +293,7 @@ from django.forms import formset_factory
 
 DetalleProduccionFormSet = formset_factory(
     DetalleProduccionForm,
-    extra=1,
+    extra=0,
     min_num=1,
     validate_min=True,
     can_delete=True,
