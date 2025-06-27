@@ -58,19 +58,51 @@
             
             <!-- Main Content -->
             <main class="nexo-content {% block main_classes %}{% endblock %}">
-                <!-- Messages -->
+                <!-- Mensajes de Django SOLO aquí -->
                 {% if messages %}
                     <div id="messages-container" class="mb-6 space-y-2">
                         {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} px-4 py-3 rounded-lg border-l-4 {% if message.tags == 'error' %}bg-red-50 border-red-500 text-red-700{% elif message.tags == 'success' %}bg-green-50 border-green-500 text-green-700{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-500 text-yellow-700{% else %}bg-blue-50 border-blue-500 text-blue-700{% endif %}">
-                                <div class="flex items-center">
-                                    <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} mr-2"></i>
-                                    <span>{{ message }}</span>
-                                    <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-current opacity-70 hover:opacity-100">
+                            {% if 'success' in message.tags %}
+                                <div class="alert relative p-4 rounded-lg shadow-sm border-l-4 border-green-500 bg-green-50 text-green-800 flex items-center space-x-3">
+                                    <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                                    <span class="flex-1 self-center">{{ message }}</span>
+                                    <button type="button" class="ml-2 focus:outline-none text-green-700 hover:text-green-900 transition" onclick="this.closest('.alert').remove()" aria-label="Cerrar">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
-                            </div>
+                            {% elif 'error' in message.tags %}
+                                <div class="alert relative p-4 rounded-lg shadow-sm border-l-4 border-red-500 bg-red-50 text-red-800 flex items-center space-x-3">
+                                    <i class="fas fa-times-circle text-red-500 text-xl"></i>
+                                    <span class="flex-1 self-center">{{ message }}</span>
+                                    <button type="button" class="ml-2 focus:outline-none text-red-700 hover:text-red-900 transition" onclick="this.closest('.alert').remove()" aria-label="Cerrar">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            {% elif 'warning' in message.tags %}
+                                <div class="alert relative p-4 rounded-lg shadow-sm border-l-4 border-yellow-500 bg-yellow-50 text-yellow-800 flex items-center space-x-3">
+                                    <i class="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
+                                    <span class="flex-1 self-center">{{ message }}</span>
+                                    <button type="button" class="ml-2 focus:outline-none text-yellow-700 hover:text-yellow-900 transition" onclick="this.closest('.alert').remove()" aria-label="Cerrar">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            {% elif 'info' in message.tags %}
+                                <div class="alert relative p-4 rounded-lg shadow-sm border-l-4 border-blue-500 bg-blue-50 text-blue-800 flex items-center space-x-3">
+                                    <i class="fas fa-info-circle text-blue-500 text-xl"></i>
+                                    <span class="flex-1 self-center">{{ message }}</span>
+                                    <button type="button" class="ml-2 focus:outline-none text-blue-700 hover:text-blue-900 transition" onclick="this.closest('.alert').remove()" aria-label="Cerrar">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            {% else %}
+                                <div class="alert relative p-4 rounded-lg shadow-sm border-l-4 border-gray-400 bg-gray-50 text-gray-800 flex items-center space-x-3">
+                                    <i class="fas fa-bell text-gray-400 text-xl"></i>
+                                    <span class="flex-1 self-center">{{ message }}</span>
+                                    <button type="button" class="ml-2 focus:outline-none text-gray-700 hover:text-gray-900 transition" onclick="this.closest('.alert').remove()" aria-label="Cerrar">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            {% endif %}
                         {% endfor %}
                     </div>
                 {% endif %}

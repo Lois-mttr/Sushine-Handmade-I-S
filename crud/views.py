@@ -35,7 +35,8 @@ except ImportError:
 logger = logging.getLogger('nexo.produccion')
 
 def clear_messages(request):
-    list(messages.get_messages(request))
+    # Solo limpiar mensajes antes de agregar uno nuevo, nunca antes de renderizar la plantilla
+    pass
 
 
 # Configuración de colores NEXO
@@ -149,15 +150,12 @@ def produccion_create(request):
     """
     if request.method == 'POST':
         form = ProduccionForm(request.POST)
-        # Filtrar usuarios permitidos en el campo id_usuario
         form.fields['id_usuario'].queryset = Usuario.objects.filter(rol__in=['admin'])
         detalle_formset = DetalleProduccionFormSet(request.POST, prefix='detalles')
-
         if form.is_valid() and detalle_formset.is_valid():
             try:
                 usuario_seleccionado = form.cleaned_data['id_usuario']
                 detalles_data = []
-                
                 for detalle_form_cleaned in detalle_formset.cleaned_data:
                     if detalle_form_cleaned and not detalle_form_cleaned.get('DELETE', False):
                         detalles_data.append({
@@ -166,9 +164,7 @@ def produccion_create(request):
                             'costo_unitario': float(detalle_form_cleaned['costo_unitario']),
                             'idFabricante': detalle_form_cleaned['idFabricante'].idempleado
                         })
-                
                 if not detalles_data:
-                    clear_messages(request)
                     messages.error(request, 'Debe agregar al menos un producto válido a la producción.')
                 else:
                     success, message_pm, id_produccion = ProduccionManager.registrar_produccion(
@@ -185,28 +181,19 @@ def produccion_create(request):
                             user_name = nexo_user.nombreusuario
                         else:
                             user_name = 'Usuario'
-                        clear_messages(request)
                         messages.success(request, f'{message_pm} (Registrado por: {user_name})')
                         return redirect('crud:produccion_detail', pk=id_produccion)
                     else:
-                        clear_messages(request)
                         messages.error(request, f'Error al registrar: {message_pm}')
             except Exception as e:
-                logger.error(f"Error inesperado en produccion_create: {str(e)}")
-                clear_messages(request)
                 messages.error(request, f'Error inesperado: {str(e)}')
         else:
-            # Solo un mensaje general de error
-            clear_messages(request)
             messages.error(request, 'Formulario inválido. Por favor, corrija los errores en los campos resaltados.')
     else:
-        # Inicializar formularios para GET
         initial_data = {
-            # Usar formato correcto para input type="date"
             'fechaEntrada': timezone.now().date().strftime('%Y-%m-%d')
         }
         form = ProduccionForm(initial=initial_data)
-        # Filtrar usuarios permitidos en el campo id_usuario
         form.fields['id_usuario'].queryset = Usuario.objects.filter(rol__in=['admin'])
         detalle_formset = DetalleProduccionFormSet(prefix='detalles')
 
@@ -272,26 +259,20 @@ def produccion_edit(request, pk):
         produccion = get_object_or_404(Productosproduccion, idproduccion=pk)
         estado, mensaje = ProduccionManager.verificar_estado_produccion(pk)
         if estado is None:
-            clear_messages(request)
             messages.error(request, mensaje)
             return redirect('crud:produccion_list')
         if not estado:
-            clear_messages(request)
             messages.warning(request, 'No se puede editar una producción inactiva.')
             return redirect('crud:produccion_detail', pk=pk)
     except Productosproduccion.DoesNotExist:
-        clear_messages(request)
         messages.error(request, 'La producción que intenta editar no existe.')
         return redirect('crud:produccion_list')
     except Exception as e:
-        logger.error(f"Error al verificar producción {pk}: {str(e)}")
-        clear_messages(request)
         messages.error(request, f'Error al verificar la producción: {str(e)}')
         return redirect('crud:produccion_list')
-    
+
     if request.method == 'POST':
         form = ProduccionForm(request.POST)
-        # Filtrar usuarios permitidos en el campo id_usuario
         form.fields['id_usuario'].queryset = Usuario.objects.filter(rol__in=['admin'])
         detalle_formset = DetalleProduccionFormSet(request.POST, prefix='detalles')
         if form.is_valid() and detalle_formset.is_valid():
@@ -305,53 +286,28 @@ def produccion_edit(request, pk):
                             'costo_unitario': float(detalle_form.cleaned_data['costo_unitario']),
                             'idFabricante': detalle_form.cleaned_data['idFabricante'].idempleado
                         })
-                # VALIDACIÓN DE DUPLICADOS
                 productos_ids = [d['id_producto'] for d in detalles_data]
                 if len(productos_ids) != len(set(productos_ids)):
-                    clear_messages(request)
-                    messages.error(request, 'No se puede agregar productos duplicados.')
-                    # Renderiza el formulario con los datos actuales y detiene el flujo
-                    context = {
-                        'form': form,
-                        'detalle_formset': detalle_formset,
-                        'produccion': produccion,
-                        'page_title': f'Editar Producción #{pk}',
-                        'page_subtitle': f'Modifica los datos de la producción registrada el {produccion.fechaentrada.strftime("%d/%m/%Y")}.',
-                        'user': getattr(request, 'nexo_user', None),
-                        'colores': COLORES_NEXO,
-                        'is_edit': True
-                    }
-                    return render(request, 'produccion/edit.html', context)
-                if not detalles_data:
-                    clear_messages(request)
-                    messages.error(request, 'Debe agregar al menos un producto válido.')
+                    messages.error(request, 'No se permiten productos duplicados en la producción.')
+                elif not detalles_data:
+                    messages.error(request, 'Debe agregar al menos un producto válido a la producción.')
                 else:
-                    success, message = ProduccionManager.editar_produccion(
-                        id_produccion=pk,
-                        fechaentrada=form.cleaned_data['fechaEntrada'],
-                        observacion=form.cleaned_data['observacion'],
-                        id_usuario=form.cleaned_data['id_usuario'].idusuario,
-                        detalles=detalles_data
+                    success, message_pm = ProduccionManager.editar_produccion(
+                        pk,
+                        form.cleaned_data['fechaEntrada'],
+                        form.cleaned_data['observacion'],
+                        form.cleaned_data['id_usuario'].idusuario,
+                        detalles_data
                     )
                     if success:
-                        nexo_user = getattr(request, 'nexo_user', None)
-                        if isinstance(nexo_user, dict):
-                            user_name = nexo_user.get('nombreusuario', 'Usuario')
-                        elif hasattr(nexo_user, 'nombreusuario'):
-                            user_name = nexo_user.nombreusuario
-                        else:
-                            user_name = 'Usuario'
-                            clear_messages(request)
-                        messages.success(request, f'{message} (Editado por: {user_name})')
+                        messages.success(request, message_pm)
                         return redirect('crud:produccion_detail', pk=pk)
                     else:
-                        clear_messages(request)
-                        messages.error(request, message)
+                        messages.error(request, f'Error al editar: {message_pm}')
             except Exception as e:
-                logger.error(f"Error inesperado en produccion_edit (ID: {pk}): {str(e)}")
-                messages.error(request, f'Error inesperado al editar: {str(e)}')
+                messages.error(request, f'Error inesperado: {str(e)}')
         else:
-            messages.error(request, 'Por favor, corrija los errores en el formulario.')
+            messages.error(request, 'Formulario inválido. Por favor, corrija los errores en los campos resaltados.')
     else:
         # Cargar datos existentes
         fecha_entrada = produccion.fechaentrada
@@ -379,6 +335,7 @@ def produccion_edit(request, pk):
         form.fields['id_usuario'].queryset = Usuario.objects.filter(rol__in=['admin'])
         detalles_actuales = ProduccionManager.obtener_detalle_produccion(pk)
         initial_detalles = []
+        warning_shown = False
         for detalle in detalles_actuales:
             try:
                 producto = Producto.objects.filter(
@@ -397,9 +354,9 @@ def produccion_edit(request, pk):
                 })
             except (Producto.DoesNotExist, Empleado.DoesNotExist) as e:
                 logger.warning(f"Item omitido en formset edit {pk}: {str(e)}")
-                # Solo un mensaje de advertencia por omisión
-                if not any('no pudieron cargarse' in m.message for m in messages.get_messages(request)):
+                if not warning_shown:
                     messages.warning(request, "Algunos detalles no pudieron cargarse porque los productos o empleados están inactivos.")
+                    warning_shown = True
         detalle_formset = DetalleProduccionFormSet(prefix='detalles', initial=initial_detalles)
     
     context = {
@@ -422,33 +379,24 @@ def produccion_delete(request, pk):
     Vista corregida para dar de baja una producción (soft delete)
     """
     try:
-        # Verificar estado antes de intentar dar de baja
         estado, mensaje = ProduccionManager.verificar_estado_produccion(pk)
-        
         if estado is None:
+            clear_messages(request)
             messages.error(request, mensaje)
         elif not estado:
-            messages.warning(request, 'La producción ya está inactiva.')
+            clear_messages(request)
+            messages.warning(request, 'No se puede eliminar una producción inactiva.')
         else:
-            # Proceder con la baja
-            success, message = ProduccionManager.dar_de_baja_produccion(pk)
-            
+            success, message_pm = ProduccionManager.dar_de_baja_produccion(pk)
             if success:
-                nexo_user = getattr(request, 'nexo_user', None)
-                if isinstance(nexo_user, dict):
-                    user_name = nexo_user.get('nombreusuario', 'Usuario')
-                elif hasattr(nexo_user, 'nombreusuario'):
-                    user_name = nexo_user.nombreusuario
-                else:
-                    user_name = 'Usuario'
-                messages.success(request, f'{message} (Acción realizada por: {user_name})')
+                clear_messages(request)
+                messages.success(request, message_pm)
             else:
-                messages.error(request, f'Error al dar de baja: {message}')
-            
+                clear_messages(request)
+                messages.error(request, f'Error al eliminar: {message_pm}')
     except Exception as e:
-        logger.error(f"Error inesperado en produccion_delete (ID: {pk}): {str(e)}")
+        clear_messages(request)
         messages.error(request, f'Error inesperado al dar de baja: {str(e)}')
-    
     return redirect('crud:produccion_list')
 
 @nexo_login_required

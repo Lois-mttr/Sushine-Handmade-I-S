@@ -60,21 +60,6 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8" style="background-color: {{ colores.bg_very_light }};">
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert-nexo {% if message.tags == 'error' %}alert-nexo-error{% else %}alert-info{% endif %} p-4 mb-4 rounded-md shadow-sm" role="alert">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <i class="fas {% if message.tags == 'error' %}fa-times-circle{% else %}fa-info-circle{% endif %} mt-1"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium">{{ message }}</p>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    {% endif %}
-
     <form method="post" id="produccionEditForm">
         {% csrf_token %}
         

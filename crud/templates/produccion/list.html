@@ -176,29 +176,6 @@
 {% block content %}
 <div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
     <div class="max-w-7xl mx-auto">
-        
-        <!-- Mensajes de Django -->
-        {% if messages %}
-            <div class="mb-6 space-y-2">
-                {% for message in messages %}
-                    <div class="alert p-4 rounded-lg shadow-sm border-l-4 flex items-start space-x-3 
-                        {% if message.tags == 'error' %}border-red-500 bg-red-50 text-red-800
-                        {% elif message.tags == 'success' %}border-green-500 bg-green-50 text-green-800
-                        {% elif message.tags == 'warning' %}border-yellow-500 bg-yellow-50 text-yellow-800
-                        {% else %}border-blue-500 bg-blue-50 text-blue-800{% endif %}" 
-                        role="alert">
-                        <div class="flex-shrink-0">
-                            <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle
-                                {% elif message.tags == 'success' %}fa-check-circle
-                                {% elif message.tags == 'warning' %}fa-exclamation-triangle
-                                {% else %}fa-info-circle{% endif %}"></i>
-                        </div>
-                        <div class="flex-1">{{ message }}</div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
         <!-- Botón para Nueva Producción -->
         <div class="mb-6 flex justify-between items-center">
             <div>
