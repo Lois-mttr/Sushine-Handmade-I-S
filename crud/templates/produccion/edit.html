@@ -277,12 +277,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (deleteCheckbox) {
                 // Para forms nuevos (que no estaban en 'initial'), simplemente los removemos.
                 // El backend no los verá si no están en el POST.
-                if (!actualFormElement.querySelector('input[name$="-id"]')) { // Si no tiene un campo ID, es nuevo
-                     actualFormElement.remove();
-                     // Si se remueve un form nuevo, TOTAL_FORMS debe reflejarlo.
-                     // Esto se complica. Es más fácil dejar que el backend ignore forms vacíos.
-                     // O, si se remueve, decrementar totalFormsInput.value y formCount.
-                     // Por ahora, la lógica de marcado para eliminar es más robusta.
+                if (!actualFormElement.querySelector('input[name$="-id"]')) {
+                    actualFormElement.remove();
+                    totalFormsInput.value = parseInt(totalFormsInput.value) - 1;
+                    formCount--;
+                    updateFormCounters();
                 } else { // Para forms existentes, marcar para eliminar
                     deleteCheckbox.checked = true;
                     actualFormElement.style.display = 'none';

@@ -558,8 +558,13 @@ document.addEventListener('DOMContentLoaded', function() {
         formElement.style.transform = 'translateY(-20px)';
         
         setTimeout(() => {
-            formElement.remove();
-            updateFormCounters();
+            const actualFormElement = formElement;
+            if (!actualFormElement.querySelector('input[name$="-id"]')) {
+                actualFormElement.remove();
+                totalFormsInput.value = parseInt(totalFormsInput.value) - 1;
+                formCount--;
+                updateFormCounters();
+            }
         }, 300);
     }
 

@@ -48,26 +48,21 @@ class ProduccionForm(forms.Form):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Cargar usuarios activos ordenados
+        # Si no hay fecha inicial, poner la actual
+        if not self.initial.get('fechaEntrada'):
+            self.initial['fechaEntrada'] = timezone.now().date()
+        # Hacer el campo solo seleccionable (no editable manualmente)
+        self.fields['fechaEntrada'].widget.attrs['onkeydown'] = 'return false;'
+
+        # Cargar usuarios activos siempre
         try:
-            self.fields['id_usuario'].queryset = Usuario.objects.filter(
-                activo=True
-            ).select_related().order_by('nombreusuario')
+            self.fields['id_usuario'].queryset = Usuario.objects.filter(activo=True).order_by('nombreusuario')
         except Exception as e:
             logger.error(f"Error al cargar usuarios: {str(e)}")
             self.fields['id_usuario'].queryset = Usuario.objects.none()
-        
-        # Establecer fecha por defecto si no se proporciona
-        if not self.initial.get('fechaEntrada'):
-            self.initial['fechaEntrada'] = timezone.now().date()
-    
+
     def clean_fechaEntrada(self):
-        """
-        Validar que la fecha no sea futura
-        """
         fecha = self.cleaned_data.get('fechaEntrada')
-        if fecha and fecha > timezone.now().date():
-            raise ValidationError('La fecha de entrada no puede ser futura.')
         return fecha
     
     def clean_observacion(self):
@@ -135,11 +130,10 @@ class DetalleProduccionForm(forms.Form):
         super().__init__(*args, **kwargs)
         
         # CORREGIDO: Cargar productos activos SIN restricción de ubicación inicialmente
-        # La validación de ubicación se hará en clean() para dar mejor mensaje de error
         try:
             self.fields['id_producto'].queryset = Producto.objects.filter(
                 estado=True,
-                idubicacionpro=1  # Asumiendo que 1 es el ID de la ubicación "Taller"
+                idubicacionpro=1  # Solo productos de taller
             ).select_related('idubicacionpro').order_by('nombreproducto')
         except Exception as e:
             logger.error(f"Error al cargar productos: {str(e)}")
@@ -148,7 +142,8 @@ class DetalleProduccionForm(forms.Form):
         # Cargar SOLO empleados activos
         try:
             self.fields['idFabricante'].queryset = Empleado.objects.filter(
-                estadoempleado=True
+                estadoempleado=True,
+                rolempleado='Obrero'
             ).select_related('idpersonaemp').order_by(
                 'idpersonaemp__primernombre', 
                 'idpersonaemp__primerapellido'
@@ -248,17 +243,17 @@ class ProduccionSearchForm(forms.Form):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Cargar usuarios que han registrado producciones
+        # Cargar usuarios que han registrado producciones o todos activos si hay error
         try:
             self.fields['usuario'].queryset = Usuario.objects.filter(
                 activo=True,
                 productosproduccion__isnull=False
             ).distinct().order_by('nombreusuario')
-        except Exception:
-            # Fallback si hay problemas con la relación
-            self.fields['usuario'].queryset = Usuario.objects.filter(
-                activo=True
-            ).order_by('nombreusuario')
+            if not self.fields['usuario'].queryset.exists():
+                self.fields['usuario'].queryset = Usuario.objects.filter(activo=True).order_by('nombreusuario')
+        except Exception as e:
+            logger.error(f"Error al cargar usuarios en search: {str(e)}")
+            self.fields['usuario'].queryset = Usuario.objects.filter(activo=True).order_by('nombreusuario')
     
     def clean(self):
         """

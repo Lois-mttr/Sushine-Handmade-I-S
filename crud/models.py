@@ -245,7 +245,7 @@ class ProduccionManager:
     @staticmethod
     def obtener_detalle_produccion(id_produccion):
         """
-        Obtiene el detalle completo de una producción usando ORM
+        Obtiene el detalle completo de una producción SOLO para productos de ubicación 1 (Taller)
         """
         try:
             with connection.cursor() as cursor:
@@ -265,7 +265,7 @@ class ProduccionManager:
                     LEFT JOIN Producto p ON dp.id_producto = p.id_producto
                     LEFT JOIN Empleado e ON dp.idfabricante = e.idempleado
                     LEFT JOIN Persona per ON e.idpersonaemp = per.cedula
-                    WHERE dp.id_produccion = %s
+                    WHERE dp.id_produccion = %s AND p.idubicacionpro = 1
                     ORDER BY dp.id_producto
                 """, [id_produccion])
                 

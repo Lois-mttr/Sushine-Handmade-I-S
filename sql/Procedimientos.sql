@@ -419,6 +419,7 @@ END$$
 DELIMITER ;
 -- Funcionamiento
 CALL RegistrarUsuario('Campary', 'Camp*2520', 'admin', 1);
+CALL RegistrarUsuario('Maria','Maria*2520','encargado_sucursal','2')
 
 -- FUNCIONAMIENTO--
 -- Vista de Alertas por bajo Inventario

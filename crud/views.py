@@ -6,10 +6,11 @@ from django.utils import timezone
 from django.db import transaction
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 from decimal import Decimal
 import logging
 import json
-from datetime import date
+from datetime import date, datetime
 
 # Importar modelos
 from core_data.models import Productosproduccion, Producto, Usuario, Empleado
@@ -130,7 +131,7 @@ def produccion_list(request):
     
     return render(request, 'produccion/list.html', context)
 
-@nexo_role_required(['admin', 'supervisor', 'empleado'])
+@nexo_role_required(['admin', 'encargado_sucursal', 'empleado'])
 def produccion_create(request):
     """
     Vista corregida para crear nueva producción
@@ -190,15 +191,6 @@ def produccion_create(request):
         initial_data = {
             'fechaEntrada': timezone.now().date()
         }
-        if hasattr(request, 'nexo_user') and request.nexo_user:
-            try:
-                usuario = Usuario.objects.get(
-                    idusuario=request.nexo_user.get('idusuario'),
-                    activo=True
-                )
-                initial_data['id_usuario'] = usuario
-            except (Usuario.DoesNotExist, AttributeError):
-                pass
         form = ProduccionForm(initial=initial_data)
         detalle_formset = DetalleProduccionFormSet(prefix='detalles')
 
@@ -243,7 +235,7 @@ def produccion_detail(request, pk):
             'page_subtitle': f'Información completa del registro de producción del {produccion.fechaentrada.strftime("%d de %B de %Y")}.',
             'user': getattr(request, 'nexo_user', None),
             'colores': COLORES_NEXO,
-            'estado_real': estado_real,  # <-- Ahora sí es el valor correcto
+            'estado_real': estado_real,  
         }
         
         return render(request, 'produccion/detail.html', context)
@@ -254,7 +246,7 @@ def produccion_detail(request, pk):
         messages.error(request, f'Error al cargar el detalle: {str(e)}')
         return redirect('crud:produccion_list')
 
-@nexo_role_required(['admin', 'supervisor'])
+@nexo_role_required(['admin', 'encargado_sucursal'])
 def produccion_edit(request, pk):
     """
     Vista corregida para editar una producción existente
@@ -344,8 +336,20 @@ def produccion_edit(request, pk):
     else:
         # Cargar datos existentes
         fecha_entrada = produccion.fechaentrada
-        if hasattr(fecha_entrada, 'date'):
+        # Normalizar fecha_entrada a date puro (yyyy-MM-dd para input type="date")
+        if isinstance(fecha_entrada, str):
+            # Intentar varios formatos
+            for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%Y-%m-%d %H:%M:%S"):
+                try:
+                    fecha_entrada = datetime.strptime(fecha_entrada, fmt).date()
+                    break
+                except Exception:
+                    continue
+            else:
+                fecha_entrada = timezone.now().date()
+        elif isinstance(fecha_entrada, datetime):
             fecha_entrada = fecha_entrada.date()
+        # Si es date, no se hace nada
         form = ProduccionForm(initial={
             'fechaEntrada': fecha_entrada,
             'observacion': produccion.observacion,
@@ -389,7 +393,7 @@ def produccion_edit(request, pk):
     
     return render(request, 'produccion/edit.html', context)
 
-@nexo_role_required(['admin', 'supervisor'])
+@nexo_role_required(['admin', 'encargado_sucursal'])
 @require_http_methods(["POST"])
 def produccion_delete(request, pk):
     """

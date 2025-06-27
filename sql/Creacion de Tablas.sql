@@ -130,6 +130,3 @@ CREATE TABLE DetalleProduccion (
     FOREIGN KEY (id_producto) REFERENCES Producto(id_producto),
     PRIMARY KEY (id_produccion, id_producto)
 );
-
-DELETE FROM ProductosProduccion
-DELETE FROM DetalleProduccion
