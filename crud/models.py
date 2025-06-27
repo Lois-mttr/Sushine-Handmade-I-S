@@ -42,6 +42,11 @@ class ProduccionManager:
                 fecha_datetime = timezone.make_aware(
                     datetime.combine(fechaEntrada, datetime.min.time())
                 )
+            elif isinstance(fechaEntrada, datetime):
+                if timezone.is_naive(fechaEntrada):
+                    fecha_datetime = timezone.make_aware(fechaEntrada)
+                else:
+                    fecha_datetime = fechaEntrada
             else:
                 fecha_datetime = fechaEntrada
             

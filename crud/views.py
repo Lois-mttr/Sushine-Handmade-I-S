@@ -57,6 +57,7 @@ COLORES_NEXO = {
 }
 
 @nexo_login_required
+@nexo_role_required(['admin'])
 def produccion_list(request):
     """
     Vista corregida para listar producciones con filtros mejorados
@@ -73,6 +74,16 @@ def produccion_list(request):
             filtros['fecha_hasta'] = search_form.cleaned_data['fecha_hasta']
         if search_form.cleaned_data.get('usuario'):
             filtros['usuario'] = search_form.cleaned_data['usuario'].nombreusuario
+    
+    # Filtrar usuarios solo con permisos de producción
+    usuarios_permitidos = Usuario.objects.filter(rol__in=['admin'])
+    search_form.fields['usuario'].queryset = usuarios_permitidos
+    if search_form.is_valid():
+        if search_form.cleaned_data.get('usuario'):
+            if search_form.cleaned_data['usuario'] not in usuarios_permitidos:
+                clear_messages(request)
+                messages.error(request, 'El usuario seleccionado no tiene permisos para producción.')
+                return redirect('crud:produccion_list')
     
     # Obtener número de página
     page = request.GET.get('page', 1)
@@ -138,6 +149,8 @@ def produccion_create(request):
     """
     if request.method == 'POST':
         form = ProduccionForm(request.POST)
+        # Filtrar usuarios permitidos en el campo id_usuario
+        form.fields['id_usuario'].queryset = Usuario.objects.filter(rol__in=['admin'])
         detalle_formset = DetalleProduccionFormSet(request.POST, prefix='detalles')
 
         if form.is_valid() and detalle_formset.is_valid():
@@ -189,9 +202,12 @@ def produccion_create(request):
     else:
         # Inicializar formularios para GET
         initial_data = {
-            'fechaEntrada': timezone.now().date()
+            # Usar formato correcto para input type="date"
+            'fechaEntrada': timezone.now().date().strftime('%Y-%m-%d')
         }
         form = ProduccionForm(initial=initial_data)
+        # Filtrar usuarios permitidos en el campo id_usuario
+        form.fields['id_usuario'].queryset = Usuario.objects.filter(rol__in=['admin'])
         detalle_formset = DetalleProduccionFormSet(prefix='detalles')
 
     context = {
@@ -275,6 +291,8 @@ def produccion_edit(request, pk):
     
     if request.method == 'POST':
         form = ProduccionForm(request.POST)
+        # Filtrar usuarios permitidos en el campo id_usuario
+        form.fields['id_usuario'].queryset = Usuario.objects.filter(rol__in=['admin'])
         detalle_formset = DetalleProduccionFormSet(request.POST, prefix='detalles')
         if form.is_valid() and detalle_formset.is_valid():
             try:
@@ -350,12 +368,15 @@ def produccion_edit(request, pk):
                 fecha_entrada = timezone.now().date()
         elif isinstance(fecha_entrada, datetime):
             fecha_entrada = fecha_entrada.date()
-        # Si es date, no se hace nada
+        # Convertir a string yyyy-MM-dd para el input type="date"
+        fecha_entrada_str = fecha_entrada.strftime('%Y-%m-%d')
         form = ProduccionForm(initial={
-            'fechaEntrada': fecha_entrada,
+            'fechaEntrada': fecha_entrada_str,
             'observacion': produccion.observacion,
             'id_usuario': produccion.id_usuario
         })
+        # Filtrar usuarios permitidos en el campo id_usuario
+        form.fields['id_usuario'].queryset = Usuario.objects.filter(rol__in=['admin'])
         detalles_actuales = ProduccionManager.obtener_detalle_produccion(pk)
         initial_detalles = []
         for detalle in detalles_actuales:
@@ -468,6 +489,7 @@ def produccion_dashboard(request):
 
 # APIs para AJAX corregidas
 @nexo_login_required
+@nexo_role_required(['admin'])
 def api_producto_info(request, producto_id):
     """
     API corregida para obtener información de un producto (solo activos)
@@ -504,6 +526,7 @@ def api_producto_info(request, producto_id):
         return JsonResponse({'error': 'Error interno del servidor.'}, status=500)
 
 @nexo_login_required
+@nexo_role_required(['admin'])
 def api_empleado_info(request, empleado_id):
     """
     API para obtener información de un empleado (solo activos)
@@ -532,6 +555,7 @@ def api_empleado_info(request, empleado_id):
         return JsonResponse({'error': 'Error interno del servidor.'}, status=500)
 
 @nexo_login_required
+@nexo_role_required(['admin'])
 def api_check_session(request):
     """
     API para verificar el estado de la sesión
