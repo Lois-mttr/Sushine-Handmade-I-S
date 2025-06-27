@@ -131,7 +131,7 @@ def produccion_list(request):
     
     return render(request, 'produccion/list.html', context)
 
-@nexo_role_required(['admin', 'encargado_sucursal', 'empleado'])
+@nexo_role_required(['admin'])
 def produccion_create(request):
     """
     Vista corregida para crear nueva producción
@@ -206,6 +206,7 @@ def produccion_create(request):
     return render(request, 'produccion/create.html', context)
 
 @nexo_login_required
+@nexo_role_required(['admin'])
 def produccion_detail(request, pk):
     """
     Vista para mostrar detalle de una producción con validaciones mejoradas
@@ -246,7 +247,7 @@ def produccion_detail(request, pk):
         messages.error(request, f'Error al cargar el detalle: {str(e)}')
         return redirect('crud:produccion_list')
 
-@nexo_role_required(['admin', 'encargado_sucursal'])
+@nexo_role_required(['admin'])
 def produccion_edit(request, pk):
     """
     Vista corregida para editar una producción existente
@@ -393,7 +394,7 @@ def produccion_edit(request, pk):
     
     return render(request, 'produccion/edit.html', context)
 
-@nexo_role_required(['admin', 'encargado_sucursal'])
+@nexo_role_required(['admin'])
 @require_http_methods(["POST"])
 def produccion_delete(request, pk):
     """
@@ -430,6 +431,7 @@ def produccion_delete(request, pk):
     return redirect('crud:produccion_list')
 
 @nexo_login_required
+@nexo_role_required(['admin'])
 def produccion_dashboard(request):
     """
     Vista del dashboard de producción con estadísticas

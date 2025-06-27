@@ -59,7 +59,7 @@ def nexo_role_required(allowed_roles):
                     return redirect('auth:login')
             
             # Verificar rol
-            user_role = user.rol or 'empleado'
+            user_role = user.rol or 'encargado_sucursal'
             if user_role not in allowed_roles:
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return JsonResponse({
