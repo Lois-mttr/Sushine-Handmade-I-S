@@ -28,7 +28,7 @@
         </a>
 
         <!-- Inventario -->
-        <a href="#" 
+        <a href="{% url 'inventario:inventario_general' %}" 
         class="nexo-menu-item {% if request.resolver_match.url_name == 'inventario' %}nexo-menu-active{% endif %}"
         data-tooltip="Inventario">
             <div class="nexo-menu-icon nexo-icon-inventario">

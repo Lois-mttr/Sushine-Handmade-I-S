@@ -19,11 +19,17 @@
             <div class="nexo-user-info">
                 <!-- Avatar del usuario -->
                 <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold text-sm cursor-pointer hover:bg-primary-dark transition-colors duration-200">
-                    {{ user.iniciales|default:user.nombreusuario|slice:":2"|upper }}
+                    {{ user_iniciales|default:"IN" }}
                 </div>
                 <div class="nexo-user-details">
-                    <span class="nexo-user-name">{{ user.nombreusuario|default:user.nombreusuario }}</span>
-                    <span class="nexo-user-role">{{ user_role|default:"Usuario" }}</span>
+                    <span class="nexo-user-name">
+                        {% if usuario_actual and usuario_actual.nombreusuario %}
+                            {{ usuario_actual.nombreusuario }}
+                        {% else %}
+                            Invitado
+                        {% endif %}
+                    </span>
+                    <span class="nexo-user-role">{{ nexo_user_role|default:"Usuario" }}</span>
                 </div>
             </div>
             

@@ -131,13 +131,19 @@ def produccion_list(request):
             'previous_page_number': None, 'next_page_number': None, 'per_page': 10
         })
     
+    usuario_actual = getattr(request, 'nexo_user', None)
+    user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
+    nexo_user_role = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
+    
     context = {
         'page_obj': page_obj,
         'filtro_form': search_form,
         'total_count': page_obj.paginator.count,
         'page_title': 'Gestión de Producción',
         'page_subtitle': 'Administra los registros de producción del taller.',
-        'user': getattr(request, 'nexo_user', None),
+        'usuario_actual': usuario_actual,
+        'user_iniciales': user_iniciales,
+        'nexo_user_role': nexo_user_role,
         'colores': COLORES_NEXO,
     }
     
@@ -197,12 +203,18 @@ def produccion_create(request):
         form.fields['id_usuario'].queryset = Usuario.objects.filter(rol__in=['admin'])
         detalle_formset = DetalleProduccionFormSet(prefix='detalles')
 
+    usuario_actual = getattr(request, 'nexo_user', None)
+    user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
+    nexo_user_role = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
+    
     context = {
         'form': form,
         'detalle_formset': detalle_formset,
         'page_title': 'Registrar Producción',
         'page_subtitle': 'Crear nuevo registro de producción en el taller.',
-        'user': getattr(request, 'nexo_user', None),
+        'usuario_actual': usuario_actual,
+        'user_iniciales': user_iniciales,
+        'nexo_user_role': nexo_user_role,
         'colores': COLORES_NEXO,
         'is_create': True
     }
@@ -230,6 +242,10 @@ def produccion_detail(request, pk):
         # USAR EL MANAGER PARA OBTENER EL ESTADO REAL
         estado_real, _ = ProduccionManager.verificar_estado_produccion(pk)
 
+        usuario_actual = getattr(request, 'nexo_user', None)
+        user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
+        nexo_user_role = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
+        
         context = {
             'produccion': produccion,
             'detalles': detalles,
@@ -237,7 +253,9 @@ def produccion_detail(request, pk):
             'total_costo_produccion': total_costo_produccion,
             'page_title': f'Detalle Producción #{pk}',
             'page_subtitle': f'Información completa del registro de producción del {produccion.fechaentrada.strftime("%d de %B de %Y")}.',
-            'user': getattr(request, 'nexo_user', None),
+            'usuario_actual': usuario_actual,
+            'user_iniciales': user_iniciales,
+            'nexo_user_role': nexo_user_role,
             'colores': COLORES_NEXO,
             'estado_real': estado_real,  
         }
@@ -359,13 +377,19 @@ def produccion_edit(request, pk):
                     warning_shown = True
         detalle_formset = DetalleProduccionFormSet(prefix='detalles', initial=initial_detalles)
     
+    usuario_actual = getattr(request, 'nexo_user', None)
+    user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
+    nexo_user_role = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
+    
     context = {
         'form': form,
         'detalle_formset': detalle_formset,
         'produccion': produccion,
         'page_title': f'Editar Producción #{pk}',
         'page_subtitle': f'Modifica los datos de la producción registrada el {produccion.fechaentrada.strftime("%d/%m/%Y")}.',
-        'user': getattr(request, 'nexo_user', None),
+        'usuario_actual': usuario_actual,
+        'user_iniciales': user_iniciales,
+        'nexo_user_role': nexo_user_role,
         'colores': COLORES_NEXO,
         'is_edit': True
     }

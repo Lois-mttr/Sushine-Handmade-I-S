@@ -145,18 +145,16 @@
                 <div class="bg-gray-50 rounded-lg p-4 mb-6">
                     <div class="flex items-center">
                         <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold text-sm mr-3">
-                            {{ user.iniciales|default:user.nombreusuario|slice:":2"|upper }}
+                            {# Usar user_iniciales del contexto si existe, si no, fallback seguro #}
+                            {{ user_iniciales|default:"IN" }}
                         </div>
                         <div>
                             <div class="font-medium text-gray-900">
-                                {% if user.nombreusuario %}
-                                    {{ user.nombreusuario }}
-                                {% else %}
-                                    {{ user.nombreusuario }}
-                                {% endif %}
+                                {# Mostrar nombreusuario si existe, si no, 'Invitado' #}
+                                {{ usuario_actual.nombreusuario|default:"Invitado" }}
                             </div>
-                            <div class="text-sm text-gray-600">{{ user.get_rol_display|default:"Usuario" }}</div>
-                            <div class="text-xs text-gray-400">ID: {{ user.idusuario }}</div>
+                            <div class="text-sm text-gray-600">{{ usuario_actual.rol|default:"Usuario" }}</div>
+                            <div class="text-xs text-gray-400">ID: {{ usuario_actual.idusuario|default:"-" }}</div>
                         </div>
                     </div>
                 </div>
@@ -181,12 +179,12 @@
         window.NEXO = {
             csrf_token: '{{ csrf_token }}',
             user: {
-                id: '{{ user.idusuario|default:"" }}',
-                username: '{{ user.nombreusuario|default:"" }}',
-                role: '{{ user.rol|default:"" }}',
-                name: '{% if user.nombreusuario %}{{ user.nombreusuario}}{% endif %}',
-                iniciales: '{{ user.iniciales|default:user.nombreusuario|slice:":2"|upper }}',
-                ultimo_acceso: '{% if user.ultimo_acceso %}{{ user.ultimo_acceso|date:"c" }}{% endif %}'
+                id: '{{ usuario_actual.idusuario|default:"" }}',
+                username: '{{ usuario_actual.nombreusuario|default:"Invitado" }}',
+                role: '{{ usuario_actual.rol|default:"" }}',
+                name: '{% if usuario_actual and usuario_actual.nombreusuario %}{{ usuario_actual.nombreusuario }}{% else %}Invitado{% endif %}',
+                iniciales: '{{ user_iniciales|default:"IN" }}',
+                ultimo_acceso: '{% if usuario_actual and usuario_actual.ultimo_acceso %}{{ usuario_actual.ultimo_acceso|date:"c" }}{% endif %}'
             },
             urls: {
                 dashboard: '{% url "dashboard:dashboard" %}',

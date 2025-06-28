@@ -1,4 +1,3 @@
-
 # Create your views here.
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
@@ -11,6 +10,12 @@ from django.core.paginator import Paginator
 from django.core.cache import cache
 from django.db import transaction
 from AuthLogin.views import check_session
+from AuthLogin.decorators import (
+    nexo_login_required,
+    nexo_role_required,
+    ajax_login_required,
+    get_authenticated_user
+)
 from core_data.models import (
     Usuario, Producto, Venta, Devolucion, 
     Detalleventa, Detalledevolucion, Cliente, 
@@ -250,16 +255,16 @@ class DashboardService:
         
         return chart_data
 
+@nexo_login_required
 def dashboard_view(request):
     """Vista principal del dashboard mejorada con ubicaciones"""
-    # Verificar sesión activa
-    user = check_session(request)
-    if not user:
+    usuario_actual = getattr(request, 'nexo_user', None)
+    if not usuario_actual:
         messages.error(request, 'Debes iniciar sesión para acceder al dashboard')
         return redirect('auth:login')
-    
+    user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
     try:
-        logger.info(f"Usuario {user.nombreusuario} accedió al dashboard")
+        logger.info(f"Usuario {usuario_actual.nombreusuario} accedió al dashboard")
         
         # Obtener datos del dashboard usando el servicio
         metrics = DashboardService.get_dashboard_metrics()
@@ -293,14 +298,13 @@ def dashboard_view(request):
                 'productos_mas_devueltos': productos_devueltos_chart
             }
         
-        # Obtener iniciales del usuario
-        user_initials = user.nombreusuario[:2].upper() if user.nombreusuario else "U"
-        if user.empleado_nombre:
-            nombres = user.empleado_nombre.split()
-            user_initials = ''.join([n[0] for n in nombres[:2]]).upper()
+        # Obtener usuario autenticado de forma segura
+        usuario_actual = getattr(request, 'nexo_user', None)
+        user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
         
         context = {
-            'user': user,
+            'usuario_actual': usuario_actual,
+            'user_iniciales': user_iniciales,
             'page_title': 'Dashboard - NEXO',
             'system_name': 'Sistema de Inventario y ventas NEXO - Sunshine Handmade',
             
@@ -317,18 +321,17 @@ def dashboard_view(request):
             'current_date': timezone.now().date(),
             'current_time': timezone.now().time(),
             'current_datetime': timezone.now(),
-            'user_role': user.rol if user.rol else 'Usuario',
-            'employee_name': user.empleado_nombre if user.empleado_nombre else user.nombreusuario,
-            'user_initials': user_initials,
-            'user_full_name': user.empleado_nombre or user.nombreusuario,
+            'nexo_user_role': usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario',
+            'employee_name': usuario_actual.empleado_nombre if hasattr(usuario_actual, 'empleado_nombre') and usuario_actual.empleado_nombre else (usuario_actual.nombreusuario if usuario_actual else 'Invitado'),
+            'user_full_name': usuario_actual.empleado_nombre if hasattr(usuario_actual, 'empleado_nombre') and usuario_actual.empleado_nombre else (usuario_actual.nombreusuario if usuario_actual else 'Invitado'),
             
             # Configuración para JavaScript
             'dashboard_config': json.dumps({
                 'refresh_interval': 30000,
                 'chart_animation_duration': 1000,
                 'notification_duration': 5000,
-                'user_id': user.idusuario,
-                'user_role': user.rol,
+                'user_id': usuario_actual.idusuario if usuario_actual else '',
+                'user_role': usuario_actual.rol if usuario_actual else '',
                 'ubicaciones': DashboardService.get_ubicaciones()
             })
         }
@@ -336,14 +339,16 @@ def dashboard_view(request):
         return render(request, 'dashboard/dashboard.html', context)
         
     except Exception as e:
-        logger.error(f'Error al cargar el dashboard para usuario {user.nombreusuario}: {str(e)}')
+        logger.error(f'Error al cargar el dashboard para usuario {getattr(usuario_actual, 'nombreusuario', 'Invitado')}: {str(e)}')
         messages.error(request, f'Error al cargar el dashboard: {str(e)}')
         return render(request, 'dashboard/dashboard.html', {
-            'user': user,
+            'usuario_actual': usuario_actual,
+            'user_iniciales': user_iniciales,
             'error': True,
             'error_message': str(e),
             'page_title': 'Dashboard - Error',
-            'system_name': 'Sistema de Inventario y ventas NEXO'
+            'system_name': 'Sistema de Inventario y ventas NEXO',
+            'nexo_user_role': usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario',
         })
 
 @require_http_methods(["POST"])
