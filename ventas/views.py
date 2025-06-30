@@ -1,7 +1,7 @@
 # Create your views here.
 # ventas/views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, Http404
 from django.contrib import messages
 from django.db import connection, transaction
 from django.core.paginator import Paginator
@@ -9,6 +9,8 @@ from django.db.models import Q, Sum, Count
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.messages import get_messages
+
 import json
 import logging
 from datetime import date, timedelta
@@ -27,7 +29,12 @@ from .forms import VentaForm, DetalleVentaForm, FiltroVentasForm, BusquedaRapida
 
 logger = logging.getLogger('nexo.ventas')
 
+# Utilidad para limpiar mensajes
+def clear_messages(request):
+    list(get_messages(request))
+
 @nexo_login_required
+@require_http_methods(["GET"])
 def lista_ventas(request):
     """
     Vista principal que muestra la lista de ventas con filtros
@@ -39,7 +46,7 @@ def lista_ventas(request):
         ventas = Venta.objects.select_related(
             'codcliente__idpersonacliente',
             'idusuarioventa'
-        ).order_by('-fechaventa')
+        ).exclude(id_venta__isnull=True).order_by('-fechaventa')
         if filtro_form.is_valid():
             if filtro_form.cleaned_data['fecha_inicio']:
                 ventas = ventas.filter(fechaventa__date__gte=filtro_form.cleaned_data['fecha_inicio'])
@@ -116,6 +123,7 @@ def lista_ventas(request):
         return render(request, 'ventas/lista_ventas.html', context)
     except Exception as e:
         logger.error(f"Error en lista_ventas: {str(e)}")
+        clear_messages(request)
         messages.error(request, 'No se pudo cargar la lista de ventas. Por favor, intente nuevamente o contacte a soporte si el problema persiste.')
         usuario_actual = getattr(request, 'nexo_user', None)
         user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
@@ -135,6 +143,7 @@ def lista_ventas(request):
         })
 
 @nexo_login_required
+@require_http_methods(["GET", "POST"])
 def crear_venta(request):
     """
     Vista para crear una nueva venta
@@ -170,6 +179,7 @@ def crear_venta(request):
         
     except Exception as e:
         logger.error(f"Error en crear_venta: {str(e)}")
+        clear_messages(request)
         messages.error(request, 'Ocurrió un error al intentar registrar la venta. Revise los datos e intente nuevamente.')
         return redirect('ventas:lista_ventas')
 
@@ -183,6 +193,7 @@ def procesar_venta_nueva(request):
         detalles_json = request.POST.get('detalles_venta')
         
         if not cliente_id or not detalles_json:
+            clear_messages(request)
             messages.error(request, 'Debe seleccionar un cliente y agregar al menos un producto para registrar la venta.')
             return redirect('ventas:crear_venta')
         
@@ -190,6 +201,7 @@ def procesar_venta_nueva(request):
         try:
             detalles = json.loads(detalles_json)
         except json.JSONDecodeError:
+            clear_messages(request)
             messages.error(request, 'El formato de los productos es inválido. Por favor, revise la información e intente de nuevo.')
             return redirect('ventas:crear_venta')
         
@@ -203,6 +215,7 @@ def procesar_venta_nueva(request):
         logger.info(f"Venta creada exitosamente por usuario {request.nexo_user.nombreusuario}")
         # Obtener el último ID de venta creada
         nueva_venta = Venta.objects.filter(idusuarioventa=request.nexo_user).order_by('-id_venta').first()
+        clear_messages(request)
         if nueva_venta:
             messages.success(request, f'¡Venta #{nueva_venta.id_venta} registrada exitosamente! Puede ver el detalle en la lista de ventas.')
         else:
@@ -210,15 +223,21 @@ def procesar_venta_nueva(request):
         return redirect('ventas:lista_ventas')
     except Exception as e:
         logger.error(f"Error al procesar venta nueva: {str(e)}")
+        clear_messages(request)
         messages.error(request, 'No se pudo registrar la venta. Por favor, revise los datos e intente nuevamente.')
         return redirect('ventas:crear_venta')
 
 @nexo_login_required
+@require_http_methods(["GET"])
 def detalle_venta(request, venta_id):
     """
     Vista para mostrar el detalle de una venta
     """
     try:
+        estado, msg = Venta.verificar_estado_venta(venta_id)
+        if estado is None:
+            messages.error(request, f'No se puede mostrar el detalle: {msg}')
+            return redirect('ventas:lista_ventas')
         venta = get_object_or_404(
             Venta.objects.select_related(
                 'codcliente__idpersonacliente',
@@ -248,8 +267,8 @@ def detalle_venta(request, venta_id):
         usuario_actual = request.nexo_user
         user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
         user_rol = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
-        puede_editar = user_rol in ['admin', 'gerente', 'encargado_ventas'] and venta.estado == 'REALIZADA'
-        puede_anular = user_rol in ['admin', 'gerente'] and venta.estado == 'REALIZADA'
+        puede_editar = user_rol in ['admin', 'gerente', 'encargado_ventas'] and estado == 'REALIZADA'
+        puede_anular = user_rol in ['admin', 'gerente'] and estado == 'REALIZADA'
         # Calcular subtotal sin IVA correctamente
         total_venta = float(venta.total or 0)
         subtotal_sin_iva = total_venta / 1.15 if total_venta else 0
@@ -270,56 +289,11 @@ def detalle_venta(request, venta_id):
         return render(request, 'ventas/detalle_venta.html', context)
     except Exception as e:
         logger.error(f"Error en detalle_venta: {str(e)}")
-        messages.error(request, 'No se pudo cargar el detalle de la venta seleccionada. Intente nuevamente.')
+        clear_messages(request)
+        messages.error(request, 'No se pudo cargar el detalle de la venta.')
         return redirect('ventas:lista_ventas')
 
-@nexo_role_required(['admin', 'gerente', 'encargado_ventas'])
-def editar_venta(request, venta_id):
-    """
-    Vista para editar una venta existente
-    Solo para usuarios con permisos específicos
-    """
-    try:
-        venta = get_object_or_404(Venta, id_venta=venta_id, estado='REALIZADA')
-        
-        if request.method == 'POST':
-            return procesar_edicion_venta(request, venta_id)
-        
-        # GET - Mostrar formulario de edición
-        venta_form = VentaForm(instance=venta)
-        detalle_form = DetalleVentaForm()
-        
-        # Obtener detalles actuales
-        detalles_actuales = Detalleventa.objects.filter(
-            idventa=venta
-        ).select_related('idproventa')
-        
-        productos_disponibles = obtener_productos_disponibles()
-        
-        usuario_actual = request.nexo_user
-        user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
-        user_rol = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
-        context = {
-            'page_title': f'Editar Venta #{venta.id_venta} - NEXO',
-            'venta': venta,
-            'venta_form': venta_form,
-            'detalle_form': detalle_form,
-            'detalles_actuales': detalles_actuales,
-            'productos_disponibles': productos_disponibles,
-            'usuario_actual': usuario_actual,
-            'user_iniciales': user_iniciales,
-            'user_rol': user_rol,
-        }
-        
-        return render(request, 'ventas/editar_venta.html', context)
-        
-    except Venta.DoesNotExist:
-        messages.error(request, 'La venta que intenta editar no existe, ya fue anulada o no está disponible.')
-        return redirect('ventas:lista_ventas')
-    except Exception as e:
-        messages.error(request, 'Ocurrió un error inesperado al intentar editar la venta. Si el problema persiste, contacte a soporte.')
-        return redirect('ventas:lista_ventas')
-
+@nexo_login_required
 def procesar_edicion_venta(request, venta_id):
     """
     Procesa la edición de una venta usando el procedimiento almacenado EditarVenta
@@ -327,42 +301,66 @@ def procesar_edicion_venta(request, venta_id):
     try:
         detalles_json = request.POST.get('detalles_venta')
         if not detalles_json:
+            clear_messages(request)
             messages.error(request, 'Debe agregar al menos un producto válido para editar la venta.')
             return redirect('ventas:editar_venta', venta_id=venta_id)
-        with connection.cursor() as cursor:
-            cursor.callproc('EditarVenta', [
-                int(venta_id),                # ID de la venta
-                request.nexo_user.idusuario,  # ID del usuario
-                detalles_json                 # JSON con nuevos detalles
-            ])
-        logger.info(f"Venta {venta_id} editada por usuario {request.nexo_user.nombreusuario}")
-        messages.success(request, f'¡Venta #{venta_id} actualizada correctamente!')
-        return redirect('ventas:detalle_venta', venta_id=venta_id)
+        try:
+            Venta.editar(venta_id, request.nexo_user.idusuario, detalles_json)
+            logger.info(f"Venta {venta_id} editada por usuario {request.nexo_user.nombreusuario}")
+            clear_messages(request)
+            messages.success(request, f'¡Venta #{venta_id} actualizada correctamente!')
+            return redirect('ventas:detalle_venta', venta_id=venta_id)
+        except Exception as e:
+            clear_messages(request)
+            messages.error(request, f'No se pudo actualizar la venta: {str(e)}')
+            return redirect('ventas:editar_venta', venta_id=venta_id)
     except Exception as e:
-        messages.error(request, 'No se pudo actualizar la venta. Por favor, revise los datos e intente nuevamente.')
+        clear_messages(request)
+        messages.error(request, f'No se pudo actualizar la venta. Detalle: {str(e)}')
         return redirect('ventas:editar_venta', venta_id=venta_id)
 
 @nexo_role_required(['admin', 'gerente'])
+@require_http_methods(["POST"])
 def anular_venta(request, venta_id):
     """
-    Vista para anular una venta (con advertencia tipo CRUD)
+    Vista para anular una venta (solo POST, robusta y segura)
     Solo para administradores y gerentes
     """
     try:
-        venta = get_object_or_404(Venta, id_venta=venta_id, estado='REALIZADA')
-        if request.GET.get('confirm') == '1':
-            with connection.cursor() as cursor:
-                cursor.callproc('AnularVenta', [int(venta_id)])
-            logger.info(f"Venta {venta_id} anulada por usuario {request.nexo_user.nombreusuario}")
-            # Mensaje tipo toast CRUD visual
-            messages.success(request, f'<i class="fas fa-ban"></i> Venta <b>#{venta_id}</b> anulada correctamente. El stock fue restablecido.')
+        # Validación robusta del ID antes de cualquier lógica
+        try:
+            venta_id_int = int(venta_id)
+            if venta_id_int <= 0:
+                raise ValueError("ID de venta debe ser mayor que cero")
+        except (TypeError, ValueError):
+            logger.error(f"[ANULAR] ID de venta inválido recibido: {venta_id!r}")
+            clear_messages(request)
+            messages.error(request, 'No se puede anular: ID de venta vacío o inválido.')
             return redirect('ventas:lista_ventas')
-        else:
-            # Mensaje de advertencia visual tipo CRUD
-            messages.warning(request, f'<i class="fas fa-exclamation-triangle"></i> ¿Está seguro que desea anular la venta <b>#{venta_id}</b>? Esta acción no se puede deshacer. <a href="{request.path}?confirm=1" class="text-red-600 underline font-bold ml-2">Sí, anular ahora</a>')
-            return redirect('ventas:detalle_venta', venta_id=venta_id)
+        logger.info(f"[ANULAR] venta_id recibido en view: {venta_id!r} (tipo: {type(venta_id)})")
+        estado, msg = Venta.verificar_estado_venta(venta_id_int)
+        if estado is None:
+            clear_messages(request)
+            messages.error(request, f'No se puede anular: {msg}')
+            return redirect('ventas:lista_ventas')
+        if estado != 'REALIZADA':
+            clear_messages(request)
+            messages.error(request, f'Solo se pueden anular ventas en estado REALIZADA. Estado actual: {estado}')
+            return redirect('ventas:lista_ventas')
+        try:
+            Venta.anular(venta_id_int)
+            logger.info(f"Venta {venta_id_int} anulada por usuario {request.nexo_user.nombreusuario}")
+            clear_messages(request)
+            messages.success(request, f'<i class="fas fa-ban"></i> Venta <b>#{venta_id_int}</b> anulada correctamente. El stock fue restablecido.')
+        except Exception as e:
+            logger.error(f"Error SQL al anular venta {venta_id_int}: {str(e)}")
+            clear_messages(request)
+            messages.error(request, f'<i class="fas fa-times-circle"></i> {str(e)}')
+        return redirect('ventas:lista_ventas')
     except Exception as e:
-        messages.error(request, '<i class="fas fa-times-circle"></i> No se pudo anular la venta. Si el problema persiste, contacte a soporte.')
+        logger.error(f"Error general en anular_venta: {str(e)}")
+        clear_messages(request)
+        messages.error(request, f'<i class="fas fa-times-circle"></i> No se pudo anular la venta: {str(e)}')
         return redirect('ventas:lista_ventas')
 
 @ajax_login_required
@@ -425,3 +423,47 @@ def estadisticas_ventas_ajax(request):
             'success': False,
             'message': 'Error al obtener estadísticas'
         })
+
+@nexo_role_required(['admin', 'gerente', 'encargado_ventas'])
+@require_http_methods(["GET", "POST"])
+def editar_venta(request, venta_id):
+    """
+    Vista para editar una venta existente
+    Solo para usuarios con permisos específicos y ventas en estado REALIZADA
+    """
+    try:
+        estado, msg = Venta.verificar_estado_venta(venta_id)
+        if estado is None:
+            messages.error(request, f'No se puede editar: {msg}')
+            return redirect('ventas:lista_ventas')
+        if estado != 'REALIZADA':
+            messages.error(request, f'Solo se pueden editar ventas en estado REALIZADA. Estado actual: {estado}')
+            return redirect('ventas:lista_ventas')
+        if request.method == 'POST':
+            return procesar_edicion_venta(request, venta_id)
+        # GET - Mostrar formulario de edición
+        venta = get_object_or_404(Venta, id_venta=venta_id)
+        venta_form = VentaForm(instance=venta)
+        detalle_form = DetalleVentaForm()
+        detalles_actuales = Detalleventa.objects.filter(idventa=venta).select_related('idproventa')
+        productos_disponibles = obtener_productos_disponibles()
+        usuario_actual = request.nexo_user
+        user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
+        user_rol = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
+        context = {
+            'page_title': f'Editar Venta #{venta.id_venta} - NEXO',
+            'venta': venta,
+            'venta_form': venta_form,
+            'detalle_form': detalle_form,
+            'detalles_actuales': detalles_actuales,
+            'productos_disponibles': productos_disponibles,
+            'usuario_actual': usuario_actual,
+            'user_iniciales': user_iniciales,
+            'user_rol': user_rol,
+        }
+        return render(request, 'ventas/editar_venta.html', context)
+    except Exception as e:
+        logger.error(f"Error en editar_venta: {str(e)}")
+        clear_messages(request)
+        messages.error(request, 'No se pudo cargar la edición de la venta.')
+        return redirect('ventas:lista_ventas')

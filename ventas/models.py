@@ -15,6 +15,7 @@ from core_data.models import (
     Categoria
 )
 from django.utils import timezone
+from django.db import connection, transaction, IntegrityError
 
 # Reexportar para uso en el módulo ventas
 __all__ = [
@@ -119,4 +120,71 @@ def get_detalleventa_or_404(idventa, idproventa):
     from core_data.models import Detalleventa
     return get_object_or_404(Detalleventa, idventa=idventa, idproventa=idproventa)
 
-# Elimina prints y consultas directas de ventas (no apropiadas para producción)
+class VentaManager:
+    @staticmethod
+    def verificar_estado_venta(venta_id):
+        """
+        Verifica el estado de una venta específica (REALIZADA, ANULADA, etc.) usando SQL crudo.
+        Devuelve (estado, mensaje). Si no existe, estado=None.
+        """
+        import logging
+        logger = logging.getLogger('nexo.ventas')
+        # Validar el ID antes de consultar
+        if not venta_id or str(venta_id).strip() == '':
+            logger.warning(f'[ANULAR] ID de venta vacío o None recibido: {venta_id!r}')
+            return None, "ID de venta vacío o inválido"
+        try:
+            venta_id_int = int(venta_id)
+        except Exception:
+            logger.warning(f'[ANULAR] ID de venta no convertible a int: {venta_id!r}')
+            return None, "ID de venta inválido"
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT estado FROM venta WHERE id_venta = %s", [venta_id_int])
+                row = cursor.fetchone()
+                if not row:
+                    return None, "Venta no encontrada"
+                estado_val = row[0]
+                if estado_val is None:
+                    return None, "Estado no definido"
+                return str(estado_val).strip().upper(), "OK"
+        except Exception as e:
+            logger.error(f'Error SQL al verificar estado de venta {venta_id}: {str(e)}')
+            return None, f"Error al verificar estado: {str(e)}"
+
+    @staticmethod
+    def anular(venta_id):
+        """
+        Anula una venta solo si está REALIZADA. Lanza excepción si no es posible.
+        """
+        estado, msg = VentaManager.verificar_estado_venta(venta_id)
+        if estado is None:
+            raise Exception(f"No se puede anular: {msg}")
+        if estado != 'REALIZADA':
+            raise Exception(f"Solo se pueden anular ventas en estado REALIZADA. Estado actual: {estado}")
+        try:
+            with connection.cursor() as cursor:
+                cursor.callproc('AnularVenta', [int(venta_id)])
+        except Exception as e:
+            raise Exception(str(e))
+
+    @staticmethod
+    def editar(venta_id, usuario_id, detalles_json):
+        """
+        Edita una venta solo si está REALIZADA. Lanza excepción si no es posible.
+        """
+        estado, msg = VentaManager.verificar_estado_venta(venta_id)
+        if estado is None:
+            raise Exception(f"No se puede editar: {msg}")
+        if estado != 'REALIZADA':
+            raise Exception(f"Solo se pueden editar ventas en estado REALIZADA. Estado actual: {estado}")
+        try:
+            with connection.cursor() as cursor:
+                cursor.callproc('EditarVenta', [int(venta_id), int(usuario_id), detalles_json])
+        except Exception as e:
+            raise Exception(str(e))
+
+# Monkey patch para acceso fácil desde views
+Venta.anular = VentaManager.anular
+Venta.editar = VentaManager.editar
+Venta.verificar_estado_venta = staticmethod(VentaManager.verificar_estado_venta)

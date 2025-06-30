@@ -200,8 +200,7 @@ class Venta(models.Model):
         ('REALIZADA', 'Realizada'),
         ('ANULADA', 'Anulada'),
     ]
-    
-    id_venta = models.AutoField(primary_key=True)
+    id_venta = models.AutoField(primary_key=True, db_column='id_venta')  # Asegura el mapeo correcto
     fechaventa = models.DateTimeField(db_column='fechaVenta', blank=True, null=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     estado = models.CharField(max_length=9, choices=ESTADO_CHOICES, default='REALIZADA')
@@ -236,6 +235,7 @@ class Detalleventa(models.Model):
     idventa = models.ForeignKey(
         Venta,
         db_column='idVenta',
+        to_field='id_venta',  # Relaciona con el campo correcto de Venta
         on_delete=models.CASCADE,
         primary_key=False
     )
