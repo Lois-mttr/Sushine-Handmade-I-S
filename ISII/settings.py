@@ -98,27 +98,27 @@ CACHES = {
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.mysql',
-         'NAME': 'nexodb',
-         'USER': 'root',
-         'PASSWORD': 'Luisa*2006',
-        'HOST': '127.0.0.1',
-         'PORT': '3306',
-     }
- }
-
 # DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'nexodb',
-#         'USER': 'root',
-#         'PASSWORD': 'lili123456',
+#      'default': {
+#          'ENGINE': 'django.db.backends.mysql',
+#          'NAME': 'nexodb',
+#          'USER': 'root',
+#          'PASSWORD': 'Luisa*2006',
 #         'HOST': '127.0.0.1',
-#         'PORT': '3306',
-#     }
-# }
+#          'PORT': '3306',
+#      }
+#  }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'nexodb',
+        'USER': 'root',
+        'PASSWORD': 'lili123456',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+    }
+}
 
 # Cache configuration (para el sistema de bloqueo de IPs)
 CACHES = {

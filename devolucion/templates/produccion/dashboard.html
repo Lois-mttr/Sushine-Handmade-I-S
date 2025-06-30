@@ -1,0 +1,263 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - NEXO{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_subtitle %}{{ page_subtitle }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #eaeef3;
+        box-shadow: 0 4px 6px -1px rgba(57, 191, 178, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px -3px rgba(57, 191, 178, 0.1);
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #39bfb2 0%, #2da89e 100%);
+        color: white;
+    }
+    
+    .stat-card.secondary {
+        background: linear-gradient(135deg, #f2ce16 0%, #f29d35 100%);
+    }
+    
+    .stat-card.tertiary {
+        background: linear-gradient(135deg, #f29d35 0%, #f28627 100%);
+    }
+    
+    .stat-card.quaternary {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6" style="background-color: #f2f2f2; min-height: 100vh; padding: 24px;">
+    
+    <!-- Breadcrumb -->
+    <nav class="flex" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="{% url 'crud:produccion_list' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary">
+                    <i class="fas fa-list mr-2"></i>
+                    Producciones
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <span class="text-sm font-medium text-gray-500">Dashboard</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Estadísticas principales -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Producciones -->
+        <div class="dashboard-card stat-card p-6 text-center">
+            <div class="flex items-center justify-center mb-4">
+                <div class="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                    <i class="fas fa-industry text-2xl"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold mb-2">{{ stats.total_producciones }}</div>
+            <div class="text-sm opacity-90">Total Producciones</div>
+        </div>
+
+        <!-- Producciones Hoy -->
+        <div class="dashboard-card stat-card secondary p-6 text-center">
+            <div class="flex items-center justify-center mb-4">
+                <div class="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                    <i class="fas fa-calendar-day text-2xl"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold mb-2">{{ stats.producciones_hoy }}</div>
+            <div class="text-sm opacity-90">Producciones Hoy</div>
+        </div>
+
+        <!-- Producciones Semana -->
+        <div class="dashboard-card stat-card tertiary p-6 text-center">
+            <div class="flex items-center justify-center mb-4">
+                <div class="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                    <i class="fas fa-calendar-week text-2xl"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold mb-2">{{ stats.producciones_semana }}</div>
+            <div class="text-sm opacity-90">Esta Semana</div>
+        </div>
+
+        <!-- Producciones Mes -->
+        <div class="dashboard-card stat-card quaternary p-6 text-center">
+            <div class="flex items-center justify-center mb-4">
+                <div class="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                    <i class="fas fa-calendar-alt text-2xl"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold mb-2">{{ stats.producciones_mes }}</div>
+            <div class="text-sm opacity-90">Este Mes</div>
+        </div>
+    </div>
+
+    <!-- Sección de análisis -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Productos más producidos -->
+        <div class="dashboard-card">
+            <div class="px-6 py-4 border-b" style="border-color: #eaeef3; background: linear-gradient(135deg, #39bfb2 0%, #2da89e 100%);">
+                <h3 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fas fa-trophy mr-2"></i>
+                    Productos Más Producidos
+                </h3>
+            </div>
+            <div class="p-6">
+                {% if productos_top %}
+                    <div class="space-y-4">
+                        {% for producto in productos_top %}
+                        <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: rgba(57, 191, 178, 0.05);">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center mr-3" style="background: linear-gradient(135deg, #39bfb2 0%, #2da89e 100%);">
+                                    <i class="fas fa-box text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900">{{ producto.0 }}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold" style="color: #39bfb2;">{{ producto.1 }}</div>
+                                <div class="text-xs text-gray-500">unidades</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <i class="fas fa-inbox text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-500">No hay datos de productos</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Empleados más productivos -->
+        <div class="dashboard-card">
+            <div class="px-6 py-4 border-b" style="border-color: #eaeef3; background: linear-gradient(135deg, #f2ce16 0%, #f29d35 100%);">
+                <h3 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fas fa-users mr-2"></i>
+                    Empleados Más Productivos
+                </h3>
+            </div>
+            <div class="p-6">
+                {% if empleados_top %}
+                    <div class="space-y-4">
+                        {% for empleado in empleados_top %}
+                        <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: rgba(242, 206, 22, 0.05);">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center mr-3" style="background: linear-gradient(135deg, #f2ce16 0%, #f29d35 100%);">
+                                    <i class="fas fa-user text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900">{{ empleado.0 }}</div>
+                                    <div class="text-xs text-gray-500">{{ empleado.1 }} producciones</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold" style="color: #f2ce16;">{{ empleado.2 }}</div>
+                                <div class="text-xs text-gray-500">unidades</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <i class="fas fa-user-slash text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-500">No hay datos de empleados</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones rápidas -->
+    <div class="dashboard-card p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-bolt mr-2" style="color: #39bfb2;"></i>
+            Acciones Rápidas
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{% url 'crud:produccion_create' %}" class="flex items-center p-4 rounded-lg border-2 border-dashed hover:border-solid transition-all duration-200" style="border-color: #39bfb2; color: #39bfb2;">
+                <i class="fas fa-plus-circle text-2xl mr-3"></i>
+                <div>
+                    <div class="font-medium">Nueva Producción</div>
+                    <div class="text-sm opacity-70">Registrar nueva producción</div>
+                </div>
+            </a>
+            
+            <a href="{% url 'crud:list' %}" class="flex items-center p-4 rounded-lg border-2 border-dashed hover:border-solid transition-all duration-200" style="border-color: #f2ce16; color: #f2ce16;">
+                <i class="fas fa-list text-2xl mr-3"></i>
+                <div>
+                    <div class="font-medium">Ver Todas</div>
+                    <div class="text-sm opacity-70">Lista de producciones</div>
+                </div>
+            </a>
+            
+            <button onclick="window.print()" class="flex items-center p-4 rounded-lg border-2 border-dashed hover:border-solid transition-all duration-200" style="border-color: #f28627; color: #f28627;">
+                <i class="fas fa-print text-2xl mr-3"></i>
+                <div>
+                    <div class="font-medium">Imprimir Reporte</div>
+                    <div class="text-sm opacity-70">Generar reporte</div>
+                </div>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animaciones de entrada para las tarjetas
+    const cards = document.querySelectorAll('.dashboard-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // Contador animado para las estadísticas
+    function animateCounters() {
+        const counters = document.querySelectorAll('.stat-card .text-3xl');
+        
+        counters.forEach(counter => {
+            const target = parseInt(counter.textContent);
+            const increment = target / 50;
+            let current = 0;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                counter.textContent = Math.floor(current);
+            }, 30);
+        });
+    }
+    
+    // Ejecutar animación de contadores después de un breve delay
+    setTimeout(animateCounters, 500);
+});
+</script>
+{% endblock %}
