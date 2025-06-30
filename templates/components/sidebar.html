@@ -88,7 +88,7 @@
         </a>
 
         <!-- Registrar Cliente -->
-        <a href="#" 
+        <a href="{% url 'clientes:list' %}" 
            class="nexo-menu-item {% if request.resolver_match.url_name == 'clientes' %}nexo-menu-active{% endif %}"
            data-tooltip="Registrar Cliente">
             <div class="nexo-menu-icon nexo-icon-clientes">

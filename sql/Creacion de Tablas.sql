@@ -130,3 +130,8 @@ CREATE TABLE DetalleProduccion (
     FOREIGN KEY (id_producto) REFERENCES Producto(id_producto),
     PRIMARY KEY (id_produccion, id_producto)
 );
+
+
+-- Alteracion de Tablas
+ALTER TABLE Persona MODIFY estadoPersona TINYINT(1);
+ALTER TABLE Cliente MODIFY estadoCliente TINYINT(1);
