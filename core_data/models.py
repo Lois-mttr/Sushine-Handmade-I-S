@@ -230,10 +230,20 @@ class Venta(models.Model):
         return f"Venta {self.id_venta} - {self.fechaventa}"
 
 class Detalleventa(models.Model):
-    idventa = models.ForeignKey(Venta, models.DO_NOTHING, db_column='idVenta')
-    idproventa = models.ForeignKey(Producto, models.DO_NOTHING, db_column='idProVenta')
-    cantidadventa = models.IntegerField(db_column='cantidadVenta', blank=True, null=True)
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    idventa = models.ForeignKey(
+        Venta,
+        db_column='idVenta',
+        on_delete=models.CASCADE,
+        primary_key=False
+    )
+    idproventa = models.ForeignKey(
+        Producto,
+        db_column='idProVenta',
+        on_delete=models.CASCADE,
+        primary_key=False
+    )
+    cantidadventa = models.IntegerField(db_column='cantidadVenta')
+    subtotal = models.DecimalField(db_column='subtotal', max_digits=10, decimal_places=2)
 
     class Meta:
         managed = False
