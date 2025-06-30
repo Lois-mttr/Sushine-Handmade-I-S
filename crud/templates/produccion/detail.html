@@ -1,0 +1,546 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Detalle Producción #{{ produccion.idproduccion }} - NEXO{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-eye mr-2" style="color: {{ colores.primary }};"></i>Detalle Producción #{{ produccion.idproduccion }}
+{% endblock %}
+
+{% block page_subtitle %}
+    {{ page_subtitle }}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card {
+        background: {{ colores.white }};
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(57, 191, 178, 0.1);
+        border: 1px solid {{ colores.bg_light }};
+        transition: all 0.3s ease;
+    }
+    
+    .detail-card:hover {
+        box-shadow: 0 8px 15px -3px rgba(57, 191, 178, 0.15);
+    }
+    
+    .status-badge-activo {
+        background: linear-gradient(135deg, {{ colores.success }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(57, 191, 178, 0.2);
+    }
+    
+    .status-badge-inactivo {
+        background: linear-gradient(135deg, {{ colores.danger }} 0%, #d07010 100%);
+        color: {{ colores.white }};
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(242, 134, 39, 0.2);
+    }
+    
+    .btn-nexo-primary {
+        background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(57, 191, 178, 0.2);
+    }
+    
+    .btn-nexo-primary:hover {
+        background: linear-gradient(135deg, #2da89e 0%, #258a7f 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(57, 191, 178, 0.3);
+        color: {{ colores.white }};
+        text-decoration: none;
+    }
+    
+    .btn-nexo-warning {
+        background: linear-gradient(135deg, {{ colores.warning }} 0%, {{ colores.accent_orange }} 100%);
+        color: {{ colores.text_dark }};
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(242, 206, 22, 0.2);
+    }
+    
+    .btn-nexo-warning:hover {
+        background: linear-gradient(135deg, #e0b800 0%, #e08a20 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(242, 206, 22, 0.3);
+        color: {{ colores.text_dark }};
+        text-decoration: none;
+    }
+    
+    .btn-nexo-danger {
+        background: linear-gradient(135deg, {{ colores.danger }} 0%, #d07010 100%);
+        color: {{ colores.white }};
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(242, 134, 39, 0.2);
+    }
+    
+    .btn-nexo-danger:hover {
+        background: linear-gradient(135deg, #d07010 0%, #b85c0a 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(242, 134, 39, 0.3);
+        color: {{ colores.white }};
+        text-decoration: none;
+    }
+    
+    .btn-disabled {
+        background: #9ca3af !important;
+        color: {{ colores.white }} !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+        pointer-events: none !important;
+        border: none !important;
+    }
+    
+    .btn-disabled:hover {
+        background: #9ca3af !important;
+        transform: none !important;
+        box-shadow: none !important;
+        color: {{ colores.white }} !important;
+    }
+    
+    .info-item {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background: {{ colores.bg_very_light }};
+        border-left: 4px solid {{ colores.primary }};
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: {{ colores.text_dark }};
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+        color: {{ colores.text_medium }};
+        font-size: 1rem;
+    }
+    
+    .summary-card {
+        background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 6px -1px rgba(57, 191, 178, 0.2);
+    }
+    
+    .summary-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .summary-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+    }
+    
+    .product-row {
+        transition: all 0.2s ease;
+    }
+    
+    .product-row:hover {
+        background-color: {{ colores.bg_very_light }};
+        transform: translateX(4px);
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @media (max-width: 768px) {
+        .detail-card {
+            margin: 0 -0.5rem;
+        }
+        
+        .summary-value {
+            font-size: 1.5rem;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .btn-group .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
+    <div class="max-w-6xl mx-auto">
+        <!-- Botones de Acción CORREGIDOS: Usar estado_real del contexto -->
+        <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <a href="{% url 'crud:produccion_list' %}" 
+               class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>Volver a Lista
+            </a>
+            
+            <div class="btn-group flex flex-wrap gap-2">
+                {% if estado_real %}
+                    <!-- Solo mostrar botones de edición y eliminación si está ACTIVO -->
+                    <a href="{% url 'crud:produccion_edit' produccion.idproduccion %}" 
+                       class="btn-nexo-warning inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium">
+                        <i class="fas fa-edit mr-2"></i>Editar
+                    </a>
+                    <button type="button" 
+                            class="btn-nexo-danger inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium"
+                            onclick="confirmarEliminacion({{ produccion.idproduccion }})">
+                        <i class="fas fa-trash-alt mr-2"></i>Dar de Baja
+                    </button>
+                {% else %}
+                    <!-- Mostrar botones deshabilitados si está INACTIVO -->
+                    <span class="btn-disabled inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium" 
+                          title="No se puede editar una producción inactiva">
+                        <i class="fas fa-edit mr-2"></i>Editar
+                    </span>
+                    <span class="btn-disabled inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium" 
+                          title="No se puede eliminar una producción inactiva">
+                        <i class="fas fa-ban mr-2"></i>Dar de Baja
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Información General -->
+        <div class="detail-card p-6 mb-6 fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold flex items-center" style="color: {{ colores.primary }};">
+                    <i class="fas fa-info-circle mr-2"></i>Información General
+                </h2>
+                {% if estado_real %}
+                    <span class="status-badge-activo">
+                        <i class="fas fa-check-circle mr-2"></i>Activo
+                    </span>
+                {% else %}
+                    <span class="status-badge-inactivo">
+                        <i class="fas fa-times-circle mr-2"></i>Inactivo
+                    </span>
+                {% endif %}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-hashtag mr-1"></i>ID Producción
+                    </div>
+                    <div class="info-value font-bold">#{{ produccion.idproduccion }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-calendar mr-1"></i>Fecha de Entrada
+                    </div>
+                    <div class="info-value">{{ produccion.fechaentrada|date:"d/m/Y" }}</div>
+                    <div class="text-xs text-gray-500 mt-1">{{ produccion.fechaentrada|date:"l, F j, Y" }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-user mr-1"></i>Usuario Responsable
+                    </div>
+                    <div class="info-value">{{ produccion.id_usuario.nombreusuario|default:"N/A" }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-clock mr-1"></i>Estado
+                    </div>
+                    <div class="info-value">
+                        {% if estado_real %}
+                            <span class="text-green-600 font-semibold">Activo</span>
+                        {% else %}
+                            <span class="text-red-600 font-semibold">Inactivo</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            {% if produccion.observacion %}
+            <div class="mt-6">
+                <div class="info-label">
+                    <i class="fas fa-sticky-note mr-1"></i>Observaciones
+                </div>
+                <div class="info-value bg-gray-50 p-3 rounded-lg mt-2">
+                    {{ produccion.observacion }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Resumen de Totales -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="summary-card fade-in">
+                <div class="summary-value">{{ detalles|length }}</div>
+                <div class="summary-label">
+                    <i class="fas fa-boxes mr-1"></i>Productos Diferentes
+                </div>
+            </div>
+            
+            <div class="summary-card fade-in" style="animation-delay: 0.1s;">
+                <div class="summary-value">{{ total_cantidad_items|intcomma }}</div>
+                <div class="summary-label">
+                    <i class="fas fa-cubes mr-1"></i>Unidades Totales
+                </div>
+            </div>
+            
+            <div class="summary-card fade-in" style="animation-delay: 0.2s;">
+                <div class="summary-value">C$ {{ total_costo_produccion|floatformat:2|intcomma }}</div>
+                <div class="summary-label">
+                    <i class="fas fa-dollar-sign mr-1"></i>Costo Total
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalle de Productos -->
+        <div class="detail-card p-6 fade-in" style="animation-delay: 0.3s;">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold flex items-center" style="color: {{ colores.primary }};">
+                    <i class="fas fa-list-ul mr-2"></i>Detalle de Productos
+                </h2>
+                <span class="text-sm text-gray-500">{{ detalles|length }} producto{{ detalles|length|pluralize }}</span>
+            </div>
+            
+            {% if detalles %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <i class="fas fa-cube mr-1"></i>Producto
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <i class="fas fa-sort-numeric-up mr-1"></i>Cantidad
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <i class="fas fa-dollar-sign mr-1"></i>Costo Unit.
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <i class="fas fa-calculator mr-1"></i>Subtotal
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <i class="fas fa-user-hard-hat mr-1"></i>Fabricante
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for detalle in detalles %}
+                            <tr class="product-row">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mr-3">
+                                            <i class="fas fa-box text-gray-500"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ detalle.nombreProducto }}
+                                            </div>
+                                            <div class="text-sm text-gray-500">
+                                                ID: {{ detalle.id_producto }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ detalle.cantidad|intcomma }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                    C$ {{ detalle.costo_unitario|floatformat:2|intcomma }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold" style="color: {{ colores.success }};">
+                                    C$ {{ detalle.subtotal|floatformat:2|intcomma }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-2">
+                                            <i class="fas fa-user text-gray-500 text-xs"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium">
+                                                {{ detalle.nombreFabricante }} {{ detalle.apellidoFabricante }}
+                                            </div>
+                                            {% if detalle.idFabricante %}
+                                                <div class="text-xs text-gray-400">
+                                                    ID: {{ detalle.idFabricante }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="bg-gray-50">
+                            <tr>
+                                <td colspan="3" class="px-6 py-4 text-right text-sm font-bold text-gray-900">
+                                    TOTAL GENERAL:
+                                </td>
+                                <td class="px-6 py-4 text-right text-lg font-bold" style="color: {{ colores.success }};">
+                                    C$ {{ total_costo_produccion|floatformat:2|intcomma }}
+                                </td>
+                                <td class="px-6 py-4"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <i class="fas fa-box-open fa-4x text-gray-400 mb-4"></i>
+                    <h4 class="text-lg font-medium text-gray-700 mb-2">No hay productos registrados</h4>
+                    <p class="text-gray-500">Esta producción no tiene productos asociados.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación para Eliminar (Solo si está activo) -->
+{% if estado_real %}
+<div id="confirmDeleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+    <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full" style="background-color: rgba(242,134,39,0.1);">
+                <i class="fas fa-exclamation-triangle fa-2x" style="color: {{ colores.danger }};"></i>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Confirmar Acción</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">
+                    ¿Está seguro de que desea dar de baja esta producción? Esta acción revertirá el stock de los productos asociados y marcará el registro como inactivo. No se podrá deshacer.
+                </p>
+            </div>
+            <div class="items-center px-4 py-3 space-x-2">
+                <button id="cancelDeleteButton" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-sm transition-colors">
+                    Cancelar
+                </button>
+                <form method="post" id="deleteForm" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="px-4 py-2 rounded-md text-white text-sm transition-colors" style="background-color: {{ colores.danger }};">
+                        Sí, Dar de Baja
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Función para confirmar eliminación (solo si está activo)
+    {% if estado_real %}
+    window.confirmarEliminacion = function(produccionId) {
+        const modal = document.getElementById('confirmDeleteModal');
+        const deleteForm = document.getElementById('deleteForm');
+        
+        if (modal && deleteForm) {
+            deleteForm.action = `/crud/produccion/${produccionId}/eliminar/`;
+            modal.classList.remove('hidden');
+        }
+    };
+
+    // Cerrar modal
+    const cancelButton = document.getElementById('cancelDeleteButton');
+    const modal = document.getElementById('confirmDeleteModal');
+
+    if (cancelButton && modal) {
+        cancelButton.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+        
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape" && !modal.classList.contains('hidden')) {
+                modal.classList.add('hidden');
+            }
+        });
+        
+        // Cerrar modal al hacer clic fuera
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+    {% endif %}
+
+    // Auto-cerrar mensajes después de 8 segundos
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            if (alert.parentElement) {
+                alert.style.transition = 'all 0.3s ease';
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    alert.remove();
+                }, 300);
+            }
+        }, 8000);
+    });
+
+    // Animación de entrada para las filas de productos
+    const productRows = document.querySelectorAll('.product-row');
+    productRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(-20px)';
+        setTimeout(() => {
+            row.style.transition = 'all 0.3s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateX(0)';
+        }, index * 100 + 500);
+
+    });
+
+    // Tooltip para botones deshabilitados
+    const disabledButtons = document.querySelectorAll('.btn-disabled');
+    disabledButtons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'absolute bg-gray-800 text-white text-xs rounded py-1 px-2 z-50';
+            tooltip.textContent = this.getAttribute('title');
+            tooltip.style.bottom = '100%';
+            tooltip.style.left = '50%';
+            tooltip.style.transform = 'translateX(-50%)';
+            tooltip.style.marginBottom = '5px';
+            
+            this.style.position = 'relative';
+            this.appendChild(tooltip);
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            const tooltip = this.querySelector('.absolute');
+            if (tooltip) {
+                tooltip.remove();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
