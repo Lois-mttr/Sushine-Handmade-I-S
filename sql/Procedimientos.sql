@@ -1155,3 +1155,5 @@ BEGIN
     COMMIT;
 END //
 DELIMITER ;
+
+--Alteracion de Base
