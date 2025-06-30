@@ -1,0 +1,113 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}Lista de Clientes - NEXO{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-users mr-2" style="color: {{ colores.primary }};"></i>Gestión de Clientes
+{% endblock %}
+
+{% block page_subtitle %}
+    Administra los registros de clientes del sistema. Aquí puedes ver, editar o dar de baja clientes.
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
+    <div class="max-w-7xl mx-auto">
+        <!-- Filtros de Búsqueda -->
+        <div class="filtros-card p-6 mb-6">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="form-label">Cédula</label>
+                    <input type="text" name="cedula" value="{{ filtros.cedula }}"
+                           class="form-input" placeholder="Buscar por cédula">
+                </div>
+                <div>
+                    <label class="form-label">Nombre</label>
+                    <input type="text" name="nombre" value="{{ filtros.nombre }}"
+                           class="form-input" placeholder="Buscar por nombre">
+                </div>
+                <div>
+                    <label class="form-label">Apellido</label>
+                    <input type="text" name="apellido" value="{{ filtros.apellido }}"
+                           class="form-input" placeholder="Buscar por apellido">
+                </div>
+                <div class="md:col-span-3 flex justify-end space-x-2">
+                    <button type="submit" class="btn-nexo-primary">
+                        <i class="fas fa-search mr-2"></i>Buscar
+                    </button>
+                    <a href="{% url 'clientes:list' %}" class="btn-cancel-form">
+                        <i class="fas fa-times mr-2"></i>Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabla de Clientes -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-{{ colores.primary }} to-{{ colores.success }} flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-white">
+                    <i class="fas fa-list-ul mr-2"></i>Registros de Clientes
+                </h3>
+                <a href="{% url 'clientes:create' %}" class="btn-nexo-primary">
+                    <i class="fas fa-plus mr-2"></i>Nuevo Cliente
+                </a>
+            </div>
+
+            {% if clientes %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left">Cédula</th>
+                            <th class="px-6 py-3 text-left">Nombre Completo</th>
+                            <th class="px-6 py-3 text-left">Correo</th>
+                            <th class="px-6 py-3 text-left">Dirección</th>
+                            <th class="px-6 py-3 text-center">Estado</th>
+                            <th class="px-6 py-3 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for cliente in clientes %}
+                        <tr class="{% if not cliente.estadoCliente %}row-inactive{% endif %}">
+                            <td class="px-6 py-4">{{ cliente.cedula }}</td>
+                            <td class="px-6 py-4">{{ cliente.nombre_completo }}</td>
+                            <td class="px-6 py-4">{{ cliente.correo|default:"-" }}</td>
+                            <td class="px-6 py-4">{{ cliente.direccion|truncatechars:20 }}</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="{% if cliente.estadoCliente %}badge-activo{% else %}badge-inactivo{% endif %}">
+                                    {{ cliente.estadoCliente|yesno:"Activo,Inactivo" }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center space-x-2">
+                                <a href="{% url 'clientes:detail' cliente.idCliente %}" class="action-btn-view">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'clientes:edit' cliente.idCliente %}" class="action-btn-edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="{% url 'clientes:delete' cliente.idCliente %}" method="post" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-btn-delete" onclick="return confirm('¿Dar de baja este cliente?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-user-slash fa-3x text-gray-400 mb-4"></i>
+                <h4 class="text-lg font-medium">No se encontraron clientes</h4>
+                <a href="{% url 'clientes:create' %}" class="btn-nexo-primary mt-4">
+                    <i class="fas fa-plus mr-2"></i>Registrar Primer Cliente
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

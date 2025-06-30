@@ -1,0 +1,302 @@
+<!-- inventario/templates/inventario/inventario_general.html -->
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos personalizados para el inventario */
+    .producto-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .producto-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        border-color: #39bfb2;
+    }
+    
+    .stock-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+    }
+    
+    .stock-alto { background-color: #10b981; color: white; }
+    .stock-medio { background-color: #f59e0b; color: white; }
+    .stock-bajo { background-color: #ef4444; color: white; }
+    .stock-agotado { background-color: #6b7280; color: white; }
+    
+    .filtros-container {
+        background: linear-gradient(135deg, #39bfb2 0%, #4ECDC4 100%);
+    }
+    /* Mejora la visibilidad del texto en los filtros */
+    .filtros-container input,
+    .filtros-container select,
+    .filtros-container option {
+        color: #222 !important;
+        background: #fff !important;
+    }
+    .filtros-container input::placeholder {
+        color: #888 !important;
+        opacity: 1;
+    }
+    .filtros-container label {
+        color: #222 !important;
+    }
+    
+    .categoria-tag {
+        background-color: #f2ce16;
+        color: #1f2937;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Header del Inventario -->
+    <div class="filtros-container text-white py-8 mb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold flex items-center">
+                        <i class="fas fa-boxes mr-3"></i>
+                        Inventario
+                    </h1>
+                    <p class="text-blue-100 mt-2">Gestión y control de productos por ubicación</p>
+                </div>
+                
+                <!-- Estadísticas rápidas -->
+                <div class="hidden md:flex space-x-6 items-center">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">{{ estadisticas.total_productos }}</div>
+                        <div class="text-sm text-blue-100">Total Productos</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-yellow-300">{{ estadisticas.productos_bajo_stock }}</div>
+                        <div class="text-sm text-blue-100">Bajo Stock</div>
+                    </div>
+                    {% if usuario_actual.rol == 'admin' %}
+                    <a href="{% url 'inventario:configurar_alertas' %}"
+                    class="ml-6 flex items-center px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-400 text-white rounded-lg shadow-lg hover:from-yellow-500 hover:to-orange-500 transition-all font-semibold text-sm group">
+                        <i class="fas fa-bell text-lg mr-2 group-hover:animate-bounce"></i>
+                        Configurar Alertas
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Filtros -->
+            <form method="GET" class="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Filtro de búsqueda -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-white mb-2">
+                            <i class="fas fa-search mr-2"></i>Buscar Producto
+                        </label>
+                        <div class="relative">
+                            <input type="text" 
+                                name="busqueda" 
+                                value="{{ filtros.busqueda }}"
+                                placeholder="Nombre, descripción o código..."
+                                class="w-full px-4 py-3 pl-10 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtro de ubicación -->
+                    <div>
+                        <label class="block text-sm font-medium text-white mb-2">
+                            <i class="fas fa-map-marker-alt mr-2"></i>Ubicación
+                        </label>
+                        <select name="ubicacion" 
+                                class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option value="">Todas las ubicaciones</option>
+                            {% for ubicacion in ubicaciones %}
+                                <option value="{{ ubicacion.id_ubicacion }}" {% if filtros.ubicacion_seleccionada|stringformat:"s" == ubicacion.id_ubicacion|stringformat:"s" %}selected{% endif %}>{{ ubicacion.nombreubicacion }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Filtro de categoría -->
+                    <div>
+                        <label class="block text-sm font-medium text-white mb-2">
+                            <i class="fas fa-tags mr-2"></i>Categoría
+                        </label>
+                        <select name="categoria" 
+                                class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option value="">Todas las categorías</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria.idcategoria }}" {% if filtros.categoria_seleccionada|stringformat:"s" == categoria.idcategoria|stringformat:"s" %}selected{% endif %}>{{ categoria.nombrecategoria }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end mt-4 space-x-3">
+                    <a href="{% url 'inventario:inventario_general' %}" 
+                    class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-times mr-2"></i>Limpiar
+                    </a>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-orange text-white rounded-lg hover:bg-orange-light transition-colors">
+                        <i class="fas fa-filter mr-2"></i>Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Grid de Productos -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        {% if productos %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {% for producto in productos %}
+                    <div class="producto-card bg-white rounded-xl overflow-hidden">
+                        <!-- Imagen del producto -->
+                        <div class="aspect-w-1 aspect-h-1 bg-gray-200 relative">
+                            {% if producto.imagenproductoruta %}
+                                <img src="{{ producto.imagenproductoruta }}" 
+                                    alt="{{ producto.nombreproducto }}"
+                                    class="w-full h-48 object-cover">
+                            {% else %}
+                                <div class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                    <i class="fas fa-image text-4xl text-gray-400"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Badge de categoría -->
+                            {% if producto.idcategoriapro %}
+                                <div class="absolute top-2 left-2">
+                                    <span class="categoria-tag">{{ producto.idcategoriapro.nombrecategoria }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Información del producto -->
+                        <div class="p-4">
+                            <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2">
+                                {{ producto.nombreproducto }}
+                            </h3>
+                            
+                            {% if producto.descripcionproducto %}
+                                <p class="text-sm text-gray-600 mb-3 line-clamp-2">
+                                    {{ producto.descripcionproducto }}
+                                </p>
+                            {% endif %}
+                            
+                            <!-- Información de ubicación -->
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                {{ producto.idubicacionpro.nombreubicacion }}
+                            </div>
+                            
+                            <!-- Existencias con colores -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-sm text-gray-600">Existencia:</div>
+                                <div class="flex space-x-2">
+                                    {% if producto.existenciaproducto == 0 %}
+                                        <span class="stock-badge stock-agotado">{{ producto.existenciaproducto }}</span>
+                                    {% elif producto.existenciaproducto <= producto.existenciaminima %}
+                                        <span class="stock-badge stock-bajo">{{ producto.existenciaproducto }}</span>
+                                    {% elif producto.existenciaproducto <= 20 %}
+                                        <span class="stock-badge stock-medio">{{ producto.existenciaproducto }}</span>
+                                    {% else %}
+                                        <span class="stock-badge stock-alto">{{ producto.existenciaproducto }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Precio -->
+                            {% if producto.precioproducto %}
+                                <div class="text-lg font-bold text-primary mb-4">
+                                    C$ {{ producto.precioproducto|stringformat:".2f" }}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Botón de detalle -->
+                            <a href="{% url 'inventario:detalle_producto_ubicacion' producto.idubicacionpro.id_ubicacion producto.id_producto %}"
+                            class="w-full bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded-lg transition-colors text-center block">
+                                <i class="fas fa-eye mr-2"></i>Ver Detalles
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Paginación -->
+            {% if productos.has_other_pages %}
+                <div class="mt-8 flex justify-center">
+                    <nav class="flex items-center space-x-2">
+                        {% if productos.has_previous %}
+                            <a href="?page={{ productos.previous_page_number }}{% if filtros.busqueda %}&busqueda={{ filtros.busqueda }}{% endif %}{% if filtros.ubicacion_seleccionada %}&ubicacion={{ filtros.ubicacion_seleccionada }}{% endif %}{% if filtros.categoria_seleccionada %}&categoria={{ filtros.categoria_seleccionada }}{% endif %}" 
+                            class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        {% endif %}
+                        
+                        <span class="px-4 py-2 bg-primary text-white rounded-lg">
+                            {{ productos.number }} de {{ productos.paginator.num_pages }}
+                        </span>
+                        
+                        {% if productos.has_next %}
+                            <a href="?page={{ productos.next_page_number }}{% if filtros.busqueda %}&busqueda={{ filtros.busqueda }}{% endif %}{% if filtros.ubicacion_seleccionada %}&ubicacion={{ filtros.ubicacion_seleccionada }}{% endif %}{% if filtros.categoria_seleccionada %}&categoria={{ filtros.categoria_seleccionada }}{% endif %}" 
+                            class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <!-- Estado vacío -->
+            <div class="text-center py-12">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-search text-3xl text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No se encontraron productos</h3>
+                <p class="text-gray-600 mb-4">Intenta ajustar los filtros de búsqueda</p>
+                <a href="{% url 'inventario:inventario_general' %}" 
+                   class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+                    <i class="fas fa-refresh mr-2"></i>Ver todos los productos
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // JavaScript para mejorar la experiencia del usuario
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-submit del formulario cuando cambian los selects
+        const selectores = document.querySelectorAll('select[name="ubicacion"], select[name="categoria"]');
+        selectores.forEach(selector => {
+            selector.addEventListener('change', function() {
+                // Opcional: auto-submit del formulario
+                // this.form.submit();
+            });
+        });
+        
+        // Efecto de carga en las tarjetas
+        const cards = document.querySelectorAll('.producto-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.style.transition = 'all 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    });
+</script>
+{% endblock %}

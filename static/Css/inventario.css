@@ -1,0 +1,305 @@
+/* static/css/inventario.css */
+/* Estilos específicos para el módulo de inventario */
+
+/* Variables CSS para consistencia con la paleta de colores */
+:root {
+    --primary-color: #39bfb2;
+    --primary-dark: #2da89c;
+    --secondary-color: #eaeef3;
+    --accent-color: #f2ce16;
+    --orange-color: #f28627;
+    --orange-light: #f29d35;
+    --white: #ffffff;
+    --gray-light: #f2f2f2;
+}
+
+/* Animaciones personalizadas */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Estilos para las tarjetas de productos */
+.producto-card {
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    position: relative;
+}
+
+.producto-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(57, 191, 178, 0.15);
+}
+
+.producto-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.producto-card:hover::before {
+    transform: scaleX(1);
+}
+
+/* Indicadores de stock con animación */
+.stock-indicator {
+    position: relative;
+    overflow: hidden;
+}
+
+.stock-indicator::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Badges de categoría mejorados */
+.categoria-badge {
+    background: linear-gradient(135deg, var(--accent-color), #f2d84b);
+    color: #1a1a1a;
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(242, 206, 22, 0.3);
+}
+
+/* Filtros con efectos glassmorphism */
+.filtros-glassmorphism {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Medidor de stock personalizado */
+.stock-meter {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.stock-meter::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0) 0%, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        rgba(255, 255, 255, 0) 100%);
+    animation: stockShimmer 2s infinite;
+}
+
+@keyframes stockShimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.stock-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+/* Estados de stock con colores específicos */
+.stock-alto {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.stock-medio {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.stock-bajo {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+.stock-agotado {
+    background: linear-gradient(90deg, #6b7280, #9ca3af);
+}
+
+/* Efectos hover para botones */
+.btn-inventario {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-inventario::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-inventario:hover::before {
+    left: 100%;
+}
+
+/* Responsive design mejorado */
+@media (max-width: 768px) {
+    .producto-card {
+        margin-bottom: 1rem;
+    }
+    
+    .filtros-container {
+        padding: 1rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .producto-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .filtros-glassmorphism {
+        backdrop-filter: none;
+        background: rgba(255, 255, 255, 0.9);
+    }
+}
+
+/* Animaciones de carga */
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Efectos de focus mejorados */
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(57, 191, 178, 0.1);
+    outline: none;
+}
+
+/* Tooltips personalizados */
+.tooltip-inventario {
+    position: relative;
+}
+
+.tooltip-inventario::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 1000;
+}
+
+.tooltip-inventario:hover::after {
+    opacity: 1;
+}
+
+/* Mejoras de accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark mode support (opcional) */
+@media (prefers-color-scheme: dark) {
+    .producto-card {
+        background: #1f2937;
+        color: #f9fafb;
+    }
+    
+    .filtros-glassmorphism {
+        background: rgba(31, 41, 55, 0.8);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Print styles */
+@media print {
+    .filtros-container,
+    .btn-inventario,
+    .sidebar {
+        display: none !important;
+    }
+    
+    .producto-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+}

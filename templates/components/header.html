@@ -1,0 +1,282 @@
+<!-- Header mejorado para trabajar con el sidebar dinámico -->
+<header class="nexo-header">
+    <div class="nexo-header-content">
+        <!-- Botón toggle para móvil -->
+        <button onclick="toggleSidebar()" class="nexo-mobile-toggle lg:hidden">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+
+        <!-- Título de la página -->
+        <div class="nexo-header-title">
+            <h1 class="text-xl font-semibold text-gray-900">{{ page_title|default:"Dashboard" }}</h1>
+            <p class="text-sm text-gray-500">{{ system_name|default:"Sistema NEXO" }}</p>
+        </div>
+
+        <!-- Información del usuario -->
+        <div class="nexo-header-user">
+            <div class="nexo-user-info">
+                <!-- Avatar del usuario -->
+                <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold text-sm cursor-pointer hover:bg-primary-dark transition-colors duration-200">
+                    {{ user_iniciales|default:"IN" }}
+                </div>
+                <div class="nexo-user-details">
+                    <span class="nexo-user-name">
+                        {% if usuario_actual and usuario_actual.nombreusuario %}
+                            {{ usuario_actual.nombreusuario }}
+                        {% else %}
+                            Invitado
+                        {% endif %}
+                    </span>
+                    <span class="nexo-user-role">{{ nexo_user_role|default:"Usuario" }}</span>
+                </div>
+            </div>
+            
+            <!-- Dropdown del usuario -->
+            <div class="nexo-user-dropdown">
+                <button onclick="toggleUserDropdown()" class="nexo-dropdown-toggle">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+                
+                <div id="user-dropdown" class="nexo-dropdown-menu">
+                    <a href="#" class="nexo-dropdown-item">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                        </svg>
+                        Mi Perfil
+                    </a>
+                    <a href="#" class="nexo-dropdown-item">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                        </svg>
+                        Configuración
+                    </a>
+                    <div class="nexo-dropdown-divider"></div>
+                    <button onclick="showLogoutConfirmation()" class="nexo-dropdown-item nexo-logout-item">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
+                        </svg>
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<style>
+/* ===== HEADER STYLES ===== */
+.nexo-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: all 0.3s ease;
+}
+
+.nexo-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 100%;
+}
+
+.nexo-mobile-toggle {
+    background: none;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 16px;
+}
+
+.nexo-mobile-toggle:hover {
+    background: #f3f4f6;
+    color: #4ecdc4;
+}
+
+.nexo-header-title h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.nexo-header-title p {
+    margin: 0;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.nexo-header-user {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.nexo-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nexo-user-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+}
+
+.nexo-user-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.nexo-user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.nexo-user-role {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.nexo-user-dropdown {
+    position: relative;
+}
+
+.nexo-dropdown-toggle {
+    background: none;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nexo-dropdown-toggle:hover {
+    background: #f3f4f6;
+    color: #4ecdc4;
+}
+
+.nexo-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    min-width: 200px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.nexo-dropdown-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.nexo-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: #374151;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    cursor: pointer;
+}
+
+.nexo-dropdown-item:hover {
+    background: #f9fafb;
+    color: #4ecdc4;
+}
+
+.nexo-dropdown-item:first-child {
+    border-radius: 12px 12px 0 0;
+}
+
+.nexo-dropdown-item:last-child {
+    border-radius: 0 0 12px 12px;
+}
+
+.nexo-dropdown-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 4px 0;
+}
+
+.nexo-logout-item {
+    color: #ef4444 !important;
+}
+
+.nexo-logout-item:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #dc2626 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nexo-header {
+        padding: 12px 16px;
+    }
+    
+    .nexo-user-details {
+        display: none;
+    }
+    
+    .nexo-header-title h1 {
+        font-size: 18px;
+    }
+    
+    .nexo-header-title p {
+        display: none;
+    }
+}
+</style>
+
+<script>
+function toggleUserDropdown() {
+    const dropdown = document.getElementById('user-dropdown');
+    dropdown.classList.toggle('active');
+}
+
+// Cerrar dropdown al hacer clic fuera
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('user-dropdown');
+    const toggle = document.querySelector('.nexo-dropdown-toggle');
+    
+    if (dropdown && !dropdown.contains(e.target) && !toggle.contains(e.target)) {
+        dropdown.classList.remove('active');
+    }
+});
+</script>

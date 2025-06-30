@@ -1,0 +1,616 @@
+<!-- Sidebar dinámico estilo YouTube mejorado -->
+<nav id="sidebar" class="nexo-sidebar">
+    <!-- Header del sidebar con toggle -->
+    <div class="nexo-sidebar-header">
+        <button onclick="toggleSidebar()" class="nexo-sidebar-toggle" aria-label="Toggle sidebar">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+        <div class="nexo-sidebar-logo">
+        <!--LOGO-->
+            <span class="nexo-sidebar-text nexo-logo-text">NEXO</span>
+        </div>
+    </div>
+
+    <!-- Menú principal -->
+    <div class="nexo-sidebar-menu">
+        <!-- Dashboard -->
+        <a href="{% url 'dashboard:dashboard' %}" 
+        class="nexo-menu-item {% if request.resolver_match.url_name == 'dashboard' %}nexo-menu-active{% endif %}"
+        data-tooltip="Dashboard">
+            <div class="nexo-menu-icon nexo-icon-dashboard">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                </svg>
+            </div>
+            <span class="nexo-sidebar-text nexo-menu-text">Dashboard</span>
+        </a>
+
+        <!-- Inventario -->
+        <a href="{% url 'inventario:inventario_general' %}" 
+        class="nexo-menu-item {% if request.resolver_match.url_name == 'inventario' %}nexo-menu-active{% endif %}"
+        data-tooltip="Inventario">
+            <div class="nexo-menu-icon nexo-icon-inventario">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                </svg>
+            </div>
+            <span class="nexo-sidebar-text nexo-menu-text">Inventario</span>
+        </a>
+
+        <!-- Registrar Producción -->
+        <a href="{% url 'crud:produccion_list' %}" 
+        class="nexo-menu-item {% if request.resolver_match.url_name == 'produccion' %}nexo-menu-active{% endif %}"
+        data-tooltip="Registrar Producción">
+            <div class="nexo-menu-icon nexo-icon-produccion">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3 3a1 1 0 100 2h.01a1 1 0 100-2H10zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H7zm2 1a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zm4-4a1 1 0 100 2h.01a1 1 0 100-2H13zM9 9a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zM7 8a1 1 0 000 2h.01a1 1 0 000-2H7z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <span class="nexo-sidebar-text nexo-menu-text">Registrar Producción</span>
+        </a>
+
+        <!-- Reabastecimiento -->
+        <a href="#" 
+        class="nexo-menu-item {% if request.resolver_match.url_name == 'reabastecimiento' %}nexo-menu-active{% endif %}"
+        data-tooltip="Reabastecimiento">
+            <div class="nexo-menu-icon nexo-icon-reabastecimiento">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <span class="nexo-sidebar-text nexo-menu-text">Reabastecimiento</span>
+        </a>
+
+        <!-- Registrar Venta -->
+        <a href="{% url 'ventas:lista_ventas' %}" 
+        class="nexo-menu-item {% if request.resolver_match.url_name == 'ventas' %}nexo-menu-active{% endif %}"
+        data-tooltip="Registrar Venta">
+            <div class="nexo-menu-icon nexo-icon-ventas">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+                </svg>
+            </div>
+            <span class="nexo-sidebar-text nexo-menu-text">Registrar Venta</span>
+        </a>
+
+        <!-- Registrar Devolución -->
+        <a href="#" 
+           class="nexo-menu-item {% if request.resolver_match.url_name == 'devoluciones' %}nexo-menu-active{% endif %}"
+           data-tooltip="Registrar Devolución">
+            <div class="nexo-menu-icon nexo-icon-devolucion">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <span class="nexo-sidebar-text nexo-menu-text">Registrar Devolución</span>
+        </a>
+
+        <!-- Registrar Cliente -->
+        <a href="{% url 'clientes:list' %}" 
+           class="nexo-menu-item {% if request.resolver_match.url_name == 'clientes' %}nexo-menu-active{% endif %}"
+           data-tooltip="Registrar Cliente">
+            <div class="nexo-menu-icon nexo-icon-clientes">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                </svg>
+            </div>
+            <span class="nexo-sidebar-text nexo-menu-text">Registrar Cliente</span>
+        </a>
+
+        <!-- Reportes -->
+        <a href="#" 
+           class="nexo-menu-item {% if request.resolver_match.url_name == 'reportes' %}nexo-menu-active{% endif %}"
+           data-tooltip="Reportes">
+            <div class="nexo-menu-icon nexo-icon-reportes">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                </svg>
+            </div>
+            <span class="nexo-sidebar-text nexo-menu-text">Reportes</span>
+        </a>
+    </div>
+
+    <!-- Footer del sidebar -->
+    <div class="nexo-sidebar-footer">
+        <!-- Configuración -->
+        <a href="#" class="nexo-menu-item" data-tooltip="Configuración">
+            <div class="nexo-menu-icon nexo-icon-config">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <span class="nexo-sidebar-text nexo-menu-text">Configuración</span>
+        </a>
+
+        <!-- Cerrar Sesión -->
+        <button onclick="showLogoutConfirmation()" class="nexo-menu-item nexo-logout-btn" data-tooltip="Cerrar Sesión">
+            <div class="nexo-menu-icon nexo-icon-logout">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <span class="nexo-sidebar-text nexo-menu-text">Cerrar Sesión</span>
+        </button>
+    </div>
+</nav>
+
+<!-- Overlay para móvil -->
+<div id="sidebar-overlay" class="nexo-sidebar-overlay"></div>
+
+<style>
+/* ===== SIDEBAR DINÁMICO ESTILO YOUTUBE MEJORADO ===== */
+.nexo-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 240px;
+    background: #ffffff;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.nexo-sidebar.collapsed {
+    width: 72px;
+}
+
+/* Header del sidebar */
+.nexo-sidebar-header {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    min-height: 64px;
+}
+
+.nexo-sidebar-toggle {
+    background: none;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 12px;
+}
+
+.nexo-sidebar-toggle:hover {
+    background: #f3f4f6;
+    color: #4ecdc4;
+}
+
+.nexo-sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nexo-logo-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+}
+
+.nexo-logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    letter-spacing: -0.5px;
+}
+
+/* Menú principal */
+.nexo-sidebar-menu {
+    flex: 1;
+    padding: 16px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nexo-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #374151;
+    transition: all 0.2s ease;
+    position: relative;
+    border: none;
+    background: none;
+    width: 100%;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.nexo-menu-item:hover {
+    background: #f9fafb;
+    transform: translateX(2px);
+}
+
+.nexo-menu-item.nexo-menu-active {
+    background: linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(78, 205, 196, 0.05));
+    color: #4ecdc4;
+    box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.2), 0 4px 12px rgba(78, 205, 196, 0.15);
+    border-left: 4px solid #4ecdc4;
+}
+
+.nexo-menu-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+/* Iconos coloridos específicos */
+.nexo-icon-dashboard {
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+}
+
+.nexo-icon-inventario {
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+}
+
+.nexo-icon-produccion {
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+}
+
+.nexo-icon-reabastecimiento {
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+}
+
+.nexo-icon-ventas {
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+}
+
+.nexo-icon-devolucion {
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+}
+
+.nexo-icon-clientes {
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+}
+
+.nexo-icon-reportes {
+    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+}
+
+.nexo-icon-config {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+}
+
+.nexo-icon-logout {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.nexo-menu-text {
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+/* Footer del sidebar */
+.nexo-sidebar-footer {
+    padding: 16px 8px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nexo-logout-btn {
+    color: #ef4444 !important;
+}
+
+.nexo-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Estado colapsado */
+.nexo-sidebar.collapsed .nexo-sidebar-text {
+    opacity: 0;
+    visibility: hidden;
+    width: 0;
+    margin: 0;
+}
+
+.nexo-sidebar.collapsed .nexo-menu-item {
+    justify-content: center;
+    padding: 12px;
+}
+
+.nexo-sidebar.collapsed .nexo-menu-icon {
+    margin-right: 0;
+}
+
+.nexo-sidebar.collapsed .nexo-sidebar-header {
+    justify-content: center;
+}
+
+.nexo-sidebar.collapsed .nexo-sidebar-toggle {
+    margin-right: 0;
+}
+
+/* Tooltips para estado colapsado */
+.nexo-sidebar.collapsed .nexo-menu-item {
+    position: relative;
+}
+
+.nexo-sidebar.collapsed .nexo-menu-item:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    white-space: nowrap;
+    z-index: 1100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    animation: fadeInTooltip 0.2s ease forwards;
+}
+
+.nexo-sidebar.collapsed .nexo-menu-item:hover::before {
+    content: '';
+    position: absolute;
+    left: calc(100% + 6px);
+    top: 50%;
+    transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-right-color: #1f2937;
+    z-index: 1100;
+}
+
+/* Overlay para móvil */
+.nexo-sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.nexo-sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Scrollbar personalizado */
+.nexo-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.nexo-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.nexo-sidebar::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.nexo-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .nexo-sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .nexo-sidebar.mobile-open {
+        transform: translateX(0);
+    }
+}
+
+/* Animaciones */
+@keyframes fadeInTooltip {
+    from {
+        opacity: 0;
+        transform: translateY(-50%) translateX(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+    }
+}
+
+/* Efectos hover mejorados */
+.nexo-menu-item:hover .nexo-menu-icon {
+    transform: scale(1.05);
+}
+
+.nexo-menu-item.nexo-menu-active .nexo-menu-icon {
+    transform: scale(1.1);
+    box-shadow: 0 4px 16px rgba(78, 205, 196, 0.4);
+}
+</style>
+
+<script>
+// ===== FUNCIONES DEL SIDEBAR DINÁMICO MEJORADO =====
+let sidebarCollapsed = localStorage.getItem('nexo_sidebar_collapsed') === 'true';
+
+function initSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    
+    // Aplicar estado inicial solo en desktop
+    if (window.innerWidth >= 1024) {
+        if (sidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            updateMainContentMargin(true);
+        } else {
+            sidebar.classList.remove('collapsed');
+            updateMainContentMargin(false);
+        }
+    }
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    if (window.innerWidth < 1024) {
+        // Móvil: mostrar/ocultar como overlay
+        sidebar.classList.toggle('mobile-open');
+        overlay.classList.toggle('active');
+        document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+    } else {
+        // Desktop: colapsar/expandir
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            sidebar.classList.remove('collapsed');
+            sidebarCollapsed = false;
+            updateMainContentMargin(false);
+        } else {
+            sidebar.classList.add('collapsed');
+            sidebarCollapsed = true;
+            updateMainContentMargin(true);
+        }
+        
+        // Guardar estado
+        localStorage.setItem('nexo_sidebar_collapsed', sidebarCollapsed);
+    }
+}
+
+function updateMainContentMargin(collapsed) {
+    const mainContent = document.getElementById('main-content');
+    if (mainContent && window.innerWidth >= 1024) {
+        if (collapsed) {
+            mainContent.style.marginLeft = '72px';
+        } else {
+            mainContent.style.marginLeft = '240px';
+        }
+    }
+}
+
+function showLogoutConfirmation() {
+    const modal = document.getElementById('logout-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function hideLogoutConfirmation() {
+    const modal = document.getElementById('logout-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+    }
+}
+
+async function confirmLogout() {
+    try {
+        const response = await fetch('/dashboard/logout/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+            },
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            window.location.href = data.redirect_url || '/login/';
+        } else {
+            alert('Error al cerrar sesión: ' + data.error);
+            hideLogoutConfirmation();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al cerrar sesión');
+        hideLogoutConfirmation();
+    }
+}
+
+// Cerrar sidebar al hacer clic en overlay
+document.addEventListener('click', function(e) {
+    const overlay = document.getElementById('sidebar-overlay');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (overlay && e.target === overlay) {
+        sidebar.classList.remove('mobile-open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+});
+
+// Responsive
+window.addEventListener('resize', function() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    if (window.innerWidth >= 1024) {
+        // Desktop: limpiar clases de móvil
+        sidebar.classList.remove('mobile-open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+        
+        // Aplicar estado de desktop
+        if (sidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            updateMainContentMargin(true);
+        } else {
+            sidebar.classList.remove('collapsed');
+            updateMainContentMargin(false);
+        }
+    } else {
+        // Móvil: limpiar clases de desktop
+        sidebar.classList.remove('collapsed');
+        updateMainContentMargin(false);
+    }
+});
+
+// Inicializar sidebar al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    initSidebar();
+});
+
+// Cerrar modal de logout con ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        hideLogoutConfirmation();
+    }
+});
+</script>
