@@ -229,6 +229,9 @@ class Venta(models.Model):
     def __str__(self):
         return f"Venta {self.id_venta} - {self.fechaventa}"
 
+# ATENCIÓN: Este modelo NO tiene campo 'id' ni 'pk'.
+# Usar SIEMPRE ambos campos (idventa, idproventa) para búsquedas y acceso.
+# Ejemplo correcto: Detalleventa.objects.get(idventa=..., idproventa=...)
 class Detalleventa(models.Model):
     idventa = models.ForeignKey(
         Venta,
@@ -246,14 +249,12 @@ class Detalleventa(models.Model):
     subtotal = models.DecimalField(db_column='subtotal', max_digits=10, decimal_places=2)
 
     class Meta:
-        managed = False
-        db_table = 'detalleventa'
+        db_table = 'DetalleVenta'
         unique_together = (('idventa', 'idproventa'),)
-        verbose_name = 'Detalle de Venta'
-        verbose_name_plural = 'Detalles de Venta'
+        managed = False 
 
     def __str__(self):
-        return f"Detalle Venta {self.idventa.id_venta} - {self.idproventa.nombreproducto}"
+        return f"Venta {self.idventa_id} - Producto {self.idproventa_id}"
 
 class Devolucion(models.Model):
     iddevolucion = models.AutoField(db_column='idDevolucion', primary_key=True)

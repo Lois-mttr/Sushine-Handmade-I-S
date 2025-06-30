@@ -70,7 +70,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Detalleventa',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('idventa', models.ForeignKey(db_column='idVenta', on_delete=models.CASCADE, to='core_data.Venta')),
+                ('idproventa', models.ForeignKey(db_column='idProVenta', on_delete=models.CASCADE, to='core_data.Producto')),
                 ('cantidadventa', models.IntegerField(blank=True, db_column='cantidadVenta', null=True)),
                 ('subtotal', models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True)),
             ],
@@ -79,6 +80,7 @@ class Migration(migrations.Migration):
                 'verbose_name_plural': 'Detalles de Venta',
                 'db_table': 'detalleventa',
                 'managed': False,
+                'unique_together': {('idventa', 'idproventa')},
             },
         ),
         migrations.CreateModel(

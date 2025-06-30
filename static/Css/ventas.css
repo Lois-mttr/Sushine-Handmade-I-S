@@ -1,0 +1,502 @@
+/* static/css/ventas.css */
+/* Estilos específicos para el módulo de ventas */
+
+/* Variables CSS para la paleta de colores */
+:root {
+    --primary-color: #39bfb2;
+    --primary-dark: #2da89c;
+    --secondary-color: #eaeef3;
+    --accent-yellow: #F2CE16;
+    --accent-orange: #F29D35;
+    --accent-orange-dark: #F28627;
+    --white: #ffffff;
+    --gray-light: #F2F2F2;
+}
+
+/* Animaciones personalizadas */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estilos para las tarjetas de ventas */
+.venta-card {
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    position: relative;
+}
+
+.venta-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(57, 191, 178, 0.15);
+}
+
+.venta-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-yellow));
+}
+
+/* Estados de venta */
+.estado-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.estado-realizada {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: white;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.estado-anulada {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    color: white;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+/* Botones de acción */
+.btn-accion {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-accion:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-ver {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    color: white;
+}
+
+.btn-editar {
+    background: linear-gradient(135deg, var(--accent-yellow), var(--accent-orange));
+    color: #1a1a1a;
+}
+
+.btn-anular {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    color: white;
+}
+
+/* Formularios de venta */
+.form-venta {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.form-section {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.form-section h3 {
+    color: #1f2937;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.form-section h3 i {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+/* Carrito de compras */
+.carrito-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: 12px;
+    border: 2px solid #e5e7eb;
+}
+
+.carrito-item {
+    background: #f8fafc;
+    border-left: 4px solid var(--primary-color);
+    margin-bottom: 0.75rem;
+    padding: 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.5s ease;
+}
+
+.carrito-item:hover {
+    background: #f1f5f9;
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(57, 191, 178, 0.15);
+}
+
+.carrito-item:last-child {
+    margin-bottom: 0;
+}
+
+/* Resumen de totales */
+.total-container {
+    background: linear-gradient(135deg, var(--primary-color), #4ECDC4);
+    color: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 24px rgba(57, 191, 178, 0.3);
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.total-row:last-child {
+    border-bottom: none;
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding-top: 1rem;
+}
+
+/* Información de producto */
+.producto-info {
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    padding: 1rem;
+    animation: slideInRight 0.5s ease;
+}
+
+.producto-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.producto-info-item {
+    text-align: center;
+}
+
+.producto-info-label {
+    font-size: 0.75rem;
+    color: #374151;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.producto-info-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-top: 0.25rem;
+}
+
+/* Estadísticas de ventas */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-yellow));
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* Filtros de búsqueda */
+.filtros-container {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.filtros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filtro-busqueda {
+    grid-column: span 2;
+    position: relative;
+}
+
+.filtro-busqueda input {
+    padding-left: 2.5rem;
+}
+
+.filtro-busqueda i {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+}
+
+/* Tabla de ventas */
+.ventas-table {
+    background: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.ventas-table thead {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+}
+
+.ventas-table th {
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.ventas-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.ventas-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.ventas-table tbody tr:hover {
+    background: #f8fafc;
+    transform: translateX(2px);
+}
+
+/* Cliente avatar */
+.cliente-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-yellow));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.75rem;
+    margin-right: 0.75rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .filtros-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .filtro-busqueda {
+        grid-column: span 1;
+    }
+    
+    .ventas-table {
+        font-size: 0.875rem;
+    }
+    
+    .ventas-table th,
+    .ventas-table td {
+        padding: 0.75rem;
+    }
+    
+    .carrito-container {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 640px) {
+    .producto-info-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .btn-accion {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* Animaciones de carga */
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Estados de carga */
+.btn-loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Efectos de focus mejorados */
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(57, 191, 178, 0.1);
+    outline: none;
+}
+
+/* Print styles */
+@media print {
+    .filtros-container,
+    .btn-accion,
+    .sidebar {
+        display: none !important;
+    }
+    
+    .venta-card,
+    .ventas-table {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+    
+    .total-container {
+        background: #f5f5f5 !important;
+        color: #000 !important;
+    }
+}

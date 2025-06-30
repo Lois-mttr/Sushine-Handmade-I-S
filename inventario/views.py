@@ -177,14 +177,17 @@ def inventario_por_ubicacion(request, ubicacion_id):
     try:
         usuario_actual = getattr(request, 'nexo_user', None)
         nombreusuario = getattr(usuario_actual, 'nombreusuario', 'Invitado')
+        rol_usuario = getattr(usuario_actual, 'rol', 'encargado_sucursal')
         logger.info(f"Usuario {nombreusuario} accedió al inventario de ubicación {ubicacion_id}")
-        
+
         # Obtener la ubicación o mostrar 404
         ubicacion = get_object_or_404(Ubicacion, id_ubicacion=ubicacion_id)
-        
-        # Verificar permisos por ubicación si es necesario
-        # (Aquí podrías agregar lógica adicional de permisos por ubicación)
-        
+
+        # Validar acceso para encargado_sucursal
+        if rol_usuario == 'encargado_sucursal' and ubicacion.nombreubicacion.lower() != 'sucursal':
+            messages.error(request, 'No tiene permiso para ver productos fuera de la sucursal.')
+            return redirect('inventario:inventario_general')
+
         # Obtener productos de la ubicación con optimización de consultas
         productos = obtener_productos_por_ubicacion(ubicacion_id)
         
@@ -281,27 +284,25 @@ def inventario_por_ubicacion(request, ubicacion_id):
         return redirect('inventario:inventario_general')
 
 @nexo_login_required
-def detalle_producto(request, producto_id):
+def detalle_producto(request, ubicacion_id, producto_id):
     """
-    Vista detallada de un producto específico
+    Vista detallada de un producto específico por ubicación
     Requiere autenticación NEXO
     """
     try:
         usuario_actual = getattr(request, 'nexo_user', None)
         nombreusuario = getattr(usuario_actual, 'nombreusuario', 'Invitado')
-        logger.info(f"Usuario {nombreusuario} accedió al detalle del producto {producto_id}")
+        rol_usuario = getattr(usuario_actual, 'rol', 'encargado_sucursal')
+        logger.info(f"Usuario {nombreusuario} accedió al detalle del producto {producto_id} en ubicación {ubicacion_id}")
 
-        # Si hay más de un producto con el mismo id_producto, muestra el primero (por ubicación, si se filtra)
-        ubicacion_id = request.GET.get('ubicacion', '')
-        productos = Producto.objects.filter(id_producto=producto_id, estado=True).select_related('idubicacionpro', 'idcategoriapro')
-        if ubicacion_id:
-            try:
-                ubicacion_id = int(ubicacion_id)
-                productos = productos.filter(idubicacionpro_id=ubicacion_id)
-            except (ValueError, TypeError):
-                messages.warning(request, 'ID de ubicación inválido')
+        productos = Producto.objects.filter(id_producto=producto_id, idubicacionpro_id=ubicacion_id, estado=True).select_related('idubicacionpro', 'idcategoriapro')
+
+        # Validar acceso para encargado_sucursal
+        if rol_usuario == 'encargado_sucursal':
+            productos = productos.filter(idubicacionpro__nombreubicacion__iexact='sucursal')
+
         if productos.count() == 0:
-            messages.error(request, 'No se encontró el producto solicitado.')
+            messages.error(request, 'No se encontró el producto solicitado o no tiene permiso para verlo.')
             return redirect('inventario:inventario_general')
         producto = productos.first()
 
@@ -454,94 +455,7 @@ def busqueda_rapida_ajax(request):
             'message': 'Error en la búsqueda'
         }, status=500)
 
-@nexo_role_required(['admin', 'gerente', 'encargado_inventario'])
-def exportar_inventario(request):
-    """
-    Vista para exportar inventario a CSV/Excel
-    Requiere roles específicos: administrador, gerente o encargado_inventario
-    """
-    try:
-        usuario_actual = getattr(request, 'nexo_user', None)
-        nombreusuario = getattr(usuario_actual, 'nombreusuario', 'Invitado')
-        rol = getattr(usuario_actual, 'rol', 'N/A')
-        logger.info(f"Exportación de inventario solicitada por usuario {nombreusuario} con rol {rol}")
-        
-        formato = request.GET.get('formato', 'csv')
-        ubicacion_id = request.GET.get('ubicacion')
-        
-        # Obtener productos según filtros
-        productos = obtener_productos_activos().select_related(
-            'idubicacionpro', 'idcategoriapro'
-        )
-        
-        if ubicacion_id:
-            productos = productos.filter(idubicacionpro_id=ubicacion_id)
-            logger.debug(f"Exportación filtrada por ubicación: {ubicacion_id}")
-        
-        # Crear respuesta HTTP
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f'inventario_{timestamp}.csv'
-        
-        response = HttpResponse(content_type='text/csv; charset=utf-8')
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        
-        # Escribir CSV
-        writer = csv.writer(response)
-        
-        # Encabezados
-        writer.writerow([
-            'Código',
-            'Nombre',
-            'Descripción',
-            'Categoría',
-            'Ubicación',
-            'Existencia',
-            'Stock Mínimo',
-            'Precio',
-            'Valor Total',
-            'Estado Stock',
-            'Exportado por',
-            'Fecha Exportación'
-        ])
-        
-        # Datos
-        for producto in productos:
-            valor_total = (producto.existenciaproducto * producto.precioproducto) if producto.precioproducto else 0
-            
-            estado_stock = 'Alto'
-            if producto.existenciaproducto == 0:
-                estado_stock = 'Agotado'
-            elif producto.existenciaproducto <= (producto.existenciaminima or 5):
-                estado_stock = 'Bajo'
-            elif producto.existenciaproducto <= 20:
-                estado_stock = 'Medio'
-            
-            writer.writerow([
-                producto.id_producto,
-                producto.nombreproducto,
-                producto.descripcionproducto or '',
-                producto.idcategoriapro.nombrecategoria if producto.idcategoriapro else '',
-                producto.idubicacionpro.nombreubicacion,
-                producto.existenciaproducto,
-                producto.existenciaminima or 5,
-                producto.precioproducto or 0,
-                valor_total,
-                estado_stock,
-                nombreusuario,
-                timezone.now().strftime('%Y-%m-%d %H:%M:%S')
-            ])
-        
-        logger.info(f"Inventario exportado exitosamente por usuario {nombreusuario}")
-        return response
-        
-    except Exception as e:
-        usuario_actual = getattr(request, 'nexo_user', None)
-        nombreusuario = getattr(usuario_actual, 'nombreusuario', 'Invitado')
-        logger.error(f"Error en exportar_inventario para usuario {nombreusuario}: {str(e)}")
-        messages.error(request, f'Error al exportar inventario: {str(e)}')
-        return redirect('inventario:inventario_general')
-
-@nexo_role_required(['admin', 'gerente'])
+@nexo_role_required(['admin'])
 def configurar_alertas_stock(request):
     """
     Vista para configurar alertas de stock bajo

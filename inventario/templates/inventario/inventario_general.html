@@ -74,7 +74,7 @@
                 </div>
                 
                 <!-- Estadísticas rápidas -->
-                <div class="hidden md:flex space-x-6">
+                <div class="hidden md:flex space-x-6 items-center">
                     <div class="text-center">
                         <div class="text-2xl font-bold">{{ estadisticas.total_productos }}</div>
                         <div class="text-sm text-blue-100">Total Productos</div>
@@ -83,6 +83,13 @@
                         <div class="text-2xl font-bold text-yellow-300">{{ estadisticas.productos_bajo_stock }}</div>
                         <div class="text-sm text-blue-100">Bajo Stock</div>
                     </div>
+                    {% if usuario_actual.rol == 'admin' %}
+                    <a href="{% url 'inventario:configurar_alertas' %}"
+                    class="ml-6 flex items-center px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-400 text-white rounded-lg shadow-lg hover:from-yellow-500 hover:to-orange-500 transition-all font-semibold text-sm group">
+                        <i class="fas fa-bell text-lg mr-2 group-hover:animate-bounce"></i>
+                        Configurar Alertas
+                    </a>
+                    {% endif %}
                 </div>
             </div>
             
@@ -215,8 +222,8 @@
                             {% endif %}
                             
                             <!-- Botón de detalle -->
-                            <a href="{% url 'inventario:detalle_producto' producto.id_producto %}" 
-                               class="w-full bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded-lg transition-colors text-center block">
+                            <a href="{% url 'inventario:detalle_producto_ubicacion' producto.idubicacionpro.id_ubicacion producto.id_producto %}"
+                            class="w-full bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded-lg transition-colors text-center block">
                                 <i class="fas fa-eye mr-2"></i>Ver Detalles
                             </a>
                         </div>
@@ -230,7 +237,7 @@
                     <nav class="flex items-center space-x-2">
                         {% if productos.has_previous %}
                             <a href="?page={{ productos.previous_page_number }}{% if filtros.busqueda %}&busqueda={{ filtros.busqueda }}{% endif %}{% if filtros.ubicacion_seleccionada %}&ubicacion={{ filtros.ubicacion_seleccionada }}{% endif %}{% if filtros.categoria_seleccionada %}&categoria={{ filtros.categoria_seleccionada }}{% endif %}" 
-                               class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                            class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
                                 <i class="fas fa-chevron-left"></i>
                             </a>
                         {% endif %}
@@ -241,7 +248,7 @@
                         
                         {% if productos.has_next %}
                             <a href="?page={{ productos.next_page_number }}{% if filtros.busqueda %}&busqueda={{ filtros.busqueda }}{% endif %}{% if filtros.ubicacion_seleccionada %}&ubicacion={{ filtros.ubicacion_seleccionada }}{% endif %}{% if filtros.categoria_seleccionada %}&categoria={{ filtros.categoria_seleccionada }}{% endif %}" 
-                               class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                            class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
                                 <i class="fas fa-chevron-right"></i>
                             </a>
                         {% endif %}

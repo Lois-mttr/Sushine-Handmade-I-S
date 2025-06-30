@@ -13,13 +13,11 @@ urlpatterns = [
     
     # Vista de detalle de producto (requiere autenticación)
     path('producto/<str:producto_id>/', views.detalle_producto, name='detalle_producto'),
+    path('producto/<int:ubicacion_id>/<str:producto_id>/', views.detalle_producto, name='detalle_producto_ubicacion'),
     
     # API endpoints para AJAX (requieren autenticación AJAX)
     path('api/stats/', views.inventario_stats_ajax, name='inventario_stats_ajax'),
     path('api/busqueda/', views.busqueda_rapida_ajax, name='busqueda_rapida_ajax'),
-    
-    # Exportación de datos (requiere roles específicos)
-    path('exportar/', views.exportar_inventario, name='exportar_inventario'),
     
     # Configuración de alertas (solo administradores y gerentes)
     path('alertas/', views.configurar_alertas_stock, name='configurar_alertas'),
