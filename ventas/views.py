@@ -445,7 +445,6 @@ def editar_venta(request, venta_id):
         venta = get_object_or_404(Venta, id_venta=venta_id)
         venta_form = VentaForm(instance=venta)
         detalle_form = DetalleVentaForm()
-        # Filtrar detalles solo de productos en ubicación 2 (sucursal)
         detalles_actuales = Detalleventa.objects.filter(idventa=venta, idproventa__idubicacionpro_id=2).select_related('idproventa')
         productos_disponibles = obtener_productos_disponibles()
         usuario_actual = request.nexo_user
