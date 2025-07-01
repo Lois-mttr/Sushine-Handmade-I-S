@@ -71,6 +71,7 @@ TEMPLATES = [
             BASE_DIR / 'inventario' / 'templates',
             BASE_DIR / 'crud' / 'templates',
             BASE_DIR / 'clientes' / 'templates',
+            BASE_DIR / 'devolucion' / 'templates',
             BASE_DIR / 'ventas' / 'templates',
             BASE_DIR / 'ajustes' / 'templates',
             BASE_DIR / 'Informes' / 'templates',
@@ -105,12 +106,22 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'nexodb',
         'USER': 'root',
-        'PASSWORD': 'Luisa*2006',
+        'PASSWORD': 'lili123456',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'nexodb',
+#         'USER': 'root',
+#         'PASSWORD': 'lili123456',
+#         'HOST': '127.0.0.1',
+#         'PORT': '3306',
+#     }
+# }
 
 # Cache configuration (para el sistema de bloqueo de IPs)
 CACHES = {

@@ -49,12 +49,126 @@
 {% endblock %}
 
 {% block content %}
-<div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
+<style>
+    /* Estilos para el formulario de edición */
+    .form-page-container {
+        background-color: #f9fafb;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .form-container {
+        background-color: #fff;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+    }
+
+    .form-title {
+        color: #39bfb2;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .required-field:after {
+        content: " *";
+        color: #ef4444;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #39bfb2;
+        box-shadow: 0 0 0 3px rgba(57, 191, 178, 0.2);
+    }
+
+    .form-help-text {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .form-error-message {
+        margin-top: 0.25rem;
+        font-size: 0.75rem;
+        color: #ef4444;
+    }
+
+    .btn-submit-form {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background-color: #39bfb2;
+        color: white;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-submit-form:hover {
+        background-color: #2fa89b;
+        transform: translateY(-1px);
+    }
+
+    .btn-cancel-form {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background-color: #f3f4f6;
+        color: #374151;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel-form:hover {
+        background-color: #e5e7eb;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-error {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        border-left: 4px solid #b91c1c;
+    }
+
+    .alert-success {
+        background-color: #dcfce7;
+        color: #166534;
+        border-left: 4px solid #166534;
+    }
+</style>
+
+<div class="form-page-container">
     <div class="max-w-4xl mx-auto">
         {% if messages %}
         <div class="mb-6 space-y-2">
             {% for message in messages %}
-            <div class="alert {% if message.tags %}{{ message.tags }}{% endif %} p-4 rounded-lg">
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
                 <div class="flex items-center">
                     <i class="fas {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-3"></i>
                     {{ message }}
@@ -66,9 +180,17 @@
         <form method="post" id="editarClienteForm" novalidate>
             {% csrf_token %}
             <input type="hidden" name="cedula" value="{{ cliente.persona.cedula }}">
+<<<<<<< HEAD
             <div class="form-container p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <i class="fas fa-id-card mr-2" style="color: {{ colores.primary }};"></i>
+=======
+
+            <!-- Sección Datos Personales -->
+            <div class="form-container">
+                <h2 class="form-title">
+                    <i class="fas fa-id-card mr-2"></i>
+>>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                     Datos Personales
                 </h2>
                 {% if persona_form.non_field_errors %}
@@ -87,8 +209,15 @@
                         <label for="id_primer_nombre" class="form-label required-field">Primer Nombre</label>
                         <input type="text" name="primer_nombre" value="{{ persona_form.instance.primer_nombre }}" class="form-input {% if persona_form.primer_nombre.errors %}border-red-500{% endif %}" maxlength="15" required id="id_primer_nombre">
                         {% if persona_form.primer_nombre.errors %}
+<<<<<<< HEAD
                         <div class="mt-1 text-sm text-red-600">
                             {% for error in persona_form.primer_nombre.errors %}<p>{{ error }}</p>{% endfor %}
+=======
+                        <div class="form-error-message">
+                            {% for error in persona_form.primer_nombre.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+>>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                         </div>
                         {% endif %}
                     </div>
@@ -96,8 +225,15 @@
                         <label for="id_segundo_nombre" class="form-label">Segundo Nombre</label>
                         <input type="text" name="segundo_nombre" value="{{ persona_form.instance.segundo_nombre }}" class="form-input {% if persona_form.segundo_nombre.errors %}border-red-500{% endif %}" maxlength="15" id="id_segundo_nombre">
                         {% if persona_form.segundo_nombre.errors %}
+<<<<<<< HEAD
                         <div class="mt-1 text-sm text-red-600">
                             {% for error in persona_form.segundo_nombre.errors %}<p>{{ error }}</p>{% endfor %}
+=======
+                        <div class="form-error-message">
+                            {% for error in persona_form.segundo_nombre.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+>>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                         </div>
                         {% endif %}
                     </div>
@@ -105,8 +241,15 @@
                         <label for="id_primer_apellido" class="form-label required-field">Primer Apellido</label>
                         <input type="text" name="primer_apellido" value="{{ persona_form.instance.primer_apellido }}" class="form-input {% if persona_form.primer_apellido.errors %}border-red-500{% endif %}" maxlength="15" required id="id_primer_apellido">
                         {% if persona_form.primer_apellido.errors %}
+<<<<<<< HEAD
                         <div class="mt-1 text-sm text-red-600">
                             {% for error in persona_form.primer_apellido.errors %}<p>{{ error }}</p>{% endfor %}
+=======
+                        <div class="form-error-message">
+                            {% for error in persona_form.primer_apellido.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+>>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                         </div>
                         {% endif %}
                     </div>
@@ -114,8 +257,15 @@
                         <label for="id_segundo_apellido" class="form-label">Segundo Apellido</label>
                         <input type="text" name="segundo_apellido" value="{{ persona_form.instance.segundo_apellido }}" class="form-input {% if persona_form.segundo_apellido.errors %}border-red-500{% endif %}" maxlength="15" id="id_segundo_apellido">
                         {% if persona_form.segundo_apellido.errors %}
+<<<<<<< HEAD
                         <div class="mt-1 text-sm text-red-600">
                             {% for error in persona_form.segundo_apellido.errors %}<p>{{ error }}</p>{% endfor %}
+=======
+                        <div class="form-error-message">
+                            {% for error in persona_form.segundo_apellido.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+>>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                         </div>
                         {% endif %}
                     </div>
@@ -123,16 +273,31 @@
                         <label for="id_direccion" class="form-label">Dirección</label>
                         <input type="text" name="direccion" value="{{ persona_form.instance.direccion }}" class="form-input {% if persona_form.direccion.errors %}border-red-500{% endif %}" maxlength="100" id="id_direccion">
                         {% if persona_form.direccion.errors %}
+<<<<<<< HEAD
                         <div class="mt-1 text-sm text-red-600">
                             {% for error in persona_form.direccion.errors %}<p>{{ error }}</p>{% endfor %}
+=======
+                        <div class="form-error-message">
+                            {% for error in persona_form.direccion.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+>>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                         </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
+<<<<<<< HEAD
             <div class="form-container p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <i class="fas fa-envelope mr-2" style="color: {{ colores.primary }};"></i>
+=======
+
+            <!-- Sección Datos Cliente -->
+            <div class="form-container">
+                <h2 class="form-title">
+                    <i class="fas fa-envelope mr-2"></i>
+>>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                     Datos del Cliente
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -140,8 +305,15 @@
                         <label for="id_correo" class="form-label">Correo</label>
                         <input type="email" name="correo" value="{{ cliente_form.instance.correo }}" class="form-input {% if cliente_form.correo.errors %}border-red-500{% endif %}" maxlength="50" id="id_correo">
                         {% if cliente_form.correo.errors %}
+<<<<<<< HEAD
                         <div class="mt-1 text-sm text-red-600">
                             {% for error in cliente_form.correo.errors %}<p>{{ error }}</p>{% endfor %}
+=======
+                        <div class="form-error-message">
+                            {% for error in cliente_form.correo.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+>>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                         </div>
                         {% endif %}
                     </div>
@@ -151,8 +323,13 @@
                 <a href="{% if cliente.id %}{% url 'clientes:detail' cliente.id %}{% else %}{% url 'clientes:list' %}{% endif %}" class="btn-cancel-nexo inline-flex items-center px-6 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                     <i class="fas fa-times mr-2"></i>Cancelar
                 </a>
+<<<<<<< HEAD
                 <button type="submit" class="btn-submit-nexo inline-flex items-center px-6 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2" style="background-color: {{ colores.warning }}; color: black;">
                     <i class="fas fa-save mr-2"></i>Actualizar Cliente
+=======
+                <button type="submit" class="btn-submit-form">
+                    <i class="fas fa-save mr-2"></i> Guardar Cambios
+>>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                 </button>
             </div>
         </form>

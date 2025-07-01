@@ -1,14 +1,14 @@
 {% extends "layouts/base.html" %}
 {% load static %}
 
-{% block title %}Registrar Producción - NEXO{% endblock %}
+{% block title %}Registrar Devolucion - NEXO{% endblock %}
 
 {% block page_title %}
-    <i class="fas fa-plus-circle mr-2" style="color: {{ colores.primary }};"></i>Registrar Nueva Producción
+    <i class="fas fa-plus-circle mr-2" style="color: {{ colores.primary }};"></i>Registrar Nueva Devolucion
 {% endblock %}
 
 {% block page_subtitle %}
-    Complete los datos para registrar una nueva entrada de producción al taller.
+    Complete los datos para registrar una nueva Devolucion.
 {% endblock %}
 
 {% block extra_css %}
@@ -234,84 +234,66 @@
     }
 </style>
 {% endblock %}
-
 {% block content %}
 <div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
     <div class="max-w-6xl mx-auto">
-        <form method="post" id="produccionForm" novalidate class="space-y-6">
+        <form method="post" id="DevolucionForm" novalidate class="space-y-6">
             {% csrf_token %}
-            
-            <!-- Sección de Cabecera de Producción -->
             <div class="form-container p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-xl font-semibold flex items-center" style="color: {{ colores.primary }};">
-                        <i class="fas fa-file-alt mr-2"></i>Datos Generales de la Producción
+                        <i class="fas fa-file-alt mr-2"></i>Datos Generales de Devolución
                     </h2>
                     <div class="text-sm text-gray-500">
                         <i class="fas fa-info-circle mr-1"></i>Campos obligatorios marcados con <span class="text-red-500">*</span>
                     </div>
                 </div>
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="{{ form.fechaEntrada.id_for_label }}" class="form-label required-field">
-                            <i class="fas fa-calendar mr-1"></i>{{ form.fechaEntrada.label }}
+                        <label for="{{ form.fechaDevolucion.id_for_label }}" class="form-label required-field">
+                            <i class="fas fa-calendar mr-1"></i>{{ form.fechaDevolucion.label }}
                         </label>
-                        {{ form.fechaEntrada }}
-                        {% if form.fechaEntrada.errors %}
+                        {{ form.fechaDevolucion }}
+                        {% if form.fechaDevolucion.errors %}
                             <p class="form-error-message">
-                                <i class="fas fa-exclamation-triangle"></i>{{ form.fechaEntrada.errors|join:", " }}
+                                <i class="fas fa-exclamation-triangle"></i>{{ form.fechaDevolucion.errors|join:", " }}
                             </p>
                         {% endif %}
-                        {% if form.fechaEntrada.help_text %}
-                            <p class="form-help-text">{{ form.fechaEntrada.help_text }}</p>
-                        {% endif %}
                     </div>
-                    
                     <div>
-                        <label for="{{ form.id_usuario.id_for_label }}" class="form-label required-field">
-                            <i class="fas fa-user mr-1"></i>{{ form.id_usuario.label }}
+                        <label for="{{ form.idVentaDev.id_for_label }}" class="form-label required-field">
+                            <i class="fas fa-receipt mr-1"></i>{{ form.idVentaDev.label }}
                         </label>
-                        {{ form.id_usuario }}
-                        {% if form.id_usuario.errors %}
+                        {{ form.idVentaDev }}
+                        {% if form.idVentaDev.errors %}
                             <p class="form-error-message">
-                                <i class="fas fa-exclamation-triangle"></i>{{ form.id_usuario.errors|join:", " }}
+                                <i class="fas fa-exclamation-triangle"></i>{{ form.idVentaDev.errors|join:", " }}
                             </p>
-                        {% endif %}
-                        {% if form.id_usuario.help_text %}
-                            <p class="form-help-text">{{ form.id_usuario.help_text }}</p>
                         {% endif %}
                     </div>
-                    
                     <div class="md:col-span-2">
-                        <label for="{{ form.observacion.id_for_label }}" class="form-label">
-                            <i class="fas fa-sticky-note mr-1"></i>{{ form.observacion.label }}
+                        <label for="{{ form.motivo.id_for_label }}" class="form-label">
+                            <i class="fas fa-sticky-note mr-1"></i>{{ form.motivo.label }}
                         </label>
-                        {{ form.observacion }}
-                        {% if form.observacion.errors %}
+                        {{ form.motivo }}
+                        {% if form.motivo.errors %}
                             <p class="form-error-message">
-                                <i class="fas fa-exclamation-triangle"></i>{{ form.observacion.errors|join:", " }}
+                                <i class="fas fa-exclamation-triangle"></i>{{ form.motivo.errors|join:", " }}
                             </p>
-                        {% endif %}
-                        {% if form.observacion.help_text %}
-                            <p class="form-help-text">{{ form.observacion.help_text }}</p>
                         {% endif %}
                     </div>
                 </div>
             </div>
-
-            <!-- Sección de Detalles de Producción (Formset) CORREGIDO -->
             <div class="form-container p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-semibold flex items-center" style="color: {{ colores.primary }};">
-                        <i class="fas fa-boxes mr-2"></i>Productos Fabricados
+                        <i class="fas fa-undo-alt mr-2"></i>Productos Devueltos
                         <span class="product-counter ml-3" id="productCounter">1 producto</span>
                     </h2>
                     <button type="button" id="add-detalle-form" class="btn-add-detail">
                         <i class="fas fa-plus mr-2"></i>Agregar Producto
                     </button>
                 </div>
-
                 {{ detalle_formset.management_form }}
                 <div id="detalle-forms-container" class="space-y-4">
                     {% for form_item in detalle_formset %}
@@ -327,9 +309,8 @@
                                 </button>
                             {% endif %}
                         </div>
-                        
                         {{ form_item.id }}
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="{{ form_item.id_producto.id_for_label }}" class="form-label required-field">
                                     <i class="fas fa-cube mr-1"></i>{{ form_item.id_producto.label }}
@@ -341,39 +322,14 @@
                                     </p>
                                 {% endif %}
                             </div>
-                            
                             <div>
-                                <label for="{{ form_item.cantidad.id_for_label }}" class="form-label required-field">
-                                    <i class="fas fa-sort-numeric-up mr-1"></i>{{ form_item.cantidad.label }}
+                                <label for="{{ form_item.cantidadDevuelta.id_for_label }}" class="form-label required-field">
+                                    <i class="fas fa-sort-numeric-up mr-1"></i>{{ form_item.cantidadDevuelta.label }}
                                 </label>
-                                {{ form_item.cantidad }}
-                                {% if form_item.cantidad.errors %}
+                                {{ form_item.cantidadDevuelta }}
+                                {% if form_item.cantidadDevuelta.errors %}
                                     <p class="form-error-message">
-                                        <i class="fas fa-exclamation-triangle"></i>{{ form_item.cantidad.errors|join:", " }}
-                                    </p>
-                                {% endif %}
-                            </div>
-                            
-                            <div>
-                                <label for="{{ form_item.costo_unitario.id_for_label }}" class="form-label required-field">
-                                    <i class="fas fa-dollar-sign mr-1"></i>{{ form_item.costo_unitario.label }}
-                                </label>
-                                {{ form_item.costo_unitario }}
-                                {% if form_item.costo_unitario.errors %}
-                                    <p class="form-error-message">
-                                        <i class="fas fa-exclamation-triangle"></i>{{ form_item.costo_unitario.errors|join:", " }}
-                                    </p>
-                                {% endif %}
-                            </div>
-                            
-                            <div>
-                                <label for="{{ form_item.idFabricante.id_for_label }}" class="form-label required-field">
-                                    <i class="fas fa-user-hard-hat mr-1"></i>{{ form_item.idFabricante.label }}
-                                </label>
-                                {{ form_item.idFabricante }}
-                                {% if form_item.idFabricante.errors %}
-                                    <p class="form-error-message">
-                                        <i class="fas fa-exclamation-triangle"></i>{{ form_item.idFabricante.errors|join:", " }}
+                                        <i class="fas fa-exclamation-triangle"></i>{{ form_item.cantidadDevuelta.errors|join:", " }}
                                     </p>
                                 {% endif %}
                             </div>
@@ -381,8 +337,6 @@
                     </div>
                     {% endfor %}
                 </div>
-                
-                <!-- Plantilla para nuevos formularios (oculta) CORREGIDO -->
                 <div id="empty-form-template" class="hidden">
                     <div class="formset-row detalle-form fade-in" id="detalle-form-__prefix__">
                         <div class="formset-row-header">
@@ -394,49 +348,31 @@
                                 <i class="fas fa-trash-alt mr-1"></i>Quitar
                             </button>
                         </div>
-                        
                         {{ detalle_formset.empty_form.id }}
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="{{ detalle_formset.empty_form.id_producto.id_for_label }}" class="form-label required-field">
                                     <i class="fas fa-cube mr-1"></i>{{ detalle_formset.empty_form.id_producto.label }}
                                 </label>
                                 {{ detalle_formset.empty_form.id_producto }}
                             </div>
-                            
                             <div>
-                                <label for="{{ detalle_formset.empty_form.cantidad.id_for_label }}" class="form-label required-field">
-                                    <i class="fas fa-sort-numeric-up mr-1"></i>{{ detalle_formset.empty_form.cantidad.label }}
+                                <label for="{{ detalle_formset.empty_form.cantidadDevuelta.id_for_label }}" class="form-label required-field">
+                                    <i class="fas fa-sort-numeric-up mr-1"></i>{{ detalle_formset.empty_form.cantidadDevuelta.label }}
                                 </label>
-                                {{ detalle_formset.empty_form.cantidad }}
-                            </div>
-                            
-                            <div>
-                                <label for="{{ detalle_formset.empty_form.costo_unitario.id_for_label }}" class="form-label required-field">
-                                    <i class="fas fa-dollar-sign mr-1"></i>{{ detalle_formset.empty_form.costo_unitario.label }}
-                                </label>
-                                {{ detalle_formset.empty_form.costo_unitario }}
-                            </div>
-                            
-                            <div>
-                                <label for="{{ detalle_formset.empty_form.idFabricante.id_for_label }}" class="form-label required-field">
-                                    <i class="fas fa-user-hard-hat mr-1"></i>{{ detalle_formset.empty_form.idFabricante.label }}
-                                </label>
-                                {{ detalle_formset.empty_form.idFabricante }}
+                                {{ detalle_formset.empty_form.cantidadDevuelta }}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Botones de Acción -->
             <div class="flex justify-end space-x-4 pt-6">
-                <a href="{% url 'crud:produccion_list' %}" class="btn-cancel-form">
+                <a href="{% url 'devolucion:devolucion_list' %}" class="btn-cancel-form">
                     <i class="fas fa-times mr-2"></i>Cancelar
                 </a>
                 <button type="submit" class="btn-submit-form" id="submitBtn">
                     <i class="fas fa-save mr-2"></i>
-                    <span id="submitText">Guardar Producción</span>
+                    <span id="submitText">Guardar Devolución</span>
                     <i class="fas fa-spinner fa-spin ml-2 hidden" id="submitSpinner"></i>
                 </button>
             </div>
@@ -444,6 +380,7 @@
     </div>
 </div>
 {% endblock %}
+
 
 {% block extra_js %}
 <script>
@@ -600,7 +537,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // CORREGIDO: Manejo del envío del formulario sin duplicación
-    const form = document.getElementById('produccionForm');
+    const form = document.getElementById('devolucionForm');
     form.addEventListener('submit', function(e) {
         submitBtn.disabled = true;
         submitText.textContent = 'Guardando...';
@@ -618,7 +555,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isValid) {
             e.preventDefault();
             submitBtn.disabled = false;
-            submitText.textContent = 'Guardar Producción';
+            submitText.textContent = 'Guardar Devolucion';
             submitSpinner.classList.add('hidden');
             
             const firstError = form.querySelector('.form-error-message');
@@ -642,14 +579,14 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let [key, value] of formData.entries()) {
             data[key] = value;
         }
-        localStorage.setItem('nexo_produccion_draft', JSON.stringify(data));
+        localStorage.setItem('nexo_devolucion_draft', JSON.stringify(data));
     }
     
     // Auto-guardar cada 30 segundos
     setInterval(autoSave, 30000);
     
     // Restaurar borrador si existe
-    const draft = localStorage.getItem('nexo_produccion_draft');
+    const draft = localStorage.getItem('nexo_devolucion_draft');
     if (draft && confirm('Se encontró un borrador guardado. ¿Desea restaurarlo?')) {
         try {
             const data = JSON.parse(draft);
@@ -666,7 +603,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Limpiar borrador al enviar exitosamente
     form.addEventListener('submit', function() {
-        localStorage.removeItem('nexo_produccion_draft');
+        localStorage.removeItem('nexo_devolucion_draft');
     });
 
     // CORREGIDO: Prevenir duplicación en refresh

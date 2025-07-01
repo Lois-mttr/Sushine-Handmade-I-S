@@ -1,0 +1,376 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Lista de Devoluciones - NEXO{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-industry mr-2" style="color: {{ colores.primary }};"></i>Gestión de Devoluciones
+{% endblock %}
+
+{% block page_subtitle %}
+    Administra los registros de Devoluciones. Aquí puedes ver y editar.
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table-responsive {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .badge-activo {
+        background: linear-gradient(135deg, {{ colores.success }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .badge-inactivo {
+        background: linear-gradient(135deg, {{ colores.danger }} 0%, #d07010 100%);
+        color: {{ colores.white }};
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .filtros-card {
+        background: {{ colores.white }};
+        border: 1px solid {{ colores.bg_light }};
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(57, 191, 178, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .filtros-card:hover {
+        box-shadow: 0 8px 15px -3px rgba(57, 191, 178, 0.15);
+    }
+    
+    .btn-nexo-primary {
+        background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-nexo-primary:hover {
+        background: linear-gradient(135deg, #2da89e 0%, #258a7f 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(57, 191, 178, 0.3);
+    }
+    
+    .action-btn {
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+    }
+    
+    .action-btn:hover {
+        transform: scale(1.1);
+        text-decoration: none;
+    }
+    
+    .action-btn-view {
+        color: {{ colores.info }};
+    }
+    
+    .action-btn-view:hover {
+        background: rgba(39, 82, 242, 0.1);
+        color: #1e40af;
+    }
+    
+    .action-btn-edit {
+        color: {{ colores.warning }};
+    }
+    
+    .action-btn-edit:hover {
+        background: rgba(242, 206, 22, 0.1);
+        color: #d97706;
+    }
+    
+    .action-btn-delete {
+        color: {{ colores.danger }};
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .action-btn-delete:hover {
+        background: rgba(242, 134, 39, 0.1);
+        color: #dc2626;
+    }
+    
+    .action-btn-disabled {
+        color: #9ca3af;
+        cursor: not-allowed;
+    }
+    
+    .action-btn-disabled:hover {
+        background: rgba(156, 163, 175, 0.1);
+        transform: none;
+    }
+    
+    .pagination-btn {
+        background: {{ colores.white }};
+        border: 1px solid {{ colores.bg_light }};
+        color: {{ colores.text_medium }};
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .pagination-btn:hover {
+        background: {{ colores.primary }};
+        border-color: {{ colores.primary }};
+        color: {{ colores.white }};
+        text-decoration: none;
+    }
+    
+    .pagination-btn.active {
+        background: {{ colores.primary }};
+        border-color: {{ colores.primary }};
+        color: {{ colores.white }};
+    }
+    
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+        background: {{ colores.white }};
+        border-radius: 0.75rem;
+        border: 2px dashed {{ colores.bg_light }};
+    }
+    
+    .row-inactive {
+        opacity: 0.6;
+        background-color: #f9fafb;
+    }
+    
+    @media (max-width: 768px) {
+        .table-responsive {
+            font-size: 0.875rem;
+        }
+        
+        .action-btn {
+            padding: 0.375rem;
+        }
+        
+        .badge-activo, .badge-inactivo {
+            font-size: 0.625rem;
+            padding: 0.125rem 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
+    <div class="max-w-7xl mx-auto">
+        <!-- Botón para Nueva Devolución -->
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Devoluciones</h1>
+                <p class="text-gray-600 mt-1">Total: {{ total_count }} registro{{ total_count|pluralize }}</p>
+            </div>
+            <a href="{% url 'devolucion:devolucion_create' %}" 
+               class="btn-nexo-primary inline-flex items-center px-6 py-3 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200">
+                <i class="fas fa-plus mr-2"></i>Nueva Devolución
+            </a>
+        </div>
+
+        <!-- Filtros de Búsqueda -->
+        <div class="filtros-card p-6 mb-6">
+            <form method="get" id="filterForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label for="{{ filtro_form.fecha_desde.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ filtro_form.fecha_desde.label }}
+                    </label>
+                    {{ filtro_form.fecha_desde }}
+                </div>
+                <div>
+                    <label for="{{ filtro_form.fecha_hasta.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ filtro_form.fecha_hasta.label }}
+                    </label>
+                    {{ filtro_form.fecha_hasta }}
+                </div>
+                <div class="flex space-x-2">
+                    <button type="submit" class="btn-nexo-primary flex-1 inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium">
+                        <i class="fas fa-search mr-2"></i>Buscar
+                    </button>
+                    <a href="{% url 'devolucion:devolucion_list' %}" 
+                       class="bg-gray-300 hover:bg-gray-400 text-gray-800 inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors" 
+                       title="Limpiar filtros">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabla de Resultados -->
+            <div class="bg-white shadow-md rounded-lg overflow-hidden table-responsive">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center" style="background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);">
+            <h3 class="text-lg font-semibold text-white flex items-center">
+                <i class="fas fa-list-ul mr-2"></i>
+                Registros de Devoluciones
+            </h3>
+            <span class="text-white text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">
+                {{ total_count }} registro{{ total_count|pluralize }} encontrados
+            </span>
+        </div>
+
+        {% if page_obj.object_list %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-hashtag mr-1"></i>ID
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-calendar-alt mr-1"></i>Fecha
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-sticky-note mr-1"></i>Motivo
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas mr-1"></i>ID Producto
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas mr-1"></i>Cantidad
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for item in page_obj.object_list %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <a href="{% url 'devolucion:devolucion_detail' item.idDevolucion %}" class="hover:underline">
+                                #{{ item.idDevolucion }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ item.fechaDevolucion|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ item.motivo|default:"N/A" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ item.id_producto|default:"-" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ item.cantidadDevuelta|default:0 }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <i class="fas fa-undo-alt fa-4x text-gray-400 mb-4"></i>
+            <h4 class="text-lg font-medium text-gray-700 mb-2">No hay devoluciones registradas</h4>
+            <p class="text-gray-500">Puedes comenzar registrando una devolución desde el botón superior.</p>
+        </div>
+        {% endif %}
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle de filtros
+    const toggleFilters = document.getElementById('toggleFilters');
+    const filterForm = document.getElementById('filterForm');
+    const filterIcon = document.getElementById('filterIcon');
+
+    if (toggleFilters && filterForm) {
+        toggleFilters.addEventListener('click', function() {
+            if (filterForm.style.display === 'none') {
+                filterForm.style.display = 'grid';
+                filterIcon.className = 'fas fa-chevron-up';
+            } else {
+                filterForm.style.display = 'none';
+                filterIcon.className = 'fas fa-chevron-down';
+            }
+        });
+    }
+
+    
+ 
+
+    // Cerrar modal
+    const cancelButton = document.getElementById('cancelDeleteButton');
+    const modal = document.getElementById('confirmDeleteModal');
+
+    if (cancelButton && modal) {
+        cancelButton.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+        
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape" && !modal.classList.contains('hidden')) {
+                modal.classList.add('hidden');
+            }
+        });
+        
+        // Cerrar modal al hacer clic fuera
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+
+    // Validación de fechas en tiempo real
+    const fechaDesde = document.querySelector('input[name="fecha_desde"]');
+    const fechaHasta = document.querySelector('input[name="fecha_hasta"]');
+    
+    function validarFechas() {
+        if (fechaDesde && fechaHasta && fechaDesde.value && fechaHasta.value) {
+            const desde = new Date(fechaDesde.value);
+            const hasta = new Date(fechaHasta.value);
+            
+            if (desde > hasta) {
+                fechaHasta.setCustomValidity('La fecha hasta no puede ser anterior a la fecha desde');
+                fechaHasta.reportValidity();
+            } else {
+                fechaHasta.setCustomValidity('');
+            }
+        }
+    }
+    
+    if (fechaDesde) {
+        fechaDesde.addEventListener('change', validarFechas);
+    }
+    
+    if (fechaHasta) {
+        fechaHasta.addEventListener('change', validarFechas);
+    }
+
+    // Animaciones de entrada para las filas de la tabla
+    const tableRows = document.querySelectorAll('tbody tr');
+    tableRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(10px)';
+        setTimeout(() => {
+            row.style.transition = 'all 0.3s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+});
+</script>
+{% endblock %}

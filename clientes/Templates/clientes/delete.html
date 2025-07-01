@@ -4,6 +4,7 @@
 {% block title %}Eliminar Cliente - NEXO{% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
 <div class="min-h-screen flex items-center justify-center" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
     <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
         <div class="mt-3 text-center">
@@ -28,6 +29,81 @@
                 </a>
             </div>
         </div>
+=======
+<style>
+    /* Estilos para la confirmación de eliminación */
+    .delete-container {
+        background-color: #f9fafb;
+        min-height: 100vh;
+        padding: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .delete-card {
+        background-color: #fff;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .delete-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 1rem;
+    }
+
+    .delete-message {
+        color: #6b7280;
+        margin-bottom: 2rem;
+    }
+
+    .btn-danger {
+        background-color: #ef4444;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn-danger:hover {
+        background-color: #dc2626;
+    }
+
+    .btn-secondary {
+        background-color: #f3f4f6;
+        color: #374151;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e5e7eb;
+    }
+</style>
+
+<div class="delete-container">
+    <div class="delete-card">
+        <h1 class="delete-title">Eliminar Cliente</h1>
+        <p class="delete-message">¿Estás seguro de que deseas eliminar a {{ object.persona }}?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn-danger">
+                <i class="fas fa-trash-alt mr-2"></i>Eliminar
+            </button>
+            <a href="{% url 'clientes:list' %}" class="btn-secondary ml-2">
+                <i class="fas fa-times mr-2"></i>Cancelar
+            </a>
+        </form>
+>>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
     </div>
 </div>
 {% endblock %}

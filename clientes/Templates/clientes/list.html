@@ -4,6 +4,7 @@
 
 {% block title %}Lista de Clientes - NEXO{% endblock %}
 
+<<<<<<< HEAD
 {% block page_title %}
     <i class="fas fa-users mr-2" style="color: {{ colores.primary }};"></i>Gestión de Clientes
 {% endblock %}
@@ -94,9 +95,128 @@
 </style>
 {% endblock %}
 
+=======
+>>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
 {% block content %}
-<div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
+<style>
+    /* Estilos para la lista de clientes */
+    .cliente-container {
+        background-color: #f9fafb;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .filtros-card {
+        background: linear-gradient(135deg, #39bfb2 0%, #4ECDC4 100%);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #fff;
+        font-weight: 500;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+        background-color: #fff;
+    }
+
+    .btn-nexo-primary {
+        background-color: #fff;
+        color: #39bfb2;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-nexo-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .btn-cancel-form {
+        background-color: rgba(255,255,255,0.2);
+        color: #fff;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .table-container {
+        background-color: #fff;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, #39bfb2 0%, #4ECDC4 100%);
+        padding: 1rem 1.5rem;
+        color: #fff;
+    }
+
+    .badge-activo {
+        background-color: #10b981;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .badge-inactivo {
+        background-color: #6b7280;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .action-btn-view {
+        color: #3b82f6;
+        transition: all 0.2s ease;
+    }
+
+    .action-btn-edit {
+        color: #f59e0b;
+        transition: all 0.2s ease;
+    }
+
+    .action-btn-delete {
+        color: #ef4444;
+        transition: all 0.2s ease;
+    }
+
+    .action-btn-view:hover,
+    .action-btn-edit:hover,
+    .action-btn-delete:hover {
+        transform: scale(1.1);
+    }
+
+    .row-inactive {
+        background-color: #f3f4f6;
+    }
+
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+        color: #6b7280;
+    }
+</style>
+
+<div class="cliente-container">
     <div class="max-w-7xl mx-auto">
+<<<<<<< HEAD
         <div class="mb-6 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Clientes</h1>
@@ -107,6 +227,10 @@
             </a>
         </div>
         <div class="filtros-card p-6 mb-6">
+=======
+        <!-- Filtros de Búsqueda -->
+        <div class="filtros-card">
+>>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
             <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="form-label">Cédula</label>
@@ -130,11 +254,20 @@
                 </div>
             </form>
         </div>
+<<<<<<< HEAD
         <div class="bg-white shadow-md rounded-lg overflow-hidden table-responsive">
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center" style="background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);">
                 <h3 class="text-lg font-semibold text-white flex items-center">
                     <i class="fas fa-list-ul mr-2"></i>
                     Registros de Clientes
+=======
+
+        <!-- Tabla de Clientes -->
+        <div class="table-container">
+            <div class="table-header flex justify-between items-center">
+                <h3 class="text-lg font-semibold">
+                    <i class="fas fa-list-ul mr-2"></i>Registros de Clientes
+>>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                 </h3>
                 <span class="text-white text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">
                     {{ clientes|length }} registro{{ clientes|length|pluralize }}
@@ -228,7 +361,7 @@
             <div class="empty-state">
                 <i class="fas fa-user-slash fa-3x text-gray-400 mb-4"></i>
                 <h4 class="text-lg font-medium">No se encontraron clientes</h4>
-                <a href="{% url 'clientes:create' %}" class="btn-nexo-primary mt-4">
+                <a href="{% url 'clientes:create' %}" class="btn-nexo-primary mt-4 inline-block">
                     <i class="fas fa-plus mr-2"></i>Registrar Primer Cliente
                 </a>
             </div>

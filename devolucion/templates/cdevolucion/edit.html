@@ -1,14 +1,14 @@
 {% extends "layouts/base.html" %}
 {% load static %}
 
-{% block title %}Editar Producción #{{ produccion.idproduccion }} - NEXO{% endblock %}
+{% block title %}Editar Devolucion #{{ produccion.idproduccion }} - NEXO{% endblock %}
 
 {% block page_title %}
-    <i class="fas fa-edit mr-2" style="color: {{ colores.warning }};"></i>Editar Producción #{{ produccion.idproduccion }}
+    <i class="fas fa-edit mr-2" style="color: {{ colores.warning }};"></i>Editar Devolucion #{{ produccion.idproduccion }}
 {% endblock %}
 
 {% block page_subtitle %}
-    Modifica los datos de la producción registrada el {{ produccion.fechaentrada|date:"d/m/Y" }}.
+    Modifica los datos de la Devolucion registrada el {{ devolucion.fechaentrada|date:"d/m/Y" }}.
 {% endblock %}
 
 {% block extra_css %}
@@ -60,44 +60,37 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8" style="background-color: {{ colores.bg_very_light }};">
 
-    <form method="post" id="produccionEditForm">
+    <form method="post" id="devolucionEditForm">
         {% csrf_token %}
-        
-        <!-- Sección de Cabecera de Producción -->
+
+        <!-- Cabecera de Devolución -->
         <div class="bg-white p-6 rounded-lg shadow-md mb-6">
             <h2 class="text-xl font-semibold mb-4" style="color: {{ colores.primary }}; border-bottom: 2px solid {{ colores.bg_light }}; padding-bottom: 0.5rem;">
-                <i class="fas fa-file-alt mr-2"></i>Datos Generales de la Producción
+                <i class="fas fa-undo-alt mr-2"></i>Editar Devolución
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="{{ form.fechaEntrada.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                        {{ form.fechaEntrada.label }} <span class="text-red-500">*</span>
+                    <label for="{{ form.fechaDevolucion.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.fechaDevolucion.label }} <span class="text-red-500">*</span>
                     </label>
-                    {{ form.fechaEntrada }}
-                    {% if form.fechaEntrada.errors %}<p class="mt-1 text-xs text-red-500">{{ form.fechaEntrada.errors|join:", " }}</p>{% endif %}
-                </div>
-                <div>
-                    <label for="{{ form.id_usuario.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                        {{ form.id_usuario.label }} <span class="text-red-500">*</span>
-                    </label>
-                    {{ form.id_usuario }}
-                    {% if form.id_usuario.errors %}<p class="mt-1 text-xs text-red-500">{{ form.id_usuario.errors|join:", " }}</p>{% endif %}
+                    {{ form.fechaDevolucion }}
+                    {% if form.fechaDevolucion.errors %}<p class="mt-1 text-xs text-red-500">{{ form.fechaDevolucion.errors|join:", " }}</p>{% endif %}
                 </div>
                 <div class="md:col-span-2">
-                    <label for="{{ form.observacion.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                        {{ form.observacion.label }}
+                    <label for="{{ form.motivo.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.motivo.label }}
                     </label>
-                    {{ form.observacion }}
-                    {% if form.observacion.errors %}<p class="mt-1 text-xs text-red-500">{{ form.observacion.errors|join:", " }}</p>{% endif %}
+                    {{ form.motivo }}
+                    {% if form.motivo.errors %}<p class="mt-1 text-xs text-red-500">{{ form.motivo.errors|join:", " }}</p>{% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- Sección de Detalles de Producción (Formset) -->
+        <!-- Detalles de Productos Devueltos -->
         <div class="bg-white p-6 rounded-lg shadow-md mb-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold" style="color: {{ colores.primary }};">
-                    <i class="fas fa-boxes mr-2"></i>Productos Fabricados
+                    <i class="fas fa-box-open mr-2"></i>Productos Devueltos
                 </h2>
                 <button type="button" id="add-detalle-form" class="add-row-btn px-4 py-2 rounded-md text-sm font-medium">
                     <i class="fas fa-plus mr-1"></i> Agregar Producto
@@ -110,26 +103,16 @@
                 <div class="formset-row detalle-form mb-4 p-4 border rounded-md bg-gray-50 relative" id="detalle-form-{{ forloop.counter0 }}">
                     <h3 class="text-md font-medium text-gray-800 mb-3">Producto #{{ forloop.counter }}</h3>
                     {{ form_item.id }} 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="{{ form_item.id_producto.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form_item.id_producto.label }} <span class="text-red-500">*</span></label>
                             {{ form_item.id_producto }}
                             {% if form_item.id_producto.errors %}<p class="mt-1 text-xs text-red-500">{{ form_item.id_producto.errors|join:", " }}</p>{% endif %}
                         </div>
                         <div>
-                            <label for="{{ form_item.cantidad.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form_item.cantidad.label }} <span class="text-red-500">*</span></label>
-                            {{ form_item.cantidad }}
-                            {% if form_item.cantidad.errors %}<p class="mt-1 text-xs text-red-500">{{ form_item.cantidad.errors|join:", " }}</p>{% endif %}
-                        </div>
-                        <div>
-                            <label for="{{ form_item.costo_unitario.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form_item.costo_unitario.label }} <span class="text-red-500">*</span></label>
-                            {{ form_item.costo_unitario }}
-                            {% if form_item.costo_unitario.errors %}<p class="mt-1 text-xs text-red-500">{{ form_item.costo_unitario.errors|join:", " }}</p>{% endif %}
-                        </div>
-                        <div>
-                            <label for="{{ form_item.idFabricante.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form_item.idFabricante.label }} <span class="text-red-500">*</span></label>
-                            {{ form_item.idFabricante }}
-                            {% if form_item.idFabricante.errors %}<p class="mt-1 text-xs text-red-500">{{ form_item.idFabricante.errors|join:", " }}</p>{% endif %}
+                            <label for="{{ form_item.cantidadDevuelta.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form_item.cantidadDevuelta.label }} <span class="text-red-500">*</span></label>
+                            {{ form_item.cantidadDevuelta }}
+                            {% if form_item.cantidadDevuelta.errors %}<p class="mt-1 text-xs text-red-500">{{ form_item.cantidadDevuelta.errors|join:", " }}</p>{% endif %}
                         </div>
                     </div>
                     {% if detalle_formset.can_delete %}
@@ -144,26 +127,20 @@
                 </div>
                 {% endfor %}
             </div>
+
+            <!-- Template vacío -->
             <div id="empty-form-template" class="hidden">
                 <div class="formset-row detalle-form mb-4 p-4 border rounded-md bg-gray-50 relative">
                     <h3 class="text-md font-medium text-gray-800 mb-3">Producto #__prefix__</h3>
                     {{ detalle_formset.empty_form.id }}
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="{{ detalle_formset.empty_form.id_producto.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ detalle_formset.empty_form.id_producto.label }} <span class="text-red-500">*</span></label>
                             {{ detalle_formset.empty_form.id_producto }}
                         </div>
                         <div>
-                            <label for="{{ detalle_formset.empty_form.cantidad.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ detalle_formset.empty_form.cantidad.label }} <span class="text-red-500">*</span></label>
-                            {{ detalle_formset.empty_form.cantidad }}
-                        </div>
-                        <div>
-                            <label for="{{ detalle_formset.empty_form.costo_unitario.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ detalle_formset.empty_form.costo_unitario.label }} <span class="text-red-500">*</span></label>
-                            {{ detalle_formset.empty_form.costo_unitario }}
-                        </div>
-                        <div>
-                            <label for="{{ detalle_formset.empty_form.idFabricante.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ detalle_formset.empty_form.idFabricante.label }} <span class="text-red-500">*</span></label>
-                            {{ detalle_formset.empty_form.idFabricante }}
+                            <label for="{{ detalle_formset.empty_form.cantidadDevuelta.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ detalle_formset.empty_form.cantidadDevuelta.label }} <span class="text-red-500">*</span></label>
+                            {{ detalle_formset.empty_form.cantidadDevuelta }}
                         </div>
                     </div>
                     {% if detalle_formset.can_delete %}
@@ -181,11 +158,11 @@
 
         <!-- Botones de Acción -->
         <div class="mt-8 flex justify-end space-x-3">
-            <a href="{% url 'crud:produccion_detail' pk=produccion.idproduccion %}" class="btn-cancel-nexo inline-flex items-center px-6 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+            <a href="{% url 'crud:devolucion_detail' pk=devolucion.idDevolucion %}" class="btn-cancel-nexo inline-flex items-center px-6 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700">
                 <i class="fas fa-times mr-2"></i>Cancelar
             </a>
-            <button type="submit" class="btn-submit-nexo inline-flex items-center px-6 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2" style="background-color: {{ colores.warning }}; color: black;">
-                <i class="fas fa-save mr-2"></i>Actualizar Producción
+            <button type="submit" class="btn-submit-nexo inline-flex items-center px-6 py-2.5 rounded-md shadow-sm text-sm font-medium text-white" style="background-color: {{ colores.warning }};">
+                <i class="fas fa-save mr-2"></i>Actualizar Devolución
             </button>
         </div>
     </form>
