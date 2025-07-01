@@ -237,7 +237,7 @@ class Detalleventa(models.Model):
         db_column='idVenta',
         to_field='id_venta',  # Relaciona con el campo correcto de Venta
         on_delete=models.CASCADE,
-        primary_key=False
+        primary_key=True  # Cambiado a clave primaria
     )
     idproventa = models.ForeignKey(
         Producto,
@@ -255,6 +255,11 @@ class Detalleventa(models.Model):
 
     def __str__(self):
         return f"Venta {self.idventa_id} - Producto {self.idproventa_id}"
+
+    @property
+    def id(self):
+        """Compatibilidad: retorna una tupla única como identificador."""
+        return (self.idventa_id, self.idproventa_id)
 
 class Devolucion(models.Model):
     iddevolucion = models.AutoField(db_column='idDevolucion', primary_key=True)

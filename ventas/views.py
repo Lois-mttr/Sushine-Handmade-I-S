@@ -445,11 +445,22 @@ def editar_venta(request, venta_id):
         venta = get_object_or_404(Venta, id_venta=venta_id)
         venta_form = VentaForm(instance=venta)
         detalle_form = DetalleVentaForm()
-        detalles_actuales = Detalleventa.objects.filter(idventa=venta).select_related('idproventa')
+        # Filtrar detalles solo de productos en ubicación 2 (sucursal)
+        detalles_actuales = Detalleventa.objects.filter(idventa=venta, idproventa__idubicacionpro_id=2).select_related('idproventa')
         productos_disponibles = obtener_productos_disponibles()
         usuario_actual = request.nexo_user
         user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
         user_rol = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
+        # Preparar detalles en formato JSON para el formulario
+        detalles_json = json.dumps([
+            {
+                'idProVenta': str(d.idproventa.id_producto),
+                'cantidadVenta': d.cantidadventa,
+                'nombreProducto': d.idproventa.nombreproducto,
+                'precioUnitario': float(d.idproventa.precioproducto) * 1.15  # o el precio con IVA que uses
+            }
+            for d in detalles_actuales
+        ])
         context = {
             'page_title': f'Editar Venta #{venta.id_venta} - NEXO',
             'venta': venta,
@@ -460,6 +471,7 @@ def editar_venta(request, venta_id):
             'usuario_actual': usuario_actual,
             'user_iniciales': user_iniciales,
             'user_rol': user_rol,
+            'detalles_json': detalles_json,  # Agregar detalles en formato JSON
         }
         return render(request, 'ventas/editar_venta.html', context)
     except Exception as e:

@@ -15,7 +15,6 @@
 
 {% block extra_css %}
 {{ block.super }}
-<link rel="stylesheet" href="{% static 'Css/toasts_modals.css' %}">
 <style>
     /* Estilos personalizados para ventas */
     .ventas-header {
@@ -123,7 +122,7 @@
                         </div>
                         <div>
                             <div class="text-2xl font-bold text-gray-900">
-                                C${{ estadisticas.ventas_hoy.total|default_if_none:0|default:0|floatformat:2 }}
+                                C${{ estadisticas.ventas_hoy.total|default_if_none:0|default:0|stringformat:".2f" }}
                             </div>
                             <div class="text-sm text-gray-600">Ventas Hoy</div>
                         </div>
@@ -151,7 +150,7 @@
                         </div>
                         <div>
                             <div class="text-2xl font-bold text-gray-900">
-                                C${{ estadisticas.ventas_ayer.total|default_if_none:0|default:0|floatformat:2 }}
+                                C${{ estadisticas.ventas_ayer.total|default_if_none:0|default:0|stringformat:".2f" }}
                             </div>
                             <div class="text-sm text-gray-600">Ventas Ayer</div>
                         </div>
@@ -165,7 +164,7 @@
                         </div>
                         <div>
                             <div class="text-2xl font-bold text-gray-900">
-                                {% if diferencia_ventas|default_if_none:0|default:0 >= 0 %}+{% endif %}C${{ diferencia_ventas|default_if_none:0|default:0|floatformat:2 }}
+                                {% if diferencia_ventas|default_if_none:0|default:0 >= 0 %}+{% endif %}C${{ diferencia_ventas|default_if_none:0|default:0|stringformat:".2f"  }}
                             </div>
                             <div class="text-sm text-gray-600">Diferencia</div>
                         </div>
@@ -314,7 +313,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-lg font-bold text-primary">
-                                            C${{ venta.total|floatformat:2 }}
+                                            C${{ venta.total|stringformat:".2f"  }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -439,7 +438,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'Js/toasts_modals.js' %}"></script>
 <script>
 function mostrarModalAnularVenta(id_venta) {
     // Validar que el id_venta sea un entero positivo antes de mostrar el modal
