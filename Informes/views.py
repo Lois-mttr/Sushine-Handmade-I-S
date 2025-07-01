@@ -194,75 +194,70 @@ def inventario_general(request):
     form = InventarioGeneralForm(request.GET or None)
     data = []
     stats = {}
-    
+
+    usuario_actual = getattr(request, 'nexo_user', None)
+    user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
+    nexo_user_role = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
+
     if form.is_valid():
         filtros = {}
-        
-        # Aplicar filtros según el rol
-        usuario_actual = getattr(request, 'nexo_user', None)
+        # Ubicación: solo ID
         if usuario_actual and usuario_actual.rol == 'encargado_sucursal':
-            # Solo inventario de sucursal (ubicación 2)
             filtros['ubicacion'] = 2
-        else:
-            # Admin puede ver todas las ubicaciones
-            if form.cleaned_data.get('ubicacion'):
-                filtros['ubicacion'] = form.cleaned_data['ubicacion'].id_ubicacion
-        
+        elif form.cleaned_data.get('ubicacion'):
+            filtros['ubicacion'] = form.cleaned_data['ubicacion'].id_ubicacion
+
+        # Categoría: solo ID
         if form.cleaned_data.get('categoria'):
             filtros['categoria'] = form.cleaned_data['categoria'].idcategoria
-        
-        if form.cleaned_data.get('stock_bajo'):
-            filtros['stock_bajo'] = True
-        
-        # Obtener datos
+
+        # Estado de stock: upper y solo si no es vacío
+        if form.cleaned_data.get('stock_estado'):
+            estado = form.cleaned_data['stock_estado'].strip().upper()
+            if estado:
+                filtros['stock_estado'] = estado
+
+        # Búsqueda: solo si hay texto
+        if form.cleaned_data.get('buscar'):
+            buscar = form.cleaned_data['buscar'].strip()
+            if buscar:
+                filtros['buscar'] = buscar
+
+        # Filtros avanzados: solo si tienen valor
+        for campo in ['precio_min', 'precio_max', 'stock_min', 'stock_max', 'ordenar']:
+            valor = request.GET.get(campo)
+            if valor not in [None, '', 'null']:
+                filtros[campo] = valor
+
         resultado = ReportService.get_inventario_general(filtros)
         data = resultado.get('data', [])
         stats = resultado.get('stats', {})
-        
-        # Registrar generación del reporte
-        end_time = time.time()
-        tiempo_generacion = end_time - start_time
-        
-        try:
-            ReportService.log_report_generation(
-                usuario=usuario_actual,
-                tipo_reporte='inventario_general',
-                formato=form.cleaned_data.get('formato_exportacion', 'view'),
-                filtros=filtros,
-                total_registros=len(data),
-                tiempo_generacion=tiempo_generacion,
-                ip_address=get_client_ip(request)
-            )
-        except Exception as e:
-            logger.warning(f"No se pudo registrar el log del reporte: {str(e)}")
-        
-        # Manejar exportación
+
+        # Exportación
         if form.cleaned_data.get('formato_exportacion') == 'pdf':
             return export_to_pdf(request, 'Inventario General', data, stats)
         elif form.cleaned_data.get('formato_exportacion') == 'excel':
             return export_to_excel(request, 'Inventario General', data, stats)
-    
-    # Paginación
+
     paginator = Paginator(data, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
-    usuario_actual = getattr(request, 'nexo_user', None)
-    user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
-    nexo_user_role = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
-    
+
     context = {
         'form': form,
         'page_obj': page_obj,
+        'data': page_obj.object_list,
         'stats': stats,
+        'is_paginated': paginator.num_pages > 1,
+        'paginator': paginator,
         'page_title': 'Reporte de Inventario General',
         'page_subtitle': 'Existencias actuales por producto y ubicación',
         'usuario_actual': usuario_actual,
         'user_iniciales': user_iniciales,
         'nexo_user_role': nexo_user_role,
         'colores': COLORES_NEXO,
+        'request': request,
     }
-    
     return render(request, 'Informes/inventario_general.html', context)
 
 @nexo_login_required
@@ -1012,7 +1007,6 @@ def dashboard_stats_api(request):
     """
     stats = ReportService.get_dashboard_stats()
     context = {
-        # ...otros datos...
         'stats': stats,
     }
     return JsonResponse({'stats': stats})

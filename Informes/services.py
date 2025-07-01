@@ -5,7 +5,7 @@ import logging
 from django.db import connection
 from django.utils import timezone
 from decimal import Decimal
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 import json
 from typing import Dict, List, Any, Optional
 
@@ -23,44 +23,41 @@ class ReportService:
         """
         try:
             base_query = """
-                SELECT 
-                p.id_producto,
-                p.idUbicacionPro,
-                p.nombreProducto,
-                p.descripcionProducto,
-                p.existenciaProducto,
-                p.existenciaMinima,
-                p.precioProducto,
-                p.estado as producto_estado,
-                c.idCategoria,
-                c.nombreCategoria,
-                c.descripcionCategoria,
-                u.id_ubicacion,
-                u.nombreUbicacion,
-                u.direccion,
-                CASE 
-            WHEN p.existenciaProducto <= 0 THEN 'SIN_STOCK'
-            WHEN p.existenciaProducto <= p.existenciaMinima THEN 'CRITICO'
-            WHEN p.existenciaProducto <= (p.existenciaMinima * 2) THEN 'BAJO'
-            WHEN p.existenciaProducto <= (p.existenciaMinima * 5) THEN 'NORMAL'
-            ELSE 'ALTO'
-        END as nivel_stock,
-        (p.existenciaProducto * COALESCE(p.precioProducto, 0)) as valor_total_stock,
-        DATEDIFF(CURDATE(), (SELECT MIN(pp.fechaEntrada) 
-        FROM ProductosProduccion pp
-        JOIN DetalleProduccion dp ON pp.idProduccion = dp.id_produccion
-        WHERE dp.id_producto = p.id_producto)) as dias_desde_creacion,(
+    SELECT 
+    p.id_producto,
+    p.idUbicacionPro,
+    p.nombreProducto,
+    p.descripcionProducto,
+    p.existenciaProducto,
+    p.existenciaMinima,
+    p.precioProducto,
+    p.estado as producto_estado,
+    c.idCategoria,
+    c.nombreCategoria,
+    c.descripcionCategoria,
+    u.id_ubicacion,
+    u.nombreUbicacion,
+    u.direccion,
+    CASE 
+        WHEN p.existenciaProducto <= 0 THEN 'SIN_STOCK'
+        WHEN p.existenciaProducto <= p.existenciaMinima THEN 'CRITICO'
+        WHEN p.existenciaProducto <= (p.existenciaMinima * 2) THEN 'BAJO'
+        WHEN p.existenciaProducto <= (p.existenciaMinima * 5) THEN 'NORMAL'
+        ELSE 'ALTO'
+    END as nivel_stock,
+    (p.existenciaProducto * COALESCE(p.precioProducto, 0)) as valor_total_stock,
+    (
         SELECT COUNT(*) 
         FROM DetalleVenta dv 
         JOIN Venta v ON dv.idVenta = v.id_venta
         WHERE dv.idProVenta = p.id_producto 
-        AND v.fechaVenta >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)) as ventas_ultimo_mes
-            FROM Producto p
-            LEFT JOIN Categoria c ON p.idCategoriaPro = c.idCategoria
-            LEFT JOIN Ubicacion u ON p.idUbicacionPro = u.id_ubicacion
-        WHERE p.estado = 1
+        AND v.fechaVenta >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+    ) as ventas_ultimo_mes
+    FROM Producto p
+    INNER JOIN Categoria c ON p.idCategoriaPro = c.idCategoria
+    INNER JOIN Ubicacion u ON p.idUbicacionPro = u.id_ubicacion
+    WHERE p.estado = 1
             """
-            
             params = []
             conditions = []
             
@@ -74,12 +71,14 @@ class ReportService:
                     params.append(filtros['categoria'])
                 
                 if filtros.get('stock_estado'):
-                    if filtros['stock_estado'] == 'bajo':
-                        conditions.append("p.existenciaProducto <= p.existenciaMinima")
-                    elif filtros['stock_estado'] == 'critico':
+                    if filtros['stock_estado'] == 'sin_stock':
                         conditions.append("p.existenciaProducto <= 0")
+                    elif filtros['stock_estado'] == 'critico':
+                        conditions.append("p.existenciaProducto > 0 AND p.existenciaProducto <= p.existenciaMinima")
+                    elif filtros['stock_estado'] == 'bajo':
+                        conditions.append("p.existenciaProducto > p.existenciaMinima AND p.existenciaProducto <= (p.existenciaMinima * 2)")
                     elif filtros['stock_estado'] == 'normal':
-                        conditions.append("p.existenciaProducto > p.existenciaMinima AND p.existenciaProducto <= (p.existenciaMinima * 5)")
+                        conditions.append("p.existenciaProducto > (p.existenciaMinima * 2) AND p.existenciaProducto <= (p.existenciaMinima * 5)")
                     elif filtros['stock_estado'] == 'alto':
                         conditions.append("p.existenciaProducto > (p.existenciaMinima * 5)")
                 
@@ -87,11 +86,47 @@ class ReportService:
                     conditions.append("(p.nombreProducto LIKE %s OR p.descripcionProducto LIKE %s)")
                     search_term = f"%{filtros['buscar']}%"
                     params.extend([search_term, search_term])
+
+                # Filtros avanzados
+                if filtros.get('precio_min'):
+                    conditions.append("p.precioProducto >= %s")
+                    params.append(filtros['precio_min'])
+                if filtros.get('precio_max'):
+                    conditions.append("p.precioProducto <= %s")
+                    params.append(filtros['precio_max'])
+                if filtros.get('stock_min'):
+                    conditions.append("p.existenciaProducto >= %s")
+                    params.append(filtros['stock_min'])
+                if filtros.get('stock_max'):
+                    conditions.append("p.existenciaProducto <= %s")
+                    params.append(filtros['stock_max'])
             
             if conditions:
                 base_query += " AND " + " AND ".join(conditions)
             
-            base_query += " ORDER BY u.nombreUbicacion, c.nombreCategoria, p.nombreProducto"
+            # Ordenamiento avanzado
+            ordenar = filtros.get('ordenar') if filtros else None
+            if ordenar:
+                if ordenar == 'nombre':
+                    base_query += " ORDER BY p.nombreProducto ASC"
+                elif ordenar == '-nombre':
+                    base_query += " ORDER BY p.nombreProducto DESC"
+                elif ordenar == 'stock':
+                    base_query += " ORDER BY p.existenciaProducto ASC"
+                elif ordenar == '-stock':
+                    base_query += " ORDER BY p.existenciaProducto DESC"
+                elif ordenar == 'precio':
+                    base_query += " ORDER BY p.precioProducto ASC"
+                elif ordenar == '-precio':
+                    base_query += " ORDER BY p.precioProducto DESC"
+                elif ordenar == 'valor':
+                    base_query += " ORDER BY valor_total_stock ASC"
+                elif ordenar == '-valor':
+                    base_query += " ORDER BY valor_total_stock DESC"
+                else:
+                    base_query += " ORDER BY u.nombreUbicacion, c.nombreCategoria, p.nombreProducto"
+            else:
+                base_query += " ORDER BY u.nombreUbicacion, c.nombreCategoria, p.nombreProducto"
             
             with connection.cursor() as cursor:
                 cursor.execute(base_query, params)
@@ -125,12 +160,14 @@ class ReportService:
                 stats_row = cursor.fetchone()
                 stats_columns = [col[0] for col in cursor.description]
                 stats = dict(zip(stats_columns, stats_row))
+
+                # Definir total_productos antes de calcular porcentajes
+                total_productos = stats.get('total_productos', 0) or 1  # evitar división por cero
                 
                 # Calcular porcentajes
-                total_productos = stats['total_productos'] or 1
-                stats['porcentaje_sin_stock'] = round((stats['productos_sin_stock'] / total_productos) * 100, 2)
-                stats['porcentaje_stock_critico'] = round((stats['productos_stock_critico'] / total_productos) * 100, 2)
-                stats['porcentaje_stock_bajo'] = round((stats['productos_stock_bajo'] / total_productos) * 100, 2)
+                stats['porcentaje_sin_stock'] = round((stats.get('productos_sin_stock', 0) / total_productos) * 100, 2)
+                stats['porcentaje_stock_critico'] = round((stats.get('productos_stock_critico', 0) / total_productos) * 100, 2)
+                stats['porcentaje_stock_bajo'] = round((stats.get('productos_stock_bajo', 0) / total_productos) * 100, 2)
                 
                 return {
                     'data': results,
@@ -167,9 +204,9 @@ class ReportService:
                     u.rol as vendedor_rol,
                     c.idCliente as cliente_id,
                     CONCAT(COALESCE(per.primerNombre, ''), ' ', 
-                        COALESCE(per.segundoNombre, ''), ' ',
-                        COALESCE(per.primerApellido, ''), ' ',
-                        COALESCE(per.segundoApellido, '')) as cliente_nombre,
+                    COALESCE(per.segundoNombre, ''), ' ',
+                    COALESCE(per.primerApellido, ''), ' ',
+                    COALESCE(per.segundoApellido, '')) as cliente_nombre,
                     per.cedula as cliente_cedula,
                     per.telefono as cliente_telefono,
                     c.correo as cliente_correo,
@@ -228,9 +265,9 @@ class ReportService:
             
             base_query += """
                 GROUP BY v.id_venta, v.fechaVenta, v.subtotal, v.descuento, v.total, 
-                         v.estado, v.observaciones, u.idUsuario, u.nombreUsuario, u.rol,
-                         c.idCliente, per.primerNombre, per.segundoNombre, per.primerApellido, 
-                         per.segundoApellido, per.cedula, per.telefono, c.correo, c.estadoCliente
+                    v.estado, v.observaciones, u.idUsuario, u.nombreUsuario, u.rol,
+                    c.idCliente, per.primerNombre, per.segundoNombre, per.primerApellido, 
+                    per.segundoApellido, per.cedula, per.telefono, c.correo, c.estadoCliente
                 ORDER BY v.fechaVenta DESC, v.id_venta DESC
             """
             
@@ -335,7 +372,7 @@ class ReportService:
                     (dp.cantidad * dp.costo_unitario) as costo_total_item,
                     e.idEmpleado as fabricante_id,
                     CONCAT(COALESCE(per.primerNombre, ''), ' ', 
-                           COALESCE(per.primerApellido, '')) as fabricante_nombre,
+                    COALESCE(per.primerApellido, '')) as fabricante_nombre,
                     per.cedula as fabricante_cedula,
                     e.rolEmpleado as fabricante_rol,
                     e.salario as fabricante_salario,
@@ -624,180 +661,27 @@ class ReportService:
                 'success': False,
                 'error': str(e)
             }
-    # @staticmethod
-    # def log_report_generation(usuario, tipo_reporte: str, formato: str, filtros: Dict, 
-    #                         total_registros: int, tiempo_generacion: float, ip_address: str = None):
-    #     """
-    #     Registra la generación de un reporte para auditoría
-    #     """
-    #     try:
-    #         from .models import ReportLog
-    #         
-    #         ReportLog.objects.create(
-    #             usuario=usuario,
-    #             tipo_reporte=tipo_reporte,
-    #             formato_exportacion=formato,
-    #             filtros_aplicados=json.dumps(filtros) if filtros else '{}',
-    #             total_registros=total_registros,
-    #             tiempo_generacion=round(tiempo_generacion, 3),
-    #             ip_address=ip_address or 'Unknown'
-    #         )
-    #         
-    #         logger.info(f"Reporte {tipo_reporte} generado por {usuario.nombreusuario if usuario else 'Sistema'}")
-    #         
-    #     except Exception as e:
-    #         logger.error(f"Error al registrar log de reporte: {str(e)}")
     
     @staticmethod
-    def get_dashboard_stats():
+    def log_report_generation(usuario, tipo_reporte: str, formato: str, filtros: Dict, 
+                            total_registros: int, tiempo_generacion: float, ip_address: str = None):
         """
-        Devuelve estadísticas agregadas para el dashboard usando SQL crudo y la estructura de tus tablas MySQL.
+        Registra la generación de un reporte para auditoría
         """
-        stats = {
-            'reportes_hoy': 0,
-            'incremento_reportes': 0,
-            'total_productos': 0,
-            'productos_stock_bajo': 0,
-            'valor_inventario': 0,
-            'ventas_mes': 0,
-            'ventas_realizadas': 0,
-            'ventas_hoy': 0,
-            'total_facturado': 0,
-            'clientes_activos': 0,
-            'clientes_nuevos': 0,
-            'total_clientes': 0,
-            'devoluciones_mes': 0,
-            'valor_devuelto': 0,
-            'producciones_mes': 0,
-            'costo_produccion': 0,
-            'eventos_hoy': 0,
-            'errores_sistema': 0,
-        }
         try:
-            with connection.cursor() as cursor:
-                hoy = date.today()
-                ayer = hoy - timedelta(days=1)
-                primer_dia_mes = hoy.replace(day=1)
-
-                # Reportes generados hoy y ayer
-                cursor.execute("""
-                    SELECT 
-                        SUM(CASE WHEN DATE(fecha_generacion) = %s THEN 1 ELSE 0 END) as reportes_hoy,
-                        SUM(CASE WHEN DATE(fecha_generacion) = %s THEN 1 ELSE 0 END) as reportes_ayer
-                    FROM report_log
-                """, [hoy, ayer])
-                row = cursor.fetchone()
-                stats['reportes_hoy'] = row[0] or 0
-                reportes_ayer = row[1] or 0
-                stats['incremento_reportes'] = (
-                    int(((stats['reportes_hoy'] - reportes_ayer) / reportes_ayer) * 100) if reportes_ayer else (100 if stats['reportes_hoy'] else 0)
-                )
-
-                # Productos en inventario y stock bajo
-                cursor.execute("""
-                    SELECT 
-                        COUNT(*) as total_productos,
-                        SUM(CASE WHEN existenciaProducto <= existenciaMinima THEN 1 ELSE 0 END) as productos_stock_bajo,
-                        SUM(existenciaProducto * IFNULL(precioProducto, 0)) as valor_inventario
-                    FROM Producto
-                    WHERE estado = 1
-                """)
-                row = cursor.fetchone()
-                stats['total_productos'] = row[0] or 0
-                stats['productos_stock_bajo'] = row[1] or 0
-                stats['valor_inventario'] = float(row[2] or 0)
-
-                # Ventas del mes, ventas realizadas, ventas hoy y total facturado
-                cursor.execute("""
-                    SELECT 
-                        COUNT(*) as ventas_mes,
-                        SUM(CASE WHEN estado = 'REALIZADA' THEN 1 ELSE 0 END) as ventas_realizadas,
-                        SUM(CASE WHEN estado = 'REALIZADA' AND DATE(fechaVenta) = %s THEN 1 ELSE 0 END) as ventas_hoy,
-                        SUM(CASE WHEN estado = 'REALIZADA' THEN total ELSE 0 END) as total_facturado
-                    FROM Venta
-                    WHERE fechaVenta >= %s
-                """, [hoy, primer_dia_mes])
-                row = cursor.fetchone()
-                stats['ventas_mes'] = row[0] or 0
-                stats['ventas_realizadas'] = row[1] or 0
-                stats['ventas_hoy'] = row[2] or 0
-                stats['total_facturado'] = float(row[3] or 0)
-
-                # Clientes activos, nuevos este mes y total
-                cursor.execute("""
-                    SELECT 
-                    COUNT(*) as total_clientes,
-                    SUM(CASE WHEN c.estadoCliente = 1 THEN 1 ELSE 0 END) as clientes_activos,
-                    SUM(CASE WHEN c.estadoCliente = 1 AND 
-                    c.idCliente IN (
-                    SELECT codCliente 
-                    FROM Venta 
-                    GROUP BY codCliente 
-                    HAVING MIN(fechaVenta) >= %s) THEN 1 ELSE 0 END) as clientes_nuevos 
-                    FROM Cliente c
-                """, [primer_dia_mes])
-                row = cursor.fetchone()
-                stats['total_clientes'] = row[0] or 0
-                stats['clientes_activos'] = row[1] or 0
-                stats['clientes_nuevos'] = row[2] or 0
-
-                # Devoluciones del mes y valor devuelto
-                cursor.execute("""
-                    SELECT 
-                        COUNT(*) as devoluciones_mes
-                    FROM Devolucion
-                    WHERE fechaDevolucion >= %s
-                """, [primer_dia_mes])
-                row = cursor.fetchone()
-                stats['devoluciones_mes'] = row[0] or 0
-
-                cursor.execute("""
-                    SELECT 
-                        SUM(dd.cantidadDevuelta * IFNULL(p.precioProducto, 0)) as valor_devuelto
-                    FROM Devolucion d
-                    JOIN DetalleDevolucion dd ON d.idDevolucion = dd.id_devolucion
-                    JOIN Producto p ON dd.id_producto = p.id_producto
-                    WHERE d.fechaDevolucion >= %s
-                """, [primer_dia_mes])
-                row = cursor.fetchone()
-                stats['valor_devuelto'] = float(row[0] or 0)
-
-                # Producción del mes y costo total
-                cursor.execute("""
-                    SELECT 
-                        COUNT(*) as producciones_mes
-                    FROM ProductosProduccion
-                    WHERE fechaEntrada >= %s AND EstadoRegistro = 1
-                """, [primer_dia_mes])
-                row = cursor.fetchone()
-                stats['producciones_mes'] = row[0] or 0
-
-                cursor.execute("""
-                    SELECT 
-                        SUM(dp.cantidad * dp.costo_unitario) as costo_produccion
-                    FROM ProductosProduccion pp
-                    JOIN DetalleProduccion dp ON pp.idProduccion = dp.id_produccion
-                    WHERE pp.fechaEntrada >= %s AND pp.EstadoRegistro = 1
-                """, [primer_dia_mes])
-                row = cursor.fetchone()
-                stats['costo_produccion'] = float(row[0] or 0)
-
-
-
-                ##### QUITARE ACTIVIDAD 
-                # Auditoría: eventos hoy y errores
-                cursor.execute("""
-                    SELECT 
-                        COUNT(*) as eventos_hoy,
-                        SUM(CASE WHEN accion = 'ERROR' THEN 1 ELSE 0 END) as errores_sistema
-                    FROM system_activity
-                    WHERE DATE(fecha_actividad) = %s
-                """, [hoy])
-                row = cursor.fetchone()
-                stats['eventos_hoy'] = row[0] or 0
-                stats['errores_sistema'] = row[1] or 0
-
+            from .models import ReportLog
+            
+            ReportLog.objects.create(
+                usuario=usuario,
+                tipo_reporte=tipo_reporte,
+                formato_exportacion=formato,
+                filtros_aplicados=json.dumps(filtros) if filtros else '{}',
+                total_registros=total_registros,
+                tiempo_generacion=round(tiempo_generacion, 3),
+                ip_address=ip_address or 'Unknown'
+            )
+            
+            logger.info(f"Reporte {tipo_reporte} generado por {usuario.nombreusuario if usuario else 'Sistema'}")
+            
         except Exception as e:
-            logger = logging.getLogger('nexo.Informes')
-            logger.error(f"Error obteniendo stats dashboard: {str(e)}")
-        return stats
+            logger.error(f"Error al registrar log de reporte: {str(e)}")
