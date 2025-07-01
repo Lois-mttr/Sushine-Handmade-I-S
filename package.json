@@ -1,0 +1,20 @@
+{
+  "name": "soft-nexo",
+  "version": "1.0.0",
+  "description": "This project is the creation of an inventory system for this company, where we will try to minimize manual errors and provide for good software practices.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Louismttr/Sushime-Handmade-I-S.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Louismttr/Sushime-Handmade-I-S/issues"
+  },
+  "homepage": "https://github.com/Louismttr/Sushime-Handmade-I-S#readme"
+}

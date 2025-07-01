@@ -1,5 +1,6 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}Lista de Clientes - NEXO{% endblock %}
 
@@ -11,26 +12,113 @@
     Administra los registros de clientes del sistema. Aquí puedes ver, editar o dar de baja clientes.
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    .table-responsive {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .badge-activo {
+        background: linear-gradient(135deg, {{ colores.success }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+    }
+    .badge-inactivo {
+        background: linear-gradient(135deg, {{ colores.danger }} 0%, #d07010 100%);
+        color: {{ colores.white }};
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+    }
+    .filtros-card {
+        background: {{ colores.white }};
+        border: 1px solid {{ colores.bg_light }};
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 255, 229, 0.1);
+        transition: all 0.3s ease;
+    }
+    .filtros-card:hover {
+        box-shadow: 0 8px 15px -3px rgba(2, 255, 230, 0.15);
+    }
+    .btn-nexo-primary {
+        background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        border: none;
+        transition: all 0.3s ease;
+    }
+    .btn-nexo-primary:hover {
+        background: linear-gradient(135deg, #2da89e 0%, #258a7f 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(57, 191, 178, 0.3);
+    }
+    .action-btn {
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+    }
+    .action-btn:hover {
+        transform: scale(1.1);
+        text-decoration: none;
+    }
+    .action-btn-view { color: {{ colores.info }}; }
+    .action-btn-view:hover { background: rgba(39, 82, 242, 0.1); color: #1e40af; }
+    .action-btn-edit { color: {{ colores.warning }}; }
+    .action-btn-edit:hover { background: rgba(242, 206, 22, 0.1); color: #d97706; }
+    .action-btn-delete { color: {{ colores.danger }}; background: none; border: none; cursor: pointer; }
+    .action-btn-delete:hover { background: rgba(242, 134, 39, 0.1); color: #dc2626; }
+    .action-btn-disabled { color: #9ca3af; cursor: not-allowed; }
+    .action-btn-disabled:hover { background: rgba(156, 163, 175, 0.1); transform: none; }
+    .pagination-btn { background: {{ colores.white }}; border: 1px solid {{ colores.bg_light }}; color: {{ colores.text_medium }}; transition: all 0.2s ease; text-decoration: none; }
+    .pagination-btn:hover { background: {{ colores.primary }}; border-color: {{ colores.primary }}; color: {{ colores.white }}; text-decoration: none; }
+    .pagination-btn.active { background: {{ colores.primary }}; border-color: {{ colores.primary }}; color: {{ colores.white }}; }
+    .empty-state { padding: 4rem 2rem; text-align: center; background: {{ colores.white }}; border-radius: 0.75rem; border: 2px dashed {{ colores.bg_light }}; }
+    .row-inactive { opacity: 0.6; background-color: #f9fafb; }
+    @media (max-width: 768px) {
+        .table-responsive { font-size: 0.875rem; }
+        .action-btn { padding: 0.375rem; }
+        .badge-activo, .badge-inactivo { font-size: 0.625rem; padding: 0.125rem 0.5rem; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
     <div class="max-w-7xl mx-auto">
-        <!-- Filtros de Búsqueda -->
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Clientes</h1>
+                <p class="text-gray-600 mt-1">Total: {{ clientes|length }} registro{{ clientes|length|pluralize }}</p>
+            </div>
+            <a href="{% url 'clientes:create' %}" class="btn-nexo-primary inline-flex items-center px-6 py-3 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200">
+                <i class="fas fa-plus mr-2"></i>Nuevo Cliente
+            </a>
+        </div>
         <div class="filtros-card p-6 mb-6">
             <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="form-label">Cédula</label>
-                    <input type="text" name="cedula" value="{{ filtros.cedula }}"
-                           class="form-input" placeholder="Buscar por cédula">
+                    <input type="text" name="cedula" value="{{ filtros.cedula }}" class="form-input" placeholder="Buscar por cédula">
                 </div>
                 <div>
                     <label class="form-label">Nombre</label>
-                    <input type="text" name="nombre" value="{{ filtros.nombre }}"
-                           class="form-input" placeholder="Buscar por nombre">
+                    <input type="text" name="nombre" value="{{ filtros.nombre }}" class="form-input" placeholder="Buscar por nombre">
                 </div>
                 <div>
                     <label class="form-label">Apellido</label>
-                    <input type="text" name="apellido" value="{{ filtros.apellido }}"
-                           class="form-input" placeholder="Buscar por apellido">
+                    <input type="text" name="apellido" value="{{ filtros.apellido }}" class="form-input" placeholder="Buscar por apellido">
                 </div>
                 <div class="md:col-span-3 flex justify-end space-x-2">
                     <button type="submit" class="btn-nexo-primary">
@@ -42,56 +130,94 @@
                 </div>
             </form>
         </div>
-
-        <!-- Tabla de Clientes -->
-        <div class="bg-white shadow-md rounded-lg overflow-hidden">
-            <div class="px-6 py-4 bg-gradient-to-r from-{{ colores.primary }} to-{{ colores.success }} flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-white">
-                    <i class="fas fa-list-ul mr-2"></i>Registros de Clientes
+        <div class="bg-white shadow-md rounded-lg overflow-hidden table-responsive">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center" style="background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);">
+                <h3 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fas fa-list-ul mr-2"></i>
+                    Registros de Clientes
                 </h3>
-                <a href="{% url 'clientes:create' %}" class="btn-nexo-primary">
-                    <i class="fas fa-plus mr-2"></i>Nuevo Cliente
-                </a>
+                <span class="text-white text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">
+                    {{ clientes|length }} registro{{ clientes|length|pluralize }}
+                </span>
             </div>
-
             {% if clientes %}
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left">Cédula</th>
-                            <th class="px-6 py-3 text-left">Nombre Completo</th>
-                            <th class="px-6 py-3 text-left">Correo</th>
-                            <th class="px-6 py-3 text-left">Dirección</th>
-                            <th class="px-6 py-3 text-center">Estado</th>
-                            <th class="px-6 py-3 text-center">Acciones</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-hashtag mr-1"></i>ID
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-id-card mr-1"></i>Cédula
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-user mr-1"></i>Nombre Completo
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-envelope mr-1"></i>Correo
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-map-marker-alt mr-1"></i>Dirección
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-toggle-on mr-1"></i>Estado
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-cogs mr-1"></i>Acciones
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         {% for cliente in clientes %}
-                        <tr class="{% if not cliente.estadoCliente %}row-inactive{% endif %}">
-                            <td class="px-6 py-4">{{ cliente.cedula }}</td>
-                            <td class="px-6 py-4">{{ cliente.nombre_completo }}</td>
-                            <td class="px-6 py-4">{{ cliente.correo|default:"-" }}</td>
-                            <td class="px-6 py-4">{{ cliente.direccion|truncatechars:20 }}</td>
-                            <td class="px-6 py-4 text-center">
-                                <span class="{% if cliente.estadoCliente %}badge-activo{% else %}badge-inactivo{% endif %}">
-                                    {{ cliente.estadoCliente|yesno:"Activo,Inactivo" }}
-                                </span>
+                        <tr class="hover:bg-gray-50 transition-colors duration-150 {% if not cliente.estadoCliente %}row-inactive{% endif %}">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                #{{ cliente.idCliente }}
                             </td>
-                            <td class="px-6 py-4 text-center space-x-2">
-                                <a href="{% url 'clientes:detail' cliente.idCliente %}" class="action-btn-view">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="{% url 'clientes:edit' cliente.idCliente %}" class="action-btn-edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form action="{% url 'clientes:delete' cliente.idCliente %}" method="post" class="inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="action-btn-delete" onclick="return confirm('¿Dar de baja este cliente?')">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </form>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ cliente.cedula }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ cliente.nombre_completo }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ cliente.correo|default:"-" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ cliente.direccion|truncatechars:30 }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {% if cliente.estadoCliente %}
+                                    <span class="badge-activo">
+                                        <i class="fas fa-check-circle mr-1"></i>Activo
+                                    </span>
+                                {% else %}
+                                    <span class="badge-inactivo">
+                                        <i class="fas fa-times-circle mr-1"></i>Inactivo
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <a href="{% url 'clientes:detail' cliente.idCliente %}" class="action-btn action-btn-view" title="Ver Detalle">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if cliente.estadoCliente %}
+                                        <a href="{% url 'clientes:edit' cliente.idCliente %}" class="action-btn action-btn-edit" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'clientes:delete' cliente.idCliente %}" class="action-btn action-btn-delete" title="Dar de Baja">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    {% else %}
+                                        <span class="action-btn action-btn-disabled" title="Cliente inactivo - No editable">
+                                            <i class="fas fa-edit"></i>
+                                        </span>
+                                        <span class="action-btn action-btn-disabled" title="Cliente inactivo - No eliminable">
+                                            <i class="fas fa-ban"></i>
+                                        </span>
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -110,4 +236,22 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animaciones de entrada para las filas de la tabla
+    const tableRows = document.querySelectorAll('tbody tr');
+    tableRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(10px)';
+        setTimeout(() => {
+            row.style.transition = 'all 0.3s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+});
+</script>
 {% endblock %}

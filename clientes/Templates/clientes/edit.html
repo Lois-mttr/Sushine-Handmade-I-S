@@ -3,10 +3,54 @@
 
 {% block title %}Editar Cliente - NEXO{% endblock %}
 
+{% block page_title %}
+    <i class="fas fa-edit mr-2" style="color: {{ colores.warning }};"></i>Editar Cliente #{{ cliente.id }}
+{% endblock %}
+
+{% block page_subtitle %}
+    Modifica los datos del cliente registrado con cédula {{ cliente.persona.cedula }}.
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<style>
+    .formset-row {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid {{ colores.bg_light }};
+        border-radius: 0.5rem;
+        background-color: {{ colores.white }};
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: box-shadow 0.3s ease;
+    }
+    .formset-row:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .btn-submit-nexo {
+        background-color: {{ colores.warning }};
+        color: black;
+    }
+    .btn-cancel-nexo {
+        background-color: #6c757d;
+        color: white;
+    }
+    .alert-nexo {
+        border-left-width: 4px;
+    }
+    .alert-nexo-error {
+        border-left-color: {{ colores.danger }};
+        background-color: #fdecea;
+        color: #932c2c;
+    }
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: {{ colores.danger }};
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
     <div class="max-w-4xl mx-auto">
-        <!-- Mensajes de error/success -->
         {% if messages %}
         <div class="mb-6 space-y-2">
             {% for message in messages %}
@@ -19,21 +63,14 @@
             {% endfor %}
         </div>
         {% endif %}
-
         <form method="post" id="editarClienteForm" novalidate>
             {% csrf_token %}
-
-            <!-- Campo oculto para la cédula -->
             <input type="hidden" name="cedula" value="{{ cliente.persona.cedula }}">
-
-            <!-- Sección Datos Personales -->
             <div class="form-container p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <i class="fas fa-id-card mr-2" style="color: {{ colores.primary }};"></i>
                     Datos Personales
                 </h2>
-
-                <!-- Errores generales del formulario -->
                 {% if persona_form.non_field_errors %}
                 <div class="mb-4 p-3 bg-red-100 border-l-4 border-red-500 text-red-700">
                     {% for error in persona_form.non_field_errors %}
@@ -41,176 +78,84 @@
                     {% endfor %}
                 </div>
                 {% endif %}
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Cédula (solo lectura) -->
                     <div>
                         <label class="form-label">Cédula</label>
                         <input type="text" value="{{ cliente.persona.cedula }}" class="form-input bg-gray-100" readonly>
                     </div>
-
-                    <!-- Primer Nombre -->
                     <div>
                         <label for="id_primer_nombre" class="form-label required-field">Primer Nombre</label>
-                        <input type="text" name="primer_nombre" value="{{ persona_form.instance.primer_nombre }}"
-                               class="form-input {% if persona_form.primer_nombre.errors %}border-red-500{% endif %}"
-                               maxlength="15" required id="id_primer_nombre">
+                        <input type="text" name="primer_nombre" value="{{ persona_form.instance.primer_nombre }}" class="form-input {% if persona_form.primer_nombre.errors %}border-red-500{% endif %}" maxlength="15" required id="id_primer_nombre">
                         {% if persona_form.primer_nombre.errors %}
                         <div class="mt-1 text-sm text-red-600">
-                            {% for error in persona_form.primer_nombre.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
+                            {% for error in persona_form.primer_nombre.errors %}<p>{{ error }}</p>{% endfor %}
                         </div>
                         {% endif %}
                     </div>
-
-                    <!-- Segundo Nombre -->
                     <div>
                         <label for="id_segundo_nombre" class="form-label">Segundo Nombre</label>
-                        <input type="text" name="segundo_nombre" value="{{ persona_form.instance.segundo_nombre|default_if_none:'' }}"
-                               class="form-input {% if persona_form.segundo_nombre.errors %}border-red-500{% endif %}"
-                               maxlength="15" id="id_segundo_nombre">
+                        <input type="text" name="segundo_nombre" value="{{ persona_form.instance.segundo_nombre }}" class="form-input {% if persona_form.segundo_nombre.errors %}border-red-500{% endif %}" maxlength="15" id="id_segundo_nombre">
                         {% if persona_form.segundo_nombre.errors %}
                         <div class="mt-1 text-sm text-red-600">
-                            {% for error in persona_form.segundo_nombre.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
+                            {% for error in persona_form.segundo_nombre.errors %}<p>{{ error }}</p>{% endfor %}
                         </div>
                         {% endif %}
                     </div>
-
-                    <!-- Primer Apellido -->
                     <div>
                         <label for="id_primer_apellido" class="form-label required-field">Primer Apellido</label>
-                        <input type="text" name="primer_apellido" value="{{ persona_form.instance.primer_apellido }}"
-                               class="form-input {% if persona_form.primer_apellido.errors %}border-red-500{% endif %}"
-                               maxlength="15" required id="id_primer_apellido">
+                        <input type="text" name="primer_apellido" value="{{ persona_form.instance.primer_apellido }}" class="form-input {% if persona_form.primer_apellido.errors %}border-red-500{% endif %}" maxlength="15" required id="id_primer_apellido">
                         {% if persona_form.primer_apellido.errors %}
                         <div class="mt-1 text-sm text-red-600">
-                            {% for error in persona_form.primer_apellido.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
+                            {% for error in persona_form.primer_apellido.errors %}<p>{{ error }}</p>{% endfor %}
                         </div>
                         {% endif %}
                     </div>
-
-                    <!-- Segundo Apellido -->
                     <div>
                         <label for="id_segundo_apellido" class="form-label">Segundo Apellido</label>
-                        <input type="text" name="segundo_apellido" value="{{ persona_form.instance.segundo_apellido|default_if_none:'' }}"
-                               class="form-input {% if persona_form.segundo_apellido.errors %}border-red-500{% endif %}"
-                               maxlength="15" id="id_segundo_apellido">
+                        <input type="text" name="segundo_apellido" value="{{ persona_form.instance.segundo_apellido }}" class="form-input {% if persona_form.segundo_apellido.errors %}border-red-500{% endif %}" maxlength="15" id="id_segundo_apellido">
                         {% if persona_form.segundo_apellido.errors %}
                         <div class="mt-1 text-sm text-red-600">
-                            {% for error in persona_form.segundo_apellido.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
+                            {% for error in persona_form.segundo_apellido.errors %}<p>{{ error }}</p>{% endfor %}
                         </div>
                         {% endif %}
                     </div>
-
-                    <!-- Dirección -->
-                    <div class="md:col-span-2">
-                        <label for="id_direccion" class="form-label required-field">Dirección</label>
-                        <textarea name="direccion" class="form-input {% if persona_form.direccion.errors %}border-red-500{% endif %}"
-                                  rows="3" required id="id_direccion">{{ persona_form.instance.direccion }}</textarea>
+                    <div>
+                        <label for="id_direccion" class="form-label">Dirección</label>
+                        <input type="text" name="direccion" value="{{ persona_form.instance.direccion }}" class="form-input {% if persona_form.direccion.errors %}border-red-500{% endif %}" maxlength="100" id="id_direccion">
                         {% if persona_form.direccion.errors %}
                         <div class="mt-1 text-sm text-red-600">
-                            {% for error in persona_form.direccion.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
+                            {% for error in persona_form.direccion.errors %}<p>{{ error }}</p>{% endfor %}
                         </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
-
-            <!-- Sección Datos Cliente -->
             <div class="form-container p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <i class="fas fa-envelope mr-2" style="color: {{ colores.primary }};"></i>
                     Datos del Cliente
                 </h2>
-
-                <!-- Errores generales del formulario -->
-                {% if cliente_form.non_field_errors %}
-                <div class="mb-4 p-3 bg-red-100 border-l-4 border-red-500 text-red-700">
-                    {% for error in cliente_form.non_field_errors %}
-                    <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                <div class="grid grid-cols-1">
-                    <!-- Correo Electrónico -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="id_correo" class="form-label">Correo Electrónico</label>
-                        <input type="email" name="correo" value="{{ cliente_form.instance.correo|default_if_none:'' }}"
-                               class="form-input {% if cliente_form.correo.errors %}border-red-500{% endif %}"
-                               maxlength="30" id="id_correo">
+                        <label for="id_correo" class="form-label">Correo</label>
+                        <input type="email" name="correo" value="{{ cliente_form.instance.correo }}" class="form-input {% if cliente_form.correo.errors %}border-red-500{% endif %}" maxlength="50" id="id_correo">
                         {% if cliente_form.correo.errors %}
                         <div class="mt-1 text-sm text-red-600">
-                            {% for error in cliente_form.correo.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
+                            {% for error in cliente_form.correo.errors %}<p>{{ error }}</p>{% endfor %}
                         </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
-
-            <!-- Botones de acción -->
-            <div class="flex justify-end space-x-4">
-                <a href="{% url 'clientes:detail' cliente.id %}" class="btn-cancel-form">
-                    <i class="fas fa-times mr-2"></i> Cancelar
+            <div class="mt-8 flex justify-end space-x-3">
+                <a href="{% if cliente.id %}{% url 'clientes:detail' cliente.id %}{% else %}{% url 'clientes:list' %}{% endif %}" class="btn-cancel-nexo inline-flex items-center px-6 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    <i class="fas fa-times mr-2"></i>Cancelar
                 </a>
-                <button type="submit" class="btn-submit-form" style="background-color: {{ colores.primary }};">
-                    <i class="fas fa-save mr-2"></i> Guardar Cambios
+                <button type="submit" class="btn-submit-nexo inline-flex items-center px-6 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2" style="background-color: {{ colores.warning }}; color: black;">
+                    <i class="fas fa-save mr-2"></i>Actualizar Cliente
                 </button>
             </div>
         </form>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('editarClienteForm');
-
-    // Validación antes de enviar
-    form.addEventListener('submit', function(e) {
-        let isValid = true;
-        const requiredFields = form.querySelectorAll('[required]');
-
-        // Validar campos requeridos
-        requiredFields.forEach(field => {
-            if (!field.value.trim()) {
-                field.classList.add('border-red-500');
-                isValid = false;
-            }
-        });
-
-        // Validar formato de cédula (si es visible)
-        const cedulaInput = document.getElementById('id_cedula');
-        if (cedulaInput && cedulaInput.value) {
-            const cedulaRegex = /^[0-9]{13}[A-Za-z]$/;
-            if (!cedulaRegex.test(cedulaInput.value)) {
-                alert('La cédula debe tener 13 dígitos seguidos de una letra');
-                isValid = false;
-            }
-        }
-
-        if (!isValid) {
-            e.preventDefault();
-            alert('Por favor completa todos los campos requeridos correctamente');
-        }
-    });
-
-    // Eliminar marca de error al escribir
-    form.addEventListener('input', function(e) {
-        if (e.target.classList.contains('border-red-500')) {
-            e.target.classList.remove('border-red-500');
-        }
-    });
-});
-</script>
 {% endblock %}

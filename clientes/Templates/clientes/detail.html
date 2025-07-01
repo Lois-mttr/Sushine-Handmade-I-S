@@ -3,22 +3,92 @@
 
 {% block title %}Cliente #{{ datos.cliente.id }} - NEXO{% endblock %}
 
+{% block page_title %}
+    <i class="fas fa-eye mr-2" style="color: {{ colores.primary }};"></i>Detalle Cliente #{{ datos.cliente.id }}
+{% endblock %}
+
+{% block page_subtitle %}
+    Información detallada del cliente y su estado.
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card {
+        background: {{ colores.white }};
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(57, 191, 178, 0.1);
+        border: 1px solid {{ colores.bg_light }};
+        transition: all 0.3s ease;
+    }
+    .detail-card:hover {
+        box-shadow: 0 8px 15px -3px rgba(57, 191, 178, 0.15);
+    }
+    .status-badge-activo {
+        background: linear-gradient(135deg, {{ colores.success }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(57, 191, 178, 0.2);
+    }
+    .status-badge-inactivo {
+        background: linear-gradient(135deg, {{ colores.danger }} 0%, #d07010 100%);
+        color: {{ colores.white }};
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(242, 134, 39, 0.2);
+    }
+    .btn-nexo-primary {
+        background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(57, 191, 178, 0.2);
+    }
+    .btn-nexo-primary:hover {
+        background: linear-gradient(135deg, #2da89e 0%, #258a7f 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(57, 191, 178, 0.3);
+    }
+    .btn-cancel-form {
+        background: {{ colores.text_medium }};
+        color: {{ colores.white }};
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    .btn-cancel-form:hover {
+        background: {{ colores.text_dark }};
+        color: {{ colores.white }};
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
     <div class="max-w-4xl mx-auto">
         <div class="form-container p-6">
-            <!-- Encabezado -->
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold flex items-center">
                     <i class="fas fa-user-circle mr-2" style="color: {{ colores.primary }};"></i>
                     {{ datos.persona.nombre_completo }}
                 </h2>
-                <span class="{% if datos.cliente.estadoCliente %}badge-activo{% else %}badge-inactivo{% endif %}">
+                <span class="{% if datos.cliente.estadoCliente %}status-badge-activo{% else %}status-badge-inactivo{% endif %}">
                     {{ datos.cliente.estadoCliente|yesno:"Activo,Inactivo" }}
                 </span>
             </div>
-
-            <!-- Datos -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <h3 class="text-lg font-semibold mb-3 flex items-center">
@@ -32,7 +102,6 @@
                         <p><strong>Estado Persona:</strong> {{ datos.persona.estadoPersona|yesno:"Activo,Inactivo" }}</p>
                     </div>
                 </div>
-
                 <div>
                     <h3 class="text-lg font-semibold mb-3 flex items-center">
                         <i class="fas fa-info-circle mr-2"></i>Información de Cliente
@@ -44,13 +113,11 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Botones -->
             <div class="mt-8 flex justify-end space-x-4">
                 <a href="{% url 'clientes:list' %}" class="btn-cancel-form">
                     <i class="fas fa-arrow-left mr-2"></i>Volver
                 </a>
-                <a href="{% url 'clientes:edit' datos.cliente.id %}" class="btn-submit-form">
+                <a href="{% url 'clientes:edit' datos.cliente.id %}" class="btn-nexo-primary">
                     <i class="fas fa-edit mr-2"></i>Editar
                 </a>
             </div>

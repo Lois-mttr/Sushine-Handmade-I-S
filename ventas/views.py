@@ -73,9 +73,10 @@ def lista_ventas(request):
         usuario_actual = request.nexo_user
         user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
         user_rol = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
+        nexo_user_role = user_rol
         # Permisos para acciones
-        puede_editar = user_rol in ['admin', 'gerente', 'encargado_ventas']
-        puede_anular = user_rol in ['admin', 'gerente']
+        puede_editar = nexo_user_role in ['admin', 'encargado_sucursal']
+        puede_anular = nexo_user_role in ['admin', 'encargado_sucursal']
         # Pasar permisos al contexto para cada venta
         context = {
             'page_title': 'Gestión de Ventas - NEXO',
@@ -86,7 +87,7 @@ def lista_ventas(request):
             'diferencia_ventas': diferencia_ventas,
             'usuario_actual': usuario_actual,
             'user_iniciales': user_iniciales,
-            'user_rol': user_rol,
+            'nexo_user_role': nexo_user_role,
             'puede_editar': puede_editar,
             'puede_anular': puede_anular,
         }
@@ -128,6 +129,7 @@ def lista_ventas(request):
         usuario_actual = getattr(request, 'nexo_user', None)
         user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
         user_rol = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
+        nexo_user_role = user_rol
         return render(request, 'ventas/lista_ventas.html', {
             'page_title': 'Error - Ventas',
             'ventas': [],
@@ -137,7 +139,7 @@ def lista_ventas(request):
             'diferencia_ventas': 0,
             'usuario_actual': usuario_actual,
             'user_iniciales': user_iniciales,
-            'user_rol': user_rol,
+            'nexo_user_role': nexo_user_role,
             'puede_editar': False,
             'puede_anular': False,
         })
@@ -267,8 +269,8 @@ def detalle_venta(request, venta_id):
         usuario_actual = request.nexo_user
         user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
         user_rol = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
-        puede_editar = user_rol in ['admin', 'gerente', 'encargado_ventas'] and estado == 'REALIZADA'
-        puede_anular = user_rol in ['admin', 'gerente'] and estado == 'REALIZADA'
+        puede_editar = user_rol in ['admin', 'encargado_sucursal'] and estado == 'REALIZADA'
+        puede_anular = user_rol in ['admin', 'encargado_sucursal'] and estado == 'REALIZADA'
         # Calcular subtotal sin IVA correctamente
         total_venta = float(venta.total or 0)
         subtotal_sin_iva = total_venta / 1.15 if total_venta else 0
@@ -319,7 +321,7 @@ def procesar_edicion_venta(request, venta_id):
         messages.error(request, f'No se pudo actualizar la venta. Detalle: {str(e)}')
         return redirect('ventas:editar_venta', venta_id=venta_id)
 
-@nexo_role_required(['admin', 'gerente'])
+@nexo_role_required(['admin', 'encargado_sucursal'])
 @require_http_methods(["POST"])
 def anular_venta(request, venta_id):
     """
@@ -424,7 +426,7 @@ def estadisticas_ventas_ajax(request):
             'message': 'Error al obtener estadísticas'
         })
 
-@nexo_role_required(['admin', 'gerente', 'encargado_ventas'])
+@nexo_role_required(['admin','encargado_sucursal'])
 @require_http_methods(["GET", "POST"])
 def editar_venta(request, venta_id):
     """

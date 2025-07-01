@@ -222,11 +222,6 @@
     
     <!-- Tabla de Ventas -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        {% if messages %}
-            {% for message in messages %}
-                <script>document.addEventListener('DOMContentLoaded',function(){showNotification("{{ message|escapejs }}", "{{ message.tags }}");});</script>
-            {% endfor %}
-        {% endif %}
         {% if ventas %}
             <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                 <!-- Header de la tabla -->

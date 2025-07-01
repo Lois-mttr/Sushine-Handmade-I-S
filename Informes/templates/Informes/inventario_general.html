@@ -1,0 +1,704 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}Reporte de Inventario General - NEXO{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--accent-color, #4ECDC4);
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+    
+    .table-container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .product-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #4ECDC4, #39bfb2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+    }
+    
+    .stock-indicator {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 60px;
+        height: 32px;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    .stock-critical { background: #FEE2E2; color: #DC2626; }
+    .stock-low { background: #FEF3C7; color: #D97706; }
+    .stock-normal { background: #D1FAE5; color: #059669; }
+    .stock-high { background: #DBEAFE; color: #2563EB; }
+    .stock-empty { background: #F3F4F6; color: #6B7280; }
+    
+    .filter-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        background: #4ECDC4;
+        color: white;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        margin: 2px;
+    }
+    
+    .loading-skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+    }
+    
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header del Reporte -->
+<div class="mb-8">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center">
+            <a href="{% url 'Informes:reports_dashboard' %}" class="mr-4 p-2 text-gray-600 hover:text-primary transition-colors duration-200 rounded-lg hover:bg-gray-100">
+                <i class="fas fa-arrow-left text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-boxes text-primary mr-3"></i>
+                    Reporte de Inventario General
+                </h1>
+                <p class="text-lg text-gray-600">
+                    Estado completo del inventario por ubicación y categoría
+                </p>
+            </div>
+        </div>
+        <div class="flex space-x-3">
+            <button onclick="exportReport('pdf')" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-200 flex items-center">
+                <i class="fas fa-file-pdf mr-2"></i>Exportar PDF
+            </button>
+            <button onclick="exportReport('excel')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-200 flex items-center">
+                <i class="fas fa-file-excel mr-2"></i>Exportar Excel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros Activos -->
+{% if request.GET %}
+<div class="mb-6">
+    <div class="flex items-center flex-wrap gap-2">
+        <span class="text-sm font-medium text-gray-700 mr-2">Filtros activos:</span>
+        {% for key, value in request.GET.items %}
+            {% if value and key != 'page' and key != 'export' %}
+                <span class="filter-badge">
+                    {{ key|title }}: {{ value }}
+                    <button onclick="removeFilter('{{ key }}')" class="ml-2 text-white hover:text-gray-200">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </span>
+            {% endif %}
+        {% endfor %}
+        <button onclick="clearAllFilters()" class="text-sm text-red-600 hover:text-red-800 ml-2">
+            <i class="fas fa-times-circle mr-1"></i>Limpiar todos
+        </button>
+    </div>
+</div>
+{% endif %}
+
+<!-- Formulario de Filtros -->
+<div class="filter-card p-6 mb-8">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold text-gray-900">
+            <i class="fas fa-filter text-primary mr-2"></i>
+            Filtros de Búsqueda
+        </h3>
+        <button onclick="toggleAdvancedFilters()" class="text-primary hover:text-primary-dark transition-colors duration-200">
+            <i class="fas fa-cog mr-1"></i>Filtros Avanzados
+        </button>
+    </div>
+    
+    <form method="get" id="filter-form" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Categoría -->
+            <div class="space-y-2">
+                <label for="categoria" class="block text-sm font-medium text-gray-700">
+                    <i class="fas fa-tag text-primary mr-2"></i>Categoría
+                </label>
+                {{ form.categoria }}
+                {% if form.categoria.help_text %}
+                    <p class="text-xs text-gray-500">{{ form.categoria.help_text }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Ubicación -->
+            <div class="space-y-2">
+                <label for="ubicacion" class="block text-sm font-medium text-gray-700">
+                    <i class="fas fa-map-marker-alt text-primary mr-2"></i>Ubicación
+                </label>
+                {{ form.ubicacion }}
+                {% if form.ubicacion.help_text %}
+                    <p class="text-xs text-gray-500">{{ form.ubicacion.help_text }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Estado Stock -->
+            <div class="space-y-2">
+                <label for="stock_estado" class="block text-sm font-medium text-gray-700">
+                    <i class="fas fa-boxes text-primary mr-2"></i>Estado Stock
+                </label>
+                {{ form.stock_estado }}
+                {% if form.stock_estado.help_text %}
+                    <p class="text-xs text-gray-500">{{ form.stock_estado.help_text }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Búsqueda -->
+            <div class="space-y-2">
+                <label for="buscar" class="block text-sm font-medium text-gray-700">
+                    <i class="fas fa-search text-primary mr-2"></i>Buscar Producto
+                </label>
+                {{ form.buscar }}
+                {% if form.buscar.help_text %}
+                    <p class="text-xs text-gray-500">{{ form.buscar.help_text }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Filtros Avanzados (Ocultos por defecto) -->
+        <div id="advanced-filters" class="hidden border-t pt-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        <i class="fas fa-dollar-sign text-primary mr-2"></i>Rango de Precio
+                    </label>
+                    <div class="flex space-x-2">
+                        <input type="number" name="precio_min" placeholder="Mín." class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                        <input type="number" name="precio_max" placeholder="Máx." class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        <i class="fas fa-cubes text-primary mr-2"></i>Rango de Stock
+                    </label>
+                    <div class="flex space-x-2">
+                        <input type="number" name="stock_min" placeholder="Mín." class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                        <input type="number" name="stock_max" placeholder="Máx." class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        <i class="fas fa-sort text-primary mr-2"></i>Ordenar por
+                    </label>
+                    <select name="ordenar" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                        <option value="nombre">Nombre A-Z</option>
+                        <option value="-nombre">Nombre Z-A</option>
+                        <option value="stock">Stock Menor-Mayor</option>
+                        <option value="-stock">Stock Mayor-Menor</option>
+                        <option value="precio">Precio Menor-Mayor</option>
+                        <option value="-precio">Precio Mayor-Menor</option>
+                        <option value="valor">Valor Total Menor-Mayor</option>
+                        <option value="-valor">Valor Total Mayor-Menor</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t">
+            <div class="flex space-x-3">
+                <button type="submit" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition-all duration-200 flex items-center">
+                    <i class="fas fa-search mr-2"></i>Aplicar Filtros
+                </button>
+                <button type="button" onclick="clearAllFilters()" class="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-all duration-200 flex items-center">
+                    <i class="fas fa-times mr-2"></i>Limpiar
+                </button>
+            </div>
+            <div class="text-sm text-gray-600">
+                <i class="fas fa-info-circle mr-1"></i>
+                Mostrando {{ data|length }} de {{ stats.total_productos|default:0 }} productos
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Resumen Ejecutivo -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="stats-card p-6" style="--accent-color: #4ECDC4;">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Total de Productos</p>
+                <p class="text-3xl font-bold text-gray-900">{{ stats.total_productos|default:0 }}</p>
+                <p class="text-sm text-gray-500 mt-1">
+                    <i class="fas fa-boxes mr-1"></i>
+                    {{ stats.total_categorias|default:0 }} categorías
+                </p>
+            </div>
+            <div class="w-16 h-16 bg-primary rounded-xl flex items-center justify-center">
+                <i class="fas fa-boxes text-white text-2xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="stats-card p-6" style="--accent-color: #10B981;">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Unidades en Stock</p>
+                <p class="text-3xl font-bold text-gray-900">{{ stats.total_unidades|default:0 }}</p>
+                <p class="text-sm text-green-600 mt-1">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    Stock disponible
+                </p>
+            </div>
+            <div class="w-16 h-16 bg-green-500 rounded-xl flex items-center justify-center">
+                <i class="fas fa-cubes text-white text-2xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="stats-card p-6" style="--accent-color: #F59E0B;">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Stock Crítico</p>
+                <p class="text-3xl font-bold text-gray-900">{{ stats.productos_stock_critico|default:0 }}</p>
+                <p class="text-sm text-orange-600 mt-1">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    {{ stats.porcentaje_stock_critico|default:0 }}% del total
+                </p>
+            </div>
+            <div class="w-16 h-16 bg-yellow-500 rounded-xl flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-white text-2xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="stats-card p-6" style="--accent-color: #8B5CF6;">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Valor Total</p>
+                <p class="text-3xl font-bold text-gray-900">C$ {{ stats.valor_total_inventario|floatformat:2|default:"0.00" }}</p>
+                <p class="text-sm text-purple-600 mt-1">
+                    <i class="fas fa-dollar-sign mr-1"></i>
+                    Inventario valorizado
+                </p>
+            </div>
+            <div class="w-16 h-16 bg-purple-500 rounded-xl flex items-center justify-center">
+                <i class="fas fa-dollar-sign text-white text-2xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Resultados -->
+<div class="table-container">
+    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">
+                <i class="fas fa-table text-primary mr-2"></i>
+                Inventario Detallado
+            </h3>
+            <div class="flex items-center space-x-4">
+                <div class="text-sm text-gray-600">
+                    Mostrando {{ data|length }} productos
+                </div>
+                <button onclick="toggleTableView()" class="text-primary hover:text-primary-dark">
+                    <i class="fas fa-th-list mr-1"></i>Vista
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <button onclick="sortTable('producto')" class="flex items-center hover:text-gray-700">
+                            Producto
+                            <i class="fas fa-sort ml-1"></i>
+                        </button>
+                    </th>
+                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Categoría
+                    </th>
+                    <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Ubicación
+                    </th>
+                    <th class="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <button onclick="sortTable('stock')" class="flex items-center hover:text-gray-700">
+                            Stock Actual
+                            <i class="fas fa-sort ml-1"></i>
+                        </button>
+                    </th>
+                    <th class="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Stock Mín.
+                    </th>
+                    <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <button onclick="sortTable('precio')" class="flex items-center hover:text-gray-700">
+                            Precio
+                            <i class="fas fa-sort ml-1"></i>
+                        </button>
+                    </th>
+                    <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <button onclick="sortTable('valor')" class="flex items-center hover:text-gray-700">
+                            Valor Stock
+                            <i class="fas fa-sort ml-1"></i>
+                        </button>
+                    </th>
+                    <th class="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Estado
+                    </th>
+                    <th class="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for producto in data %}
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <div class="product-avatar mr-4">
+                                {{ producto.nombreProducto|first|upper }}
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">{{ producto.nombreProducto }}</div>
+                                <div class="text-sm text-gray-500">ID: {{ producto.id_producto }}</div>
+                                {% if producto.descripcionProducto %}
+                                    <div class="text-xs text-gray-400 mt-1">{{ producto.descripcionProducto|truncatechars:50 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if producto.nombreCategoria %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <i class="fas fa-tag mr-1"></i>
+                                {{ producto.nombreCategoria }}
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                Sin categoría
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-map-marker-alt mr-1"></i>
+                            {{ producto.nombreUbicacion }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        {% if producto.nivel_stock == 'SIN_STOCK' %}
+                            <span class="stock-indicator stock-empty">
+                                <i class="fas fa-times mr-1"></i>{{ producto.existenciaProducto }}
+                            </span>
+                        {% elif producto.nivel_stock == 'CRITICO' %}
+                            <span class="stock-indicator stock-critical">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>{{ producto.existenciaProducto }}
+                            </span>
+                        {% elif producto.nivel_stock == 'BAJO' %}
+                            <span class="stock-indicator stock-low">
+                                <i class="fas fa-exclamation mr-1"></i>{{ producto.existenciaProducto }}
+                            </span>
+                        {% elif producto.nivel_stock == 'NORMAL' %}
+                            <span class="stock-indicator stock-normal">
+                                <i class="fas fa-check mr-1"></i>{{ producto.existenciaProducto }}
+                            </span>
+                        {% else %}
+                            <span class="stock-indicator stock-high">
+                                <i class="fas fa-arrow-up mr-1"></i>{{ producto.existenciaProducto }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm text-gray-500">
+                        {{ producto.existenciaMinima|default:5 }}
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm font-mono">
+                        {% if producto.precioProducto %}
+                            <span class="text-gray-900 font-semibold">C$ {{ producto.precioProducto|floatformat:2 }}</span>
+                        {% else %}
+                            <span class="text-gray-400">No definido</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-right text-sm font-mono">
+                        {% if producto.valor_total_stock %}
+                            <span class="text-gray-900 font-bold">C$ {{ producto.valor_total_stock|floatformat:2 }}</span>
+                        {% else %}
+                            <span class="text-gray-400">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        {% if producto.nivel_stock == 'SIN_STOCK' %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-ban mr-1"></i>Sin Stock
+                            </span>
+                        {% elif producto.nivel_stock == 'CRITICO' %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>Crítico
+                            </span>
+                        {% elif producto.nivel_stock == 'BAJO' %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-exclamation mr-1"></i>Bajo
+                            </span>
+                        {% elif producto.nivel_stock == 'NORMAL' %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check mr-1"></i>Normal
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <i class="fas fa-arrow-up mr-1"></i>Alto
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="viewProduct({{ producto.id_producto }})" class="text-blue-600 hover:text-blue-800 transition-colors duration-200" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="editProduct({{ producto.id_producto }})" class="text-green-600 hover:text-green-800 transition-colors duration-200" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="showHistory({{ producto.id_producto }})" class="text-purple-600 hover:text-purple-800 transition-colors duration-200" title="Historial">
+                                <i class="fas fa-history"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="px-6 py-12 text-center">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-search text-gray-400 text-4xl mb-4"></i>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No se encontraron productos</h3>
+                            <p class="text-gray-500 mb-4">No hay productos que coincidan con los filtros aplicados.</p>
+                            <button onclick="clearAllFilters()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-all duration-200">
+                                <i class="fas fa-times mr-2"></i>Limpiar Filtros
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    {% if is_paginated %}
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+                Mostrando {{ page_obj.start_index }} - {{ page_obj.end_index }} de {{ paginator.count }} productos
+            </div>
+            <div class="flex items-center space-x-2">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                        <i class="fas fa-angle-left mr-1"></i>Anterior
+                    </a>
+                {% endif %}
+                
+                <span class="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg">
+                    Página {{ page_obj.number }} de {{ paginator.num_pages }}
+                </span>
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                        Siguiente<i class="fas fa-angle-right ml-1"></i>
+                    </a>
+                    <a href="?page={{ paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales
+let currentSort = '';
+let sortDirection = 'asc';
+
+// Funciones de filtrado
+function toggleAdvancedFilters() {
+    const advancedFilters = document.getElementById('advanced-filters');
+    advancedFilters.classList.toggle('hidden');
+}
+
+function removeFilter(filterKey) {
+    const url = new URL(window.location);
+    url.searchParams.delete(filterKey);
+    window.location.href = url.toString();
+}
+
+function clearAllFilters() {
+    const url = new URL(window.location);
+    // Mantener solo la página base
+    window.location.href = url.pathname;
+}
+
+function exportReport(format) {
+    const url = new URL(window.location);
+    url.searchParams.set('export', format);
+    
+    showNotification(`Generando reporte en formato ${format.toUpperCase()}...`, 'info');
+    
+    // Crear enlace temporal para descarga
+    const link = document.createElement('a');
+    link.href = url.toString();
+    link.download = `inventario_general_${new Date().toISOString().split('T')[0]}.${format}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function sortTable(column) {
+    if (currentSort === column) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSort = column;
+        sortDirection = 'asc';
+    }
+    
+    const url = new URL(window.location);
+    url.searchParams.set('ordenar', sortDirection === 'desc' ? `-${column}` : column);
+    window.location.href = url.toString();
+}
+
+function toggleTableView() {
+    // Implementar cambio de vista de tabla
+    showNotification('Función de cambio de vista próximamente...', 'info');
+}
+
+// Funciones de acciones de productos
+function viewProduct(productId) {
+    showNotification(`Viendo detalles del producto ${productId}...`, 'info');
+    // Implementar vista de detalles
+}
+
+function editProduct(productId) {
+    showNotification(`Editando producto ${productId}...`, 'info');
+    // Implementar edición
+}
+
+function showHistory(productId) {
+    showNotification(`Mostrando historial del producto ${productId}...`, 'info');
+    // Implementar historial
+}
+
+// Búsqueda en tiempo real
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[name="buscar"]');
+    if (searchInput) {
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (this.value.length >= 2 || this.value.length === 0) {
+                    document.getElementById('filter-form').submit();
+                }
+            }, 500);
+        });
+    }
+    
+    // Animaciones de entrada
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            row.style.transition = 'all 0.3s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+});
+
+// Actualización automática de estadísticas
+setInterval(() => {
+    fetch(window.location.href, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.stats) {
+            updateStats(data.stats);
+        }
+    })
+    .catch(error => {
+        console.log('Error actualizando estadísticas:', error);
+    });
+}, 300000); // 5 minutos
+
+function updateStats(stats) {
+    // Actualizar estadísticas en tiempo real
+    const statElements = {
+        'total_productos': stats.total_productos,
+        'total_unidades': stats.total_unidades,
+        'productos_stock_critico': stats.productos_stock_critico,
+        'valor_total_inventario': `C$ ${parseFloat(stats.valor_total_inventario).toFixed(2)}`
+    };
+    
+    Object.keys(statElements).forEach(key => {
+        const element = document.querySelector(`[data-stat="${key}"]`);
+        if (element) {
+            element.textContent = statElements[key];
+        }
+    });
+}
+</script>
+{% endblock %}

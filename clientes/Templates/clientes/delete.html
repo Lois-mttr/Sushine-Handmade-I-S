@@ -1,14 +1,33 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
 
+{% block title %}Eliminar Cliente - NEXO{% endblock %}
+
 {% block content %}
-<div class="container">
-    <h1>Eliminar Cliente</h1>
-    <p>¿Estás seguro de que deseas eliminar a {{ object.persona }}?</p>
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Eliminar</button>
-        <a href="{% url 'clientes:list' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+<div class="min-h-screen flex items-center justify-center" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
+    <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full" style="background-color: rgba(242,134,39,0.1);">
+                <i class="fas fa-exclamation-triangle fa-2x" style="color: {{ colores.danger }};"></i>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Confirmar Acción</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">
+                    ¿Estás seguro de que deseas eliminar a <strong>{{ object.persona }}</strong>? Esta acción no se puede deshacer.
+                </p>
+            </div>
+            <div class="items-center px-4 py-3 space-x-2">
+                <form method="post" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="px-4 py-2 rounded-md text-white text-sm transition-colors" style="background-color: {{ colores.danger }};">
+                        Sí, Eliminar
+                    </button>
+                </form>
+                <a href="{% url 'clientes:list' %}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-sm transition-colors">
+                    Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

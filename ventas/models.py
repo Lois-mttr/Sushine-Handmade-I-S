@@ -61,53 +61,45 @@ def obtener_ventas_del_dia():
 
 def calcular_estadisticas_ventas():
     """
-    Calcula estadísticas de ventas (a prueba de errores y siempre retorna números)
+    Calcula estadísticas de ventas usando SQL crudo para mayor precisión.
+    Retorna un diccionario con ventas_hoy y ventas_ayer (total y cantidad).
     """
-    from django.db.models import Sum, Count
+    from datetime import datetime, timedelta
     from django.utils import timezone
-    from datetime import timedelta
     import logging
     logger = logging.getLogger('nexo.ventas')
     hoy = timezone.localdate()
     ayer = hoy - timedelta(days=1)
-    # Ventas de hoy
-    ventas_hoy_qs = Venta.objects.filter(
-        fechaventa__date=hoy,
-        estado='REALIZADA',
-        total__isnull=False
-    )
-    ventas_ayer_qs = Venta.objects.filter(
-        fechaventa__date=ayer,
-        estado='REALIZADA'
-    )
-    ventas_hoy = ventas_hoy_qs.aggregate(
-        total=Sum('total'),
-        cantidad=Count('id_venta')
-    )
-    ventas_ayer = ventas_ayer_qs.aggregate(
-        total=Sum('total'),
-        cantidad=Count('id_venta')
-    )
-    # Log para depuración
-    if ventas_hoy_qs.count() == 0:
-        logger.warning(f"No hay ventas REALIZADA para hoy ({hoy})")
-    if ventas_ayer_qs.count() == 0:
-        logger.warning(f"No hay ventas REALIZADA para ayer ({ayer})")
-    # Forzar a float y nunca None
-    total_hoy = float(ventas_hoy['total']) if ventas_hoy['total'] is not None else 0.0
-    total_ayer = float(ventas_ayer['total']) if ventas_ayer['total'] is not None else 0.0
-    cantidad_hoy = int(ventas_hoy['cantidad']) if ventas_hoy['cantidad'] is not None else 0
-    cantidad_ayer = int(ventas_ayer['cantidad']) if ventas_ayer['cantidad'] is not None else 0
-    return {
-        'ventas_hoy': {
-            'total': total_hoy,
-            'cantidad': cantidad_hoy
-        },
-        'ventas_ayer': {
-            'total': total_ayer,
-            'cantidad': cantidad_ayer
-        }
+    # Convertir fechas a string para SQL (YYYY-MM-DD)
+    hoy_str = hoy.strftime('%Y-%m-%d')
+    ayer_str = ayer.strftime('%Y-%m-%d')
+    resultado = {
+        'ventas_hoy': {'total': 0.0, 'cantidad': 0},
+        'ventas_ayer': {'total': 0.0, 'cantidad': 0}
     }
+    try:
+        with connection.cursor() as cursor:
+            # Ventas de hoy
+            cursor.execute("""
+                SELECT COALESCE(SUM(total),0), COUNT(id_venta)
+                FROM venta
+                WHERE DATE(fechaventa) = %s AND estado = 'REALIZADA' AND total IS NOT NULL
+            """, [hoy_str])
+            row = cursor.fetchone()
+            resultado['ventas_hoy']['total'] = float(row[0]) if row and row[0] is not None else 0.0
+            resultado['ventas_hoy']['cantidad'] = int(row[1]) if row and row[1] is not None else 0
+            # Ventas de ayer
+            cursor.execute("""
+                SELECT COALESCE(SUM(total),0), COUNT(id_venta)
+                FROM venta
+                WHERE DATE(fechaventa) = %s AND estado = 'REALIZADA' AND total IS NOT NULL
+            """, [ayer_str])
+            row = cursor.fetchone()
+            resultado['ventas_ayer']['total'] = float(row[0]) if row and row[0] is not None else 0.0
+            resultado['ventas_ayer']['cantidad'] = int(row[1]) if row and row[1] is not None else 0
+    except Exception as e:
+        logger.error(f'Error SQL al calcular estadísticas de ventas: {str(e)}')
+    return resultado
 
 def get_detalleventa_or_404(idventa, idproventa):
     """

@@ -3,10 +3,126 @@
 
 {% block title %}Registrar Cliente - NEXO{% endblock %}
 
+{% block page_title %}
+    <i class="fas fa-plus-circle mr-2" style="color: {{ colores.primary }};"></i>Registrar Nuevo Cliente
+{% endblock %}
+
+{% block page_subtitle %}
+    Complete los datos para registrar un nuevo cliente en el sistema.
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+    .form-container {
+        background: {{ colores.white }};
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(57, 191, 178, 0.1);
+        border: 1px solid {{ colores.bg_light }};
+        transition: all 0.3s ease;
+    }
+    .form-container:hover {
+        box-shadow: 0 8px 15px -3px rgba(57, 191, 178, 0.15);
+    }
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: {{ colores.text_dark }};
+        margin-bottom: 0.5rem;
+    }
+    .btn-submit-form {
+        background: linear-gradient(135deg, {{ colores.success }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    .btn-submit-form:hover {
+        background: linear-gradient(135deg, #2da89e 0%, #258a7f 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(57, 191, 178, 0.3);
+    }
+    .btn-cancel-form {
+        background: {{ colores.text_medium }};
+        color: {{ colores.white }};
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    .btn-cancel-form:hover {
+        background: {{ colores.text_dark }};
+        color: {{ colores.white }};
+        text-decoration: none;
+    }
+    .form-error-message {
+        color: {{ colores.danger }};
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+    }
+    .form-error-message i {
+        margin-right: 0.25rem;
+    }
+    .alert-django-error {
+        border-left: 4px solid {{ colores.danger }};
+        background: #fef2f2;
+        color: #991b1b;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .alert-django-success {
+        border-left: 4px solid {{ colores.success }};
+        background: #f0fdfa;
+        color: #065f46;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .required-field::after {
+        content: " *";
+        color: {{ colores.danger }};
+        font-weight: bold;
+    }
+    .form-help-text {
+        font-size: 0.75rem;
+        color: {{ colores.text_medium }};
+        margin-top: 0.25rem;
+        font-style: italic;
+    }
+    @media (max-width: 768px) {
+        .formset-row {
+            padding: 1rem;
+        }
+        .formset-row-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
     <div class="max-w-4xl mx-auto">
-        <!-- Mostrar mensajes de error -->
         {% if messages %}
         <div class="mb-6">
             {% for message in messages %}
@@ -16,11 +132,8 @@
             {% endfor %}
         </div>
         {% endif %}
-
         <form method="post" id="clienteForm" novalidate>
             {% csrf_token %}
-
-            <!-- Sección Datos Persona -->
             <div class="form-container p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <i class="fas fa-id-card mr-2" style="color: {{ colores.primary }};"></i>
@@ -45,8 +158,6 @@
                     {% endfor %}
                 </div>
             </div>
-
-            <!-- Sección Datos Cliente -->
             <div class="form-container p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <i class="fas fa-envelope mr-2" style="color: {{ colores.primary }};"></i>
@@ -71,19 +182,19 @@
                     {% endfor %}
                 </div>
             </div>
-
-            <!-- Botones -->
-            <div class="flex justify-end space-x-4">
+            <div class="flex justify-end space-x-4 pt-6">
                 <a href="{% url 'clientes:list' %}" class="btn-cancel-form">
                     <i class="fas fa-times mr-2"></i>Cancelar
                 </a>
-                <button type="submit" class="btn-submit-form" style="background-color: {{ colores.primary }};">
-                    <i class="fas fa-save mr-2"></i>Guardar Cliente
+                <button type="submit" class="btn-submit-form" id="submitBtn">
+                    <i class="fas fa-save mr-2"></i>
+                    <span id="submitText">Guardar Cliente</span>
                 </button>
             </div>
         </form>
     </div>
 </div>
+{% endblock %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -128,4 +239,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-{% endblock %}
