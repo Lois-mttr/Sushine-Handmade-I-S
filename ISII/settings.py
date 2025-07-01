@@ -70,6 +70,7 @@ TEMPLATES = [
             BASE_DIR / 'inventario' / 'templates',
             BASE_DIR / 'crud' / 'templates',
             BASE_DIR / 'clientes' / 'templates',
+            BASE_DIR / 'devolucion' / 'templates',
             BASE_DIR / 'ajustes' / 'templates',
             BASE_DIR / 'Informes' / 'templates',
         ],

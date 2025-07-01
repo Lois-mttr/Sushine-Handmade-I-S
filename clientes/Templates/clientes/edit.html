@@ -4,13 +4,127 @@
 {% block title %}Editar Cliente - NEXO{% endblock %}
 
 {% block content %}
-<div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
+<style>
+    /* Estilos para el formulario de edición */
+    .form-page-container {
+        background-color: #f9fafb;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .form-container {
+        background-color: #fff;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+    }
+
+    .form-title {
+        color: #39bfb2;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .required-field:after {
+        content: " *";
+        color: #ef4444;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #39bfb2;
+        box-shadow: 0 0 0 3px rgba(57, 191, 178, 0.2);
+    }
+
+    .form-help-text {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .form-error-message {
+        margin-top: 0.25rem;
+        font-size: 0.75rem;
+        color: #ef4444;
+    }
+
+    .btn-submit-form {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background-color: #39bfb2;
+        color: white;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-submit-form:hover {
+        background-color: #2fa89b;
+        transform: translateY(-1px);
+    }
+
+    .btn-cancel-form {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background-color: #f3f4f6;
+        color: #374151;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel-form:hover {
+        background-color: #e5e7eb;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-error {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        border-left: 4px solid #b91c1c;
+    }
+
+    .alert-success {
+        background-color: #dcfce7;
+        color: #166534;
+        border-left: 4px solid #166534;
+    }
+</style>
+
+<div class="form-page-container">
     <div class="max-w-4xl mx-auto">
         <!-- Mensajes de error/success -->
         {% if messages %}
         <div class="mb-6 space-y-2">
             {% for message in messages %}
-            <div class="alert {% if message.tags %}{{ message.tags }}{% endif %} p-4 rounded-lg">
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
                 <div class="flex items-center">
                     <i class="fas {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-3"></i>
                     {{ message }}
@@ -27,9 +141,9 @@
             <input type="hidden" name="cedula" value="{{ cliente.persona.cedula }}">
 
             <!-- Sección Datos Personales -->
-            <div class="form-container p-6 mb-6">
-                <h2 class="text-xl font-semibold mb-4 flex items-center">
-                    <i class="fas fa-id-card mr-2" style="color: {{ colores.primary }};"></i>
+            <div class="form-container">
+                <h2 class="form-title">
+                    <i class="fas fa-id-card mr-2"></i>
                     Datos Personales
                 </h2>
 
@@ -56,7 +170,7 @@
                                class="form-input {% if persona_form.primer_nombre.errors %}border-red-500{% endif %}"
                                maxlength="15" required id="id_primer_nombre">
                         {% if persona_form.primer_nombre.errors %}
-                        <div class="mt-1 text-sm text-red-600">
+                        <div class="form-error-message">
                             {% for error in persona_form.primer_nombre.errors %}
                             <p>{{ error }}</p>
                             {% endfor %}
@@ -71,7 +185,7 @@
                                class="form-input {% if persona_form.segundo_nombre.errors %}border-red-500{% endif %}"
                                maxlength="15" id="id_segundo_nombre">
                         {% if persona_form.segundo_nombre.errors %}
-                        <div class="mt-1 text-sm text-red-600">
+                        <div class="form-error-message">
                             {% for error in persona_form.segundo_nombre.errors %}
                             <p>{{ error }}</p>
                             {% endfor %}
@@ -86,7 +200,7 @@
                                class="form-input {% if persona_form.primer_apellido.errors %}border-red-500{% endif %}"
                                maxlength="15" required id="id_primer_apellido">
                         {% if persona_form.primer_apellido.errors %}
-                        <div class="mt-1 text-sm text-red-600">
+                        <div class="form-error-message">
                             {% for error in persona_form.primer_apellido.errors %}
                             <p>{{ error }}</p>
                             {% endfor %}
@@ -101,7 +215,7 @@
                                class="form-input {% if persona_form.segundo_apellido.errors %}border-red-500{% endif %}"
                                maxlength="15" id="id_segundo_apellido">
                         {% if persona_form.segundo_apellido.errors %}
-                        <div class="mt-1 text-sm text-red-600">
+                        <div class="form-error-message">
                             {% for error in persona_form.segundo_apellido.errors %}
                             <p>{{ error }}</p>
                             {% endfor %}
@@ -115,7 +229,7 @@
                         <textarea name="direccion" class="form-input {% if persona_form.direccion.errors %}border-red-500{% endif %}"
                                   rows="3" required id="id_direccion">{{ persona_form.instance.direccion }}</textarea>
                         {% if persona_form.direccion.errors %}
-                        <div class="mt-1 text-sm text-red-600">
+                        <div class="form-error-message">
                             {% for error in persona_form.direccion.errors %}
                             <p>{{ error }}</p>
                             {% endfor %}
@@ -126,9 +240,9 @@
             </div>
 
             <!-- Sección Datos Cliente -->
-            <div class="form-container p-6 mb-6">
-                <h2 class="text-xl font-semibold mb-4 flex items-center">
-                    <i class="fas fa-envelope mr-2" style="color: {{ colores.primary }};"></i>
+            <div class="form-container">
+                <h2 class="form-title">
+                    <i class="fas fa-envelope mr-2"></i>
                     Datos del Cliente
                 </h2>
 
@@ -149,7 +263,7 @@
                                class="form-input {% if cliente_form.correo.errors %}border-red-500{% endif %}"
                                maxlength="30" id="id_correo">
                         {% if cliente_form.correo.errors %}
-                        <div class="mt-1 text-sm text-red-600">
+                        <div class="form-error-message">
                             {% for error in cliente_form.correo.errors %}
                             <p>{{ error }}</p>
                             {% endfor %}
@@ -164,7 +278,7 @@
                 <a href="{% url 'clientes:detail' cliente.id %}" class="btn-cancel-form">
                     <i class="fas fa-times mr-2"></i> Cancelar
                 </a>
-                <button type="submit" class="btn-submit-form" style="background-color: {{ colores.primary }};">
+                <button type="submit" class="btn-submit-form">
                     <i class="fas fa-save mr-2"></i> Guardar Cambios
                 </button>
             </div>

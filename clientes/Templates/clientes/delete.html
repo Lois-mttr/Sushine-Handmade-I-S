@@ -2,13 +2,79 @@
 {% load static %}
 
 {% block content %}
-<div class="container">
-    <h1>Eliminar Cliente</h1>
-    <p>¿Estás seguro de que deseas eliminar a {{ object.persona }}?</p>
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Eliminar</button>
-        <a href="{% url 'clientes:list' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+<style>
+    /* Estilos para la confirmación de eliminación */
+    .delete-container {
+        background-color: #f9fafb;
+        min-height: 100vh;
+        padding: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .delete-card {
+        background-color: #fff;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .delete-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 1rem;
+    }
+
+    .delete-message {
+        color: #6b7280;
+        margin-bottom: 2rem;
+    }
+
+    .btn-danger {
+        background-color: #ef4444;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn-danger:hover {
+        background-color: #dc2626;
+    }
+
+    .btn-secondary {
+        background-color: #f3f4f6;
+        color: #374151;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e5e7eb;
+    }
+</style>
+
+<div class="delete-container">
+    <div class="delete-card">
+        <h1 class="delete-title">Eliminar Cliente</h1>
+        <p class="delete-message">¿Estás seguro de que deseas eliminar a {{ object.persona }}?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn-danger">
+                <i class="fas fa-trash-alt mr-2"></i>Eliminar
+            </button>
+            <a href="{% url 'clientes:list' %}" class="btn-secondary ml-2">
+                <i class="fas fa-times mr-2"></i>Cancelar
+            </a>
+        </form>
+    </div>
 </div>
 {% endblock %}

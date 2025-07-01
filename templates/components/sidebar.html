@@ -76,7 +76,7 @@
         </a>
 
         <!-- Registrar Devolución -->
-        <a href="#" 
+        <a href="{% url 'devolucion:devolucion_list' %}" 
            class="nexo-menu-item {% if request.resolver_match.url_name == 'devoluciones' %}nexo-menu-active{% endif %}"
            data-tooltip="Registrar Devolución">
             <div class="nexo-menu-icon nexo-icon-devolucion">

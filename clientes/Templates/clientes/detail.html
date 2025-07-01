@@ -4,13 +4,112 @@
 {% block title %}Cliente #{{ datos.cliente.id }} - NEXO{% endblock %}
 
 {% block content %}
-<div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
+<style>
+    /* Estilos para la vista de detalle */
+    .detail-container {
+        background-color: #f9fafb;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .detail-card {
+        background-color: #fff;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .detail-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        display: flex;
+        align-items: center;
+    }
+
+    .badge-activo {
+        background-color: #10b981;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .badge-inactivo {
+        background-color: #6b7280;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .detail-item {
+        margin-bottom: 0.75rem;
+    }
+
+    .detail-label {
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .btn-submit-form {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background-color: #39bfb2;
+        color: white;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-submit-form:hover {
+        background-color: #2fa89b;
+    }
+
+    .btn-cancel-form {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background-color: #f3f4f6;
+        color: #374151;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel-form:hover {
+        background-color: #e5e7eb;
+    }
+</style>
+
+<div class="detail-container">
     <div class="max-w-4xl mx-auto">
-        <div class="form-container p-6">
+        <div class="detail-card">
             <!-- Encabezado -->
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold flex items-center">
-                    <i class="fas fa-user-circle mr-2" style="color: {{ colores.primary }};"></i>
+            <div class="detail-header">
+                <h2 class="detail-title">
+                    <i class="fas fa-user-circle mr-2" style="color: #39bfb2;"></i>
                     {{ datos.persona.nombre_completo }}
                 </h2>
                 <span class="{% if datos.cliente.estadoCliente %}badge-activo{% else %}badge-inactivo{% endif %}">
@@ -19,28 +118,44 @@
             </div>
 
             <!-- Datos -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                    <h3 class="text-lg font-semibold mb-3 flex items-center">
+                    <h3 class="section-title">
                         <i class="fas fa-id-card mr-2"></i>Información Personal
                     </h3>
-                    <div class="space-y-2">
-                        <p><strong>Cédula:</strong> {{ datos.persona.cedula }}</p>
-                        <p><strong>Nombres:</strong> {{ datos.persona.primerNombre }} {{ datos.persona.segundoNombre|default:"" }}</p>
-                        <p><strong>Apellidos:</strong> {{ datos.persona.primerApellido }} {{ datos.persona.segundoApellido|default:"" }}</p>
-                        <p><strong>Dirección:</strong> {{ datos.persona.direccion }}</p>
-                        <p><strong>Estado Persona:</strong> {{ datos.persona.estadoPersona|yesno:"Activo,Inactivo" }}</p>
+                    <div class="space-y-3">
+                        <div class="detail-item">
+                            <span class="detail-label">Cédula:</span> {{ datos.persona.cedula }}
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Nombres:</span> {{ datos.persona.primerNombre }} {{ datos.persona.segundoNombre|default:"" }}
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Apellidos:</span> {{ datos.persona.primerApellido }} {{ datos.persona.segundoApellido|default:"" }}
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Dirección:</span> {{ datos.persona.direccion }}
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Estado Persona:</span> {{ datos.persona.estadoPersona|yesno:"Activo,Inactivo" }}
+                        </div>
                     </div>
                 </div>
 
                 <div>
-                    <h3 class="text-lg font-semibold mb-3 flex items-center">
+                    <h3 class="section-title">
                         <i class="fas fa-info-circle mr-2"></i>Información de Cliente
                     </h3>
-                    <div class="space-y-2">
-                        <p><strong>ID Cliente:</strong> {{ datos.cliente.id }}</p>
-                        <p><strong>Correo:</strong> {{ datos.cliente.correo|default:"No especificado" }}</p>
-                        <p><strong>Fecha Registro:</strong> {{ datos.cliente.fecha_registro }}</p>
+                    <div class="space-y-3">
+                        <div class="detail-item">
+                            <span class="detail-label">ID Cliente:</span> {{ datos.cliente.id }}
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Correo:</span> {{ datos.cliente.correo|default:"No especificado" }}
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Fecha Registro:</span> {{ datos.cliente.fecha_registro }}
+                        </div>
                     </div>
                 </div>
             </div>
