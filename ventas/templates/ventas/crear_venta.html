@@ -289,7 +289,8 @@
                             </div>
                             <div class="flex items-end">
                                 <button type="button" 
-                                        class="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                                        class="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                                        onclick="window.open('{% url 'clientes:list' %}', '_blank')">
                                     <i class="fas fa-user-plus mr-2"></i>Nuevo Cliente
                                 </button>
                             </div>
@@ -849,7 +850,18 @@
 
     // Función para limpiar carrito y formulario con modal CRUD personalizado
     function limpiarCarrito() {
-        if (carritoProductos.length === 0) return;
+        if (carritoProductos.length === 0) {
+            // Limpiar también el formulario aunque el carrito esté vacío
+            const productoSelect = document.getElementById('id_producto');
+            const cantidadInput = document.getElementById('id_cantidad');
+            if (productoSelect) productoSelect.value = '';
+            if (cantidadInput) cantidadInput.value = '';
+            document.getElementById('info-producto').classList.add('hidden');
+            const clienteSelect = document.querySelector('select[name="codcliente"]');
+            if (clienteSelect) clienteSelect.value = '';
+            showNotification('Formulario limpiado correctamente.', 'info');
+            return;
+        }
         const html = `
         <div class="modal">
             <button class="modal-close-x" aria-label="Cerrar">&times;</button>

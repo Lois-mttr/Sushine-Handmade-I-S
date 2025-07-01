@@ -163,10 +163,253 @@
     @media (max-width: 768px) {
         .info-card, .total-section { padding: 1rem; }
     }
+
+    /* Toasts modernos y consistentes con crear_venta.html */
+    .toast {
+        display: flex;
+        align-items: center;
+        min-width: 260px;
+        max-width: 350px;
+        padding: 1rem 1.25rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 6px 24px 0 rgba(57,191,178,0.18);
+        font-size: 1rem;
+        font-weight: 500;
+        margin-bottom: 0.7rem;
+        position: relative;
+        gap: 0.75rem;
+        opacity: 0.98;
+        border: 2px solid #e5e7eb;
+        background: #fff;
+        color: #222;
+        transition: box-shadow 0.2s, border 0.2s;
+        z-index: 9999;
+    }
+    .toast-success {
+        border-left: 6px solid #39bfb2;
+        background: linear-gradient(90deg, #e6fcfa 0%, #d1f7f2 100%);
+        color: #1a4742;
+    }
+    .toast-error {
+        border-left: 6px solid #ef4444;
+        background: linear-gradient(90deg, #ffeaea 0%, #ffd6d6 100%);
+        color: #7f1d1d;
+    }
+    .toast-warning {
+        border-left: 6px solid #F28627;
+        background: linear-gradient(90deg, #fff7e6 0%, #ffe7c2 100%);
+        color: #7c4700;
+    }
+    .toast-info {
+        border-left: 6px solid #3b82f6;
+        background: linear-gradient(90deg, #e6f0ff 0%, #d6e7ff 100%);
+        color: #1e3a8a;
+    }
+    .toast .toast-close {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.75rem;
+        background: transparent;
+        border: none;
+        color: inherit;
+        font-size: 1.1rem;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    .toast .toast-close:hover { opacity: 1; }
+    .toast .toast-icon { font-size: 1.3rem; margin-right: 0.5rem; }
+    .animate-fade-in-up { animation: fade-in-up 0.4s cubic-bezier(.4,0,.2,1); }
+    .animate-fade-out { animation: fade-out 0.5s cubic-bezier(.4,0,.2,1); }
+    @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px);} to { opacity: 1; transform: none; } }
+    @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+    /* Modal CRUD compacto y elegante */
+    .modal {
+        background: #fff;
+        border-radius: 0.75rem;
+        box-shadow: 0 6px 32px 0 rgba(57,191,178,0.18);
+        padding: 1.2rem 1.2rem 1rem 1.2rem;
+        min-width: 320px;
+        max-width: 360px;
+        width: 96vw;
+        position: relative;
+        animation: fade-in-up 0.3s;
+        margin: auto;
+        z-index: 1003;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .modal-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 0.7rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .modal-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1.2rem;
+        justify-content: flex-end;
+        width: 100%;
+    }
+    .modal input[type="number"] {
+        border: 1.5px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 0.4rem 0.8rem;
+        font-size: 1rem;
+        width: 100%;
+        margin-top: 0.3rem;
+    }
+    .modal-close-x {
+        position: absolute;
+        top: 0.7rem;
+        right: 1rem;
+        background: transparent;
+        border: none;
+        font-size: 1.1rem;
+        color: #888;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    .modal-close-x:hover { opacity: 1; }
+    .btn-crud {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-weight: 600;
+        border-radius: 0.4rem;
+        padding: 0.45rem 1.1rem;
+        font-size: 0.98rem;
+        transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+        box-shadow: 0 1px 4px 0 rgba(57,191,178,0.08);
+        border: none;
+        cursor: pointer;
+        outline: none;
+    }
+    .btn-crud-primary {
+        background: linear-gradient(90deg, #39bfb2 0%, #4ECDC4 100%);
+        color: #fff;
+    }
+    .btn-crud-primary:hover {
+        background: linear-gradient(90deg, #4ECDC4 0%, #39bfb2 100%);
+        color: #fff;
+    }
+    .btn-crud-danger {
+        background: linear-gradient(90deg, #ef4444 0%, #f59e42 100%);
+        color: #fff;
+    }
+    .btn-crud-danger:hover {
+        background: linear-gradient(90deg, #f59e42 0%, #ef4444 100%);
+        color: #fff;
+    }
+    .btn-crud-gray {
+        background: #e5e7eb;
+        color: #222;
+    }
+    .btn-crud-gray:hover {
+        background: #d1d5db;
+        color: #222;
+    }
+    .modal-bg {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(34, 34, 34, 0.32);
+        z-index: 1001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: auto;
+    }
+    #modal-content {
+        z-index: 1002 !important;
+        display: none;
+        position: fixed;
+        left: 0; right: 0; top: 0; bottom: 0;
+        pointer-events: none;
+        align-items: center;
+        justify-content: center;
+    }
+    @media (max-width: 500px) {
+        .modal { min-width: 90vw; max-width: 98vw; padding: 0.8rem 0.2rem; }
+        .btn-crud { width: 100%; justify-content: center; font-size: 0.97rem; }
+        .modal-actions { flex-direction: column; gap: 0.5rem; }
+    }
+
+    /* Estilos específicos para la sección de edición de ventas */
+    .container {
+        background-color: #f8fafc;
+    }
+    .bg-white {
+        background-color: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .text-primary {
+        color: #4f46e5;
+    }
+    .text-success {
+        color: #10b981;
+    }
+    .text-danger {
+        color: #ef4444;
+    }
+    .text-warning {
+        color: #f59e0b;
+    }
+    .text-info {
+        color: #3b82f6;
+    }
+    .font-bold {
+        font-weight: 700;
+    }
+    .rounded-lg {
+        border-radius: 0.5rem;
+    }
+    .shadow-md {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .shadow-sm {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    .p-6 {
+        padding: 1.5rem;
+    }
+    .mb-6 {
+        margin-bottom: 1.5rem;
+    }
+    .mt-6 {
+        margin-top: 1.5rem;
+    }
+    .gap-4 {
+        gap: 1rem;
+    }
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    @media (max-width: 768px) {
+        .grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Contenedor de notificaciones tipo toast abajo a la derecha -->
+<div id="toast-container" class="fixed bottom-8 right-8 z-50 space-y-2"></div>
+<!-- Modales personalizados -->
+<div id="modal-bg" class="modal-bg" style="display:none;"></div>
+<div id="modal-content" style="display:none; position:fixed; z-index:70; left:0; right:0; top:0; bottom:0; pointer-events:none;"></div>
 <div class="container mx-auto px-4 py-8" style="background-color: #f8fafc;">
     <form id="form-editar-venta" method="post">
         {% csrf_token %}
@@ -178,11 +421,12 @@
                     Editar Venta #{{ venta.id_venta }}
                 </h1>
                 <div class="text-gray-500 mt-1">
-                    Fecha y Hora: <span class="font-semibold">
+                    Fecha: <span class="font-semibold">
                         {% if fechaventa_cruda %}
-                            {{ fechaventa_cruda|date:'d/m/Y h:i A' }}
+                            {# Mostrar la fecha y hora cruda obtenida por SQL sin formato Django #}
+                            {{ fechaventa_cruda|date:'d/m/Y ' }}
                         {% elif venta.fechaventa %}
-                            {{ venta.fechaventa|date:'d/m/Y h:i A' }}
+                            {{ venta.fechaventa|date:'d/m/Y' }}
                         {% else %}
                             -
                         {% endif %}
@@ -226,7 +470,7 @@
                     Agregar Productos
                 </h3>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4" id="grid-agregar-productos">
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Producto *</label>
                     {{ detalle_form.producto }}
@@ -404,89 +648,158 @@
         document.getElementById('subtotal-producto').textContent = `C$${(precio * cantidad).toFixed(2)}`;
     }
 
-    function agregarProductoAlCarrito() {
-        const selectProducto = document.getElementById('id_producto');
-        const inputCantidad = document.getElementById('id_cantidad');
-        if (!selectProducto.value) {
-            alert('Seleccione un producto');
-            return;
+    // Toast personalizado tipo crear_venta
+    function showNotification(message, type = 'info') {
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'fixed bottom-8 right-8 z-50 space-y-2';
+            document.body.appendChild(toastContainer);
         }
-        // Obtener el stock real desde la API antes de agregar
-        fetch('/ventas/api/producto-info/?producto_id=' + encodeURIComponent(selectProducto.value))
+        const icons = {
+            success: '<i class="fas fa-check-circle"></i>',
+            error: '<i class="fas fa-times-circle"></i>',
+            warning: '<i class="fas fa-exclamation-triangle"></i>',
+            info: '<i class="fas fa-info-circle"></i>'
+        };
+        const classes = {
+            success: 'toast toast-success',
+            error: 'toast toast-error',
+            warning: 'toast toast-warning',
+            info: 'toast toast-info'
+        };
+        const toast = document.createElement('div');
+        toast.className = `${classes[type] || classes.info} animate-fade-in-up`;
+        toast.innerHTML = `
+            <span class="toast-icon">${icons[type] || icons.info}</span>
+            <span style="flex:1;">${message}</span>
+            <button class="toast-close" aria-label="Cerrar">&times;</button>
+        `;
+        toast.querySelector('.toast-close').onclick = () => toast.remove();
+        setTimeout(() => {
+            toast.classList.add('animate-fade-out');
+            setTimeout(() => toast.remove(), 500);
+        }, 3500);
+        toastContainer.appendChild(toast);
+    }
+
+    // Modal CRUD compacto para editar/eliminar
+    function showModal(html, onClose) {
+        let bg = document.getElementById('modal-bg');
+        let content = document.getElementById('modal-content');
+        if (!bg) {
+            bg = document.createElement('div');
+            bg.id = 'modal-bg';
+            bg.className = 'modal-bg';
+            document.body.appendChild(bg);
+        }
+        if (!content) {
+            content = document.createElement('div');
+            content.id = 'modal-content';
+            content.style.position = 'fixed';
+            content.style.zIndex = '1002';
+            content.style.left = '0';
+            content.style.right = '0';
+            content.style.top = '0';
+            content.style.bottom = '0';
+            content.style.pointerEvents = 'none';
+            document.body.appendChild(content);
+        }
+        content.innerHTML = html;
+        bg.style.display = 'flex';
+        content.style.display = 'flex';
+        content.style.pointerEvents = 'auto';
+        function closeModal() {
+            bg.style.display = 'none';
+            content.style.display = 'none';
+            content.innerHTML = '';
+            content.style.pointerEvents = 'none';
+            if (onClose) onClose();
+        }
+        bg.onclick = function(e) { if (e.target === bg) closeModal(); };
+        const closeBtn = content.querySelector('.modal-close-x');
+        if (closeBtn) closeBtn.onclick = closeModal;
+        return closeModal;
+    }
+
+    function editarCantidadProducto(idx) {
+        const producto = carritoProductos[idx];
+        fetch('/ventas/api/producto-info/?producto_id=' + encodeURIComponent(producto.id))
             .then(response => response.json())
             .then(data => {
                 if (!data.success) {
-                    alert('No se pudo obtener información del producto');
+                    showNotification('No se pudo obtener la información del producto.', 'error');
                     return;
                 }
                 let stockTotal = parseInt(data.producto.stock);
                 let precio = parseFloat(data.producto.precio_con_impuesto);
-                let nombre = data.producto.nombre;
-                let cantidad = parseInt(inputCantidad.value) || 1;
-                // Calcular cuántos ya hay en el carrito (excepto si es edición)
-                let enCarrito = 0;
-                carritoProductos.forEach(p => {
-                    if (p.id == selectProducto.value) {
-                        enCarrito += parseInt(p.cantidad) || 0;
+                let html = `
+                <div class="modal">
+                    <button class="modal-close-x" aria-label="Cerrar">&times;</button>
+                    <div class="modal-title"><i class="fas fa-edit"></i> Editar cantidad</div>
+                    <div style="margin-bottom:0.7rem;">
+                        <div><b>${producto.nombre}</b></div>
+                        <div class="text-xs text-gray-500">ID: ${producto.id}</div>
+                        <div class="info-producto-panel" style="margin:0.7rem 0 0.5rem 0;">
+                            <span class="info-label">Precio:</span> <span class="info-value precio">C$${precio.toFixed(2)}</span>
+                            <span class="info-label">Stock:</span> <span class="info-value stock">${stockTotal}</span>
+                            <span class="info-label">Subtotal:</span> <span class="info-value subtotal">C$${(precio * producto.cantidad).toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <label for="nueva-cantidad" style="font-weight:500;">Nueva cantidad:</label>
+                    <input id="nueva-cantidad" type="number" min="1" max="${stockTotal}" value="${producto.cantidad}" style="margin-bottom:0.7rem;" />
+                    <div class="modal-actions">
+                        <button class="btn-crud btn-crud-primary" id="btn-confirmar-editar"><i class="fas fa-check"></i> Guardar</button>
+                        <button class="btn-crud btn-crud-gray" id="btn-cancelar-editar"><i class="fas fa-times"></i> Cancelar</button>
+                    </div>
+                </div>`;
+                const closeModal = showModal(html);
+                document.getElementById('btn-confirmar-editar').onclick = function(e) {
+                    e.preventDefault();
+                    let nuevaCantidad = parseInt(document.getElementById('nueva-cantidad').value);
+                    if (isNaN(nuevaCantidad) || nuevaCantidad < 1 || nuevaCantidad > stockTotal) {
+                        showNotification('Cantidad inválida. Debe ser entre 1 y el stock disponible.', 'warning');
+                        return;
                     }
-                });
-                // Stock disponible real
-                let stockDisponible = stockTotal - enCarrito;
-                if (cantidad > stockDisponible) {
-                    alert(`No hay suficiente stock disponible. Stock actual: ${stockDisponible}`);
-                    return;
-                }
-                // Si ya existe, actualiza cantidad
-                const idx = carritoProductos.findIndex(p => p.id === selectProducto.value);
-                if (idx !== -1) {
-                    carritoProductos[idx].cantidad = cantidad;
-                    carritoProductos[idx].precio = precio;
-                    carritoProductos[idx].nombre = nombre;
-                } else {
-                    carritoProductos.push({
-                        id: selectProducto.value,
-                        nombre: nombre,
-                        precio: precio,
-                        cantidad: cantidad
-                    });
-                }
-                renderizarCarrito();
-                selectProducto.value = '';
-                inputCantidad.value = 1;
-                document.getElementById('info-producto').classList.add('hidden');
+                    carritoProductos[idx].cantidad = nuevaCantidad;
+                    renderizarCarrito();
+                    closeModal();
+                    showNotification('Cantidad actualizada correctamente.', 'success');
+                };
+                document.getElementById('btn-cancelar-editar').onclick = function(e) {
+                    e.preventDefault();
+                    closeModal();
+                };
             });
     }
 
-    function limpiarFormulario() {
-        document.getElementById('id_producto').value = '';
-        document.getElementById('id_cantidad').value = 1;
-        document.getElementById('info-producto').classList.add('hidden');
-    }
-
-    function editarCantidadProducto(idx) {
-        const nuevaCantidad = prompt('Nueva cantidad para ' + carritoProductos[idx].nombre, carritoProductos[idx].cantidad);
-        if (nuevaCantidad !== null) {
-            const cantidadInt = parseInt(nuevaCantidad);
-            if (isNaN(cantidadInt) || cantidadInt < 1) {
-                alert('Cantidad inválida');
-                return;
-            }
-            // Validar stock
-            const info = getProductoInfoById(carritoProductos[idx].id);
-            if (cantidadInt > info.stock) {
-                alert('No hay suficiente stock disponible');
-                return;
-            }
-            carritoProductos[idx].cantidad = cantidadInt;
-            renderizarCarrito();
-        }
-    }
-
     function eliminarProductoDelCarrito(idx) {
-        if (confirm('¿Eliminar este producto del carrito?')) {
+        const producto = carritoProductos[idx];
+        let html = `
+        <div class="modal">
+            <button class="modal-close-x" aria-label="Cerrar">&times;</button>
+            <div class="modal-title"><i class="fas fa-trash"></i> Eliminar producto</div>
+            <div style="margin-bottom:0.7rem;">
+                ¿Estás seguro de que deseas eliminar <b>${producto.nombre}</b> del carrito?
+            </div>
+            <div class="modal-actions">
+                <button class="btn-crud btn-crud-danger" id="btn-confirmar-eliminar"><i class="fas fa-trash"></i> Eliminar</button>
+                <button class="btn-crud btn-crud-gray" id="btn-cancelar-eliminar"><i class="fas fa-times"></i> Cancelar</button>
+            </div>
+        </div>`;
+        const closeModal = showModal(html);
+        document.getElementById('btn-confirmar-eliminar').onclick = function(e) {
+            e.preventDefault();
             carritoProductos.splice(idx, 1);
             renderizarCarrito();
-        }
+            closeModal();
+            showNotification('Producto eliminado de la venta.', 'success');
+        };
+        document.getElementById('btn-cancelar-eliminar').onclick = function(e) {
+            e.preventDefault();
+            closeModal();
+        };
     }
 
     function cargarProductosOriginales() {
@@ -512,12 +825,12 @@
 
     function actualizarVenta() {
         if (carritoProductos.length === 0) {
-            alert('Debe tener al menos un producto en la venta');
+            showNotification('Debe tener al menos un producto en la venta.', 'warning');
             return;
         }
         for (let p of carritoProductos) {
             if (!p.id || p.cantidad < 1) {
-                alert('Todos los productos deben estar completos y con cantidad válida');
+                showNotification('Todos los productos deben estar completos y con cantidad válida.', 'warning');
                 return;
             }
         }
@@ -526,12 +839,101 @@
             cantidadVenta: producto.cantidad
         }));
         document.getElementById('detalles_venta').value = JSON.stringify(detalles);
-        if (confirm(`¿Confirmar actualización de la venta por un total de C$${totalVenta.toFixed(2)}?`)) {
+        // Confirmación personalizada con toast
+        const totalMsg = `¿Confirmar actualización de la venta por un total de C$${totalVenta.toFixed(2)}?`;
+        mostrarConfirmacionVenta(totalMsg, function() {
             const btnActualizar = document.getElementById('btn-actualizar-venta');
             btnActualizar.disabled = true;
             btnActualizar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Actualizando...';
             document.getElementById('form-editar-venta').submit();
+        });
+    }
+
+    // Modal de confirmación elegante para actualizar venta
+    function mostrarConfirmacionVenta(mensaje, onConfirm) {
+        const html = `
+        <div class="modal">
+            <button class="modal-close-x" aria-label="Cerrar">&times;</button>
+            <div class="modal-title"><i class="fas fa-question-circle text-warning"></i> Confirmar actualización</div>
+            <div style="margin-bottom:0.7rem;">${mensaje}</div>
+            <div class="modal-actions">
+                <button class="btn-crud btn-crud-primary" id="btn-confirmar-actualizar"><i class="fas fa-check"></i> Sí, actualizar</button>
+                <button class="btn-crud btn-crud-gray" id="btn-cancelar-actualizar"><i class="fas fa-times"></i> Cancelar</button>
+            </div>
+        </div>`;
+        const closeModal = showModal(html);
+        document.getElementById('btn-confirmar-actualizar').onclick = function(e) {
+            e.preventDefault();
+            closeModal();
+            if (onConfirm) onConfirm();
+        };
+        document.getElementById('btn-cancelar-actualizar').onclick = function(e) {
+            e.preventDefault();
+            closeModal();
+            showNotification('Actualización cancelada.', 'info');
+        };
+    }
+
+    function agregarProductoAlCarrito() {
+        const selectProducto = document.getElementById('id_producto');
+        const inputCantidad = document.getElementById('id_cantidad');
+        if (!selectProducto.value) {
+            showNotification('Por favor, selecciona un producto antes de agregar.', 'warning');
+            selectProducto.focus();
+            return;
         }
+        // Validar cantidad 0
+        let cantidad = parseInt(inputCantidad.value) || 0;
+        if (cantidad === 0) {
+            showNotification('La cantidad debe ser mayor a 0 para agregar el producto.', 'warning');
+            inputCantidad.focus();
+            return;
+        }
+        fetch('/ventas/api/producto-info/?producto_id=' + encodeURIComponent(selectProducto.value))
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    showNotification('No se pudo obtener la información del producto.', 'error');
+                    return;
+                }
+                let stockTotal = parseInt(data.producto.stock);
+                let precio = parseFloat(data.producto.precio_con_impuesto);
+                // let cantidad = parseInt(inputCantidad.value) || 1; // Ya está arriba
+                // Verificar si ya está en el carrito
+                let idx = carritoProductos.findIndex(p => p.id == selectProducto.value);
+                let cantidadEnCarrito = idx >= 0 ? carritoProductos[idx].cantidad : 0;
+                if (cantidad + cantidadEnCarrito > stockTotal) {
+                    showNotification('No hay suficiente stock disponible para este producto.', 'error');
+                    return;
+                }
+                if (idx >= 0) {
+                    carritoProductos[idx].cantidad += cantidad;
+                } else {
+                    carritoProductos.push({
+                        id: selectProducto.value,
+                        nombre: selectProducto.options[selectProducto.selectedIndex].text.split(' (')[0],
+                        precio: precio,
+                        cantidad: cantidad
+                    });
+                }
+                renderizarCarrito();
+                showNotification('Producto agregado correctamente.', 'success');
+                // Limpiar selección
+                selectProducto.selectedIndex = 0;
+                inputCantidad.value = 0;
+                actualizarInfoProducto('');
+                calcularSubtotal();
+            });
+    }
+
+    function limpiarFormulario() {
+        const selectProducto = document.getElementById('id_producto');
+        const inputCantidad = document.getElementById('id_cantidad');
+        if (selectProducto) selectProducto.selectedIndex = 0;
+        if (inputCantidad) inputCantidad.value = 0;
+        actualizarInfoProducto('');
+        calcularSubtotal();
+        showNotification('Formulario limpiado.', 'info');
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -546,6 +948,7 @@
             });
         }
         if (inputCantidad) {
+            inputCantidad.value = 0; // Valor por defecto al cargar
             inputCantidad.addEventListener('input', function() {
                 const productoId = selectProducto ? selectProducto.value : null;
                 if (productoId) {
@@ -573,7 +976,8 @@
         limpiarBtn.id = 'btn-limpiar-formulario';
         limpiarBtn.className = 'w-full btn-crud btn-crud-gray py-3 rounded-lg font-medium mt-2';
         limpiarBtn.innerHTML = '<i class="fas fa-eraser mr-2"></i>Limpiar';
-        const grid = document.querySelector('.grid.grid-cols-1.md\:grid-cols-4.gap-4.mb-4');
+        // Usar el id seguro para el grid
+        const grid = document.getElementById('grid-agregar-productos');
         if (grid) grid.appendChild(limpiarBtn);
     }
 </script>
