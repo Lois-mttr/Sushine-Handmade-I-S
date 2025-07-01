@@ -214,6 +214,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'mn513819@gmail.com'
 EMAIL_HOST_PASSWORD = 'nbwc wioj vrql rfnw'
 DEFAULT_FROM_EMAIL = 'NEXO <mn513819@gmail.com>'
+EMAIL_HOST_USER = 'cinthiacarbajal1309052017@gmail.com'
+EMAIL_HOST_PASSWORD = 'mcex wuks hrql fsck'
+DEFAULT_FROM_EMAIL = 'NEXO <cinthiacarbajal1309052017@gmail.com>'
 
 LOGIN_URL = 'auth:login'  # o 'login' según tu estructura de URLs
 LOGIN_REDIRECT_URL = '/dashboard/'  # Página tras login exitoso
