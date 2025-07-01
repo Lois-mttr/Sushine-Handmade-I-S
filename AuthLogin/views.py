@@ -1,5 +1,7 @@
+from django.db import IntegrityError
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from django.utils.html import strip_tags
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.cache import never_cache
@@ -10,6 +12,21 @@ from .forms import LoginForm
 from core_data.models import Usuario, Empleado, Persona
 import logging
 import hashlib
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils import timezone
+from django.conf import settings
+from django.urls import reverse
+from .forms import RegisterForm, ForgotPasswordForm, ResetPasswordForm
+from core_data.models import Usuario
+import hashlib
+import secrets
+import logging
 
 # Create your views here.
 logger = logging.getLogger('nexo.auth')
@@ -412,3 +429,332 @@ def check_session_ajax(request):
             'authenticated': False,
             'message': 'Sesión no válida o expirada'
         })
+    
+
+@never_cache
+@csrf_protect
+@require_http_methods(["GET", "POST"])
+def register_view(request):
+    if request.method == "POST":
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            try:
+                user = form.save()
+                messages.success(
+                    request,
+                    '¡Registro exitoso! Ahora puedes iniciar sesión.'
+                )
+                return redirect('auth:login')
+            except IntegrityError as e:
+                logger.error(f"Error de integridad al registrar: {str(e)}")
+                messages.error(
+                    request,
+                    'Error al registrar. El usuario o correo ya existen.'
+                )
+            except Exception as e:
+                logger.error(f"Error al registrar usuario: {str(e)}", exc_info=True)
+                messages.error(
+                    request,
+                    'Ocurrió un error inesperado. Por favor intenta nuevamente.'
+                )
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    else:
+        form = RegisterForm()
+
+    return render(request, 'AuthLogin/register.html', {
+        'form': form,
+        'title': 'Registro - NEXO',
+        'page_name': 'register'
+    })
+
+@never_cache
+@csrf_protect
+@require_http_methods(["GET", "POST"])
+def forgot_password_view(request):
+    """
+    Vista para solicitar recuperación de contraseña
+    """
+    if request.method == 'GET':
+        # Verificar si el usuario ya está autenticado
+        if request.session.get('user_id'):
+            return redirect('/dashboard/')
+            
+        form = ForgotPasswordForm()
+        return render(request, 'AuthLogin/forgot_password.html', {
+            'form': form,
+            'title': 'Recuperar Contraseña - NEXO',
+            'page_name': 'forgot_password'
+        })
+    
+    elif request.method == 'POST':
+        form = ForgotPasswordForm(request.POST)
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Procesamiento AJAX
+            if form.is_valid():
+                email = form.cleaned_data['email']
+                try:
+                    send_password_reset_email(request, email)
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Se ha enviado un correo con instrucciones para restablecer tu contraseña.'
+                    })
+                except Exception as e:
+                    logger.error(f"Error al enviar correo de recuperación: {e}")
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Error al enviar el correo. Intenta nuevamente.'
+                    })
+            else:
+                errors = {}
+                for field in form.errors:
+                    errors[field] = form.errors[field][0]
+                return JsonResponse({
+                    'success': False,
+                    'errors': errors
+                })
+        else:
+            # Procesamiento tradicional
+            if form.is_valid():
+                email = form.cleaned_data['email']
+                try:
+                    send_password_reset_email(request, email)
+                    messages.success(request, 'Se ha enviado un correo con instrucciones para restablecer tu contraseña.')
+                    return redirect('auth:login')
+                except Exception as e:
+                    logger.error(f"Error al enviar correo de recuperación: {e}")
+                    messages.error(request, 'Error al enviar el correo. Intenta nuevamente.')
+            else:
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{field.capitalize()}: {error}")
+            
+            return render(request, 'AuthLogin/forgot_password.html', {
+                'form': form,
+                'title': 'Recuperar Contraseña - NEXO',
+                'page_name': 'forgot_password'
+            })
+
+@never_cache
+@csrf_protect
+@require_http_methods(["GET", "POST"])
+def reset_password_view(request, uidb64, token):
+    """
+    Vista completa para restablecer contraseña con manejo de errores
+    """
+    # Verificación inicial del token
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = Usuario.objects.get(idusuario=uid)
+
+        if not validate_password_reset_token(user, token):
+            raise ValueError("Token inválido o expirado")
+
+    except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist) as e:
+        logger.error(f"Error en validación de token: {str(e)}")
+        messages.error(request, 'El enlace de recuperación no es válido o ha expirado.')
+        return redirect('auth:forgot_password')
+
+    # Procesamiento del formulario
+    if request.method == 'POST':
+        form = ResetPasswordForm(request.POST)
+        if form.is_valid():
+            try:
+                new_password = form.cleaned_data['new_password']
+
+                # Validación adicional de contraseña
+                if len(new_password) < 8:
+                    raise ValueError("La contraseña debe tener al menos 8 caracteres")
+
+                # Actualizar contraseña usando el método del modelo
+                user.set_password(new_password)
+
+                # Limpiar token y resetear intentos fallidos
+                cache.delete(f"pw_reset_{user.idusuario}")
+                user.intentos_fallidos = 0
+                user.save()
+
+                # Registrar el cambio
+                logger.info(f"Contraseña actualizada para usuario ID {user.idusuario}")
+
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Contraseña actualizada correctamente',
+                        'redirect_url': reverse('auth:login')
+                    })
+
+                messages.success(request, '¡Contraseña actualizada! Ya puedes iniciar sesión.')
+                return redirect('auth:login')
+
+            except Exception as e:
+                logger.error(f"Error al actualizar contraseña: {str(e)}")
+                error_msg = f"Error al actualizar la contraseña: {str(e)}"
+
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': error_msg
+                    })
+
+                messages.error(request, error_msg)
+        else:
+            # Manejar errores de validación del formulario
+            errors = {f: e[0] for f, e in form.errors.items()}
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'errors': errors
+                })
+
+            for field, error in errors.items():
+                messages.error(request, f"{field.capitalize()}: {error}")
+
+    # Mostrar formulario (GET request o formulario inválido)
+    form = ResetPasswordForm()
+    return render(request, 'AuthLogin/reset_password.html', {
+        'form': form,
+        'title': 'Restablecer Contraseña',
+        'page_name': 'reset_password',
+        'valid_link': True
+    })
+
+
+def generate_password_reset_token(user):
+    """
+    Genera un token seguro para recuperación de contraseña
+    """
+    if not user or not user.idusuario:
+        raise ValueError("Usuario inválido para generar token")
+
+    # Usamos datos del usuario + timestamp + secret key
+    timestamp = str(int(timezone.now().timestamp()))
+    raw_token = f"{user.idusuario}{user.passusuario}{timestamp}{settings.SECRET_KEY}"
+
+    # Generar hash SHA-256
+    token = hashlib.sha256(raw_token.encode('utf-8')).hexdigest()
+
+    # Guardar en cache con prefijo único
+    cache_key = f"pw_reset_{user.idusuario}"
+    cache.set(cache_key, token, 86400)  # 24 horas de expiración
+
+    return token
+
+
+def validate_password_reset_token(user, token):
+    """
+    Valida si el token de recuperación es válido
+    """
+    if not user or not token:
+        return False
+
+    cache_key = f"pw_reset_{user.idusuario}"
+    stored_token = cache.get(cache_key)
+
+    # Verificar coincidencia y limpiar si no coincide
+    if stored_token != token:
+        cache.delete(cache_key)
+        return False
+    return True
+
+
+def send_password_reset_email(request, email):
+    """
+    Envía correo con enlace para restablecer contraseña
+    """
+    try:
+        user = Usuario.objects.get(correo=email)
+
+        # Generar token seguro
+        token = generate_password_reset_token(user)
+
+        # Construir URL absoluta usando reverse
+        uid = urlsafe_base64_encode(force_bytes(user.idusuario))
+        reset_url = request.build_absolute_uri(
+            reverse('auth:reset_password', kwargs={
+                'uidb64': uid,
+                'token': token
+            })
+        )
+
+        # Renderizar contenido del correo
+        mail_subject = 'Restablecer tu contraseña en NEXO'
+        message = render_to_string('AuthLogin/password_reset_email.html', {
+            'user': user,
+            'reset_url': reset_url,
+            'expiry_hours': 24
+        })
+
+        # Enviar el correo
+        send_mail(
+            mail_subject,
+            strip_tags(message),  # Versión texto plano
+            settings.DEFAULT_FROM_EMAIL,
+            [user.correo],
+            fail_silently=False,
+            html_message=message  # Versión HTML
+        )
+
+        logger.info(f"Correo de recuperación enviado a {email}")
+        return True
+
+    except Usuario.DoesNotExist:
+        logger.warning(f"Intento de recuperación para email no registrado: {email}")
+        raise ValueError("No existe usuario con este correo electrónico")
+    except Exception as e:
+        logger.error(f"Error al enviar correo de recuperación: {str(e)}")
+        raise
+
+
+def update_user_password(request):
+    """Vista segura para actualizar contraseñas"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        user_id = data.get('user_id')
+        new_password = data.get('new_password')
+        confirm_password = data.get('confirm_password')
+
+        # Validaciones básicas
+        if not all([user_id, new_password, confirm_password]):
+            raise ValueError("Todos los campos son requeridos")
+
+        if new_password != confirm_password:
+            raise ValueError("Las contraseñas no coinciden")
+
+        if len(new_password) < 8:
+            raise ValueError("La contraseña debe tener al menos 8 caracteres")
+
+        # Obtener usuario
+        user = Usuario.objects.get(idusuario=user_id)
+
+        # Actualizar contraseña
+        if not user.save_password(new_password):
+            raise ValueError("No se pudo actualizar la contraseña")
+
+        # Limpiar cachés
+        cache.delete_many([
+            f"user_{user.idusuario}_auth",
+            f"pw_reset_{user.idusuario}",
+            f"login_attempts_{user.nombreusuario}"
+        ])
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Contraseña actualizada exitosamente'
+        })
+
+    except Usuario.DoesNotExist:
+        logger.warning(f"Intento de actualizar contraseña para usuario inexistente: {user_id}")
+        return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
+    except ValueError as ve:
+        logger.warning(f"Error de validación: {str(ve)}")
+        return JsonResponse({'error': str(ve)}, status=400)
+    except Exception as e:
+        logger.error(f"Error inesperado: {str(e)}", exc_info=True)
+        return JsonResponse({'error': 'Ocurrió un error al procesar la solicitud'}, status=500)

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django_extensions',
     'core_data',
     'dashboard',
     'inventario',
@@ -70,7 +71,6 @@ TEMPLATES = [
             BASE_DIR / 'inventario' / 'templates',
             BASE_DIR / 'crud' / 'templates',
             BASE_DIR / 'clientes' / 'templates',
-            BASE_DIR / 'devolucion' / 'templates',
             BASE_DIR / 'ajustes' / 'templates',
             BASE_DIR / 'Informes' / 'templates',
         ],
@@ -93,9 +93,12 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'nexo-cache',
+        'TIMEOUT': 300,  # 5 minutos
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
     }
 }
-
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
@@ -104,7 +107,7 @@ DATABASES = {
          'ENGINE': 'django.db.backends.mysql',
          'NAME': 'nexodb',
          'USER': 'root',
-         'PASSWORD': 'Luisa*2006',
+         'PASSWORD': 'root',
         'HOST': '127.0.0.1',
          'PORT': '3306',
      }
@@ -203,3 +206,20 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.ERROR: 'error',
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'mn513819@gmail.com'
+EMAIL_HOST_PASSWORD = 'nbwc wioj vrql rfnw'
+DEFAULT_FROM_EMAIL = 'NEXO <mn513819@gmail.com>'
+
+LOGIN_URL = 'auth:login'  # o 'login' según tu estructura de URLs
+LOGIN_REDIRECT_URL = '/dashboard/'  # Página tras login exitoso
+LOGOUT_REDIRECT_URL = '/login/'  # Página tras logout
+SESSION_COOKIE_AGE = 28800  # 8 horas en segundos
+SESSION_SAVE_EVERY_REQUEST = True
+
+
+

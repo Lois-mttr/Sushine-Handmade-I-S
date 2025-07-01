@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="es" class="h-full">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXO - Iniciar Sesión</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -32,18 +33,18 @@
             }
         }
     </script>
-    
+
     {% load static %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #F3F4F6;
         }
-        
+
         .login-container {
             min-height: 100vh;
             display: flex;
@@ -51,7 +52,7 @@
             justify-content: center;
             padding: 2rem 1rem;
         }
-        
+
         .login-card {
             background: white;
             border-radius: 1.5rem;
@@ -63,7 +64,7 @@
             display: flex;
             flex-direction: row;
         }
-        
+
         .image-section {
             flex: 1;
             background: #f8f9fa;
@@ -72,14 +73,14 @@
             justify-content: center;
             padding: 2rem;
         }
-        
+
         .handbag-image {
             max-width: 100%;
             max-height: 400px;
             object-fit: contain;
             border-radius: 1rem;
         }
-        
+
         .form-section {
             flex: 1;
             padding: 3rem 2.5rem;
@@ -87,7 +88,7 @@
             flex-direction: column;
             justify-content: center;
         }
-        
+
         .form-title {
             font-size: 2rem;
             font-weight: 600;
@@ -95,11 +96,11 @@
             margin-bottom: 2rem;
             text-align: left;
         }
-        
+
         .form-group {
             margin-bottom: 1.5rem;
         }
-        
+
         .form-label {
             display: block;
             font-size: 0.875rem;
@@ -107,11 +108,11 @@
             color: #374151;
             margin-bottom: 0.5rem;
         }
-        
+
         .input-wrapper {
             position: relative;
         }
-        
+
         .form-input {
             width: 100%;
             padding: 0.875rem 1rem;
@@ -122,22 +123,22 @@
             background: white;
             transition: all 0.2s ease;
         }
-        
+
         .form-input:focus {
             outline: none;
             border-color: #4ECDC4;
             box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
         }
-        
+
         .form-input.error {
             border-color: #EF4444;
             box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
         }
-        
+
         .form-input::placeholder {
             color: #D1D5DB;
         }
-        
+
         .error-message {
             color: #EF4444;
             font-size: 0.75rem;
@@ -146,17 +147,17 @@
             transform: translateY(-4px);
             transition: all 0.2s ease;
         }
-        
+
         .error-message.show {
             opacity: 1;
             transform: translateY(0);
         }
-        
+
         .forgot-password {
-            text-align: center;
-            margin: 1.5rem 0;
+            text-align: right;
+            margin: 0.5rem 0;
         }
-        
+
         .forgot-password a {
             color: #6B7280;
             font-size: 0.875rem;
@@ -164,11 +165,11 @@
             text-underline-offset: 2px;
             transition: color 0.2s ease;
         }
-        
+
         .forgot-password a:hover {
             color: #4ECDC4;
         }
-        
+
         .login-button {
             width: 100%;
             background: #4ECDC4;
@@ -184,37 +185,38 @@
             justify-content: center;
             gap: 0.5rem;
             font-size: 1rem;
+            margin-top: 1rem;
         }
-        
+
         .login-button:hover:not(:disabled) {
             background: #39bfb2;
             transform: translateY(-1px);
             box-shadow: 0 10px 25px -3px rgba(78, 205, 196, 0.3);
         }
-        
+
         .login-button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
-        
+
         .attempts-info {
             text-align: center;
             margin-top: 1rem;
             font-size: 0.875rem;
             color: #6B7280;
         }
-        
+
         .attempts-info.warning {
             color: #F59E0B;
             font-weight: 500;
         }
-        
+
         .attempts-info.danger {
             color: #EF4444;
             font-weight: 600;
         }
-        
+
         .loading-spinner {
             width: 1.25rem;
             height: 1.25rem;
@@ -223,21 +225,51 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+
+        .auth-footer a {
+            color: #4ECDC4;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
-        
+
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
         }
-        
+
         .shake {
             animation: shake 0.5s ease-in-out;
         }
-        
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .login-card {
@@ -245,44 +277,44 @@
                 max-width: 400px;
                 margin: 1rem;
             }
-            
+
             .image-section {
                 padding: 1.5rem;
                 min-height: 200px;
             }
-            
+
             .handbag-image {
                 max-height: 180px;
             }
-            
+
             .form-section {
                 padding: 2rem 1.5rem;
             }
-            
+
             .form-title {
                 font-size: 1.75rem;
                 text-align: center;
             }
         }
-        
+
         @media (max-width: 480px) {
             .login-container {
                 padding: 1rem 0.5rem;
             }
-            
+
             .login-card {
                 margin: 0.5rem;
             }
-            
+
             .form-section {
                 padding: 1.5rem 1rem;
             }
-            
+
             .form-title {
                 font-size: 1.5rem;
             }
         }
-        
+
         /* Lockout Modal */
         .lockout-modal {
             position: fixed;
@@ -295,11 +327,11 @@
             z-index: 50;
             padding: 1rem;
         }
-        
+
         .lockout-modal.show {
             display: flex;
         }
-        
+
         .lockout-content {
             background: white;
             border-radius: 1.5rem;
@@ -309,7 +341,7 @@
             width: 100%;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
-        
+
         .lockout-icon {
             width: 4rem;
             height: 4rem;
@@ -320,14 +352,14 @@
             justify-content: center;
             margin: 0 auto 1.5rem;
         }
-        
+
         .countdown-number {
             font-size: 3rem;
             font-weight: 700;
             color: #4ECDC4;
             margin: 1rem 0;
         }
-        
+
         .progress-bar-container {
             width: 100%;
             height: 0.5rem;
@@ -336,14 +368,14 @@
             overflow: hidden;
             margin-top: 1rem;
         }
-        
+
         .progress-bar {
             height: 100%;
             background: linear-gradient(90deg, #4ECDC4, #39bfb2);
             border-radius: 0.25rem;
             transition: width 1s linear;
         }
-        
+
         /* Notifications */
         .notification-container {
             position: fixed;
@@ -352,7 +384,7 @@
             z-index: 60;
             max-width: 24rem;
         }
-        
+
         .notification {
             background: white;
             border-radius: 0.75rem;
@@ -363,27 +395,27 @@
             transform: translateX(100%);
             transition: transform 0.3s ease;
         }
-        
+
         .notification.show {
             transform: translateX(0);
         }
-        
+
         .notification.success {
             border-left-color: #10B981;
         }
-        
+
         .notification.error {
             border-left-color: #EF4444;
         }
-        
+
         .notification.warning {
             border-left-color: #F59E0B;
         }
-        
+
         .notification.info {
             border-left-color: #3B82F6;
         }
-        
+
         @media (max-width: 640px) {
             .notification-container {
                 left: 1rem;
@@ -394,99 +426,102 @@
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <div class="login-card">
             <!-- Left Side - Image Section -->
             <div class="image-section">
-                <img src="{% static 'images/bag.jpg' %}" 
-                    alt="NEXO Handbag" 
-                    class="handbag-image"
+                <img src="{% static 'images/bag.jpg' %}" alt="NEXO Handbag" class="handbag-image"
                     onerror="this.style.display='none';">
             </div>
-            
+
             <!-- Right Side - Form Section -->
             <div class="form-section">
                 <h1 class="form-title">Iniciar Sesión</h1>
-                
+
                 <!-- Django Messages -->
                 {% if messages %}
-                    <div class="mb-4">
-                        {% for message in messages %}
-                            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-2">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-2">
+                        {{ message }}
                     </div>
+                    {% endfor %}
+                </div>
                 {% endif %}
-                
+
                 <!-- Login Form -->
                 <form id="loginForm" method="post" novalidate>
                     {% csrf_token %}
-                    
+
                     <!-- Username Field -->
                     <div class="form-group">
                         <label for="username" class="form-label">Usuario</label>
-                        <input type="text" 
-                            id="username" 
-                            name="username" 
-                            class="form-input"
-                            placeholder="Usuario"
-                            required
-                            maxlength="15"
-                            autocomplete="username"
+                        <input type="text" id="username" name="username" class="form-input" placeholder="Usuario"
+                            required maxlength="15" autocomplete="username"
                             value="{{ form.username.value|default:'' }}">
                         <div id="username-error" class="error-message" role="alert"></div>
                     </div>
-                    
+
                     <!-- Password Field -->
                     <div class="form-group">
                         <label for="password" class="form-label">Contraseña</label>
-                        <input type="password" 
-                                id="password" 
-                                name="password" 
-                                class="form-input"
-                                placeholder="Contraseña"
-                                required
-                                autocomplete="current-password">
+                        <input type="password" id="password" name="password" class="form-input" placeholder="Contraseña"
+                            required autocomplete="current-password">
                         <div id="password-error" class="error-message" role="alert"></div>
                     </div>
-                    
+
                     <!-- Forgot Password Link -->
                     <div class="forgot-password">
-                        <a href="#" id="forgotPasswordLink">¿Has olvidado la contraseña?</a>
+                        <a href="{% url 'auth:forgot_password' %}" id="forgotPasswordLink">¿Olvidaste tu contraseña?</a>
                     </div>
-                    
+
                     <!-- Submit Button -->
                     <button type="submit" id="loginButton" class="login-button">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                         </svg>
                         <span>Iniciar Sesión</span>
                     </button>
-                    
+
                     <!-- Attempts Info -->
                     <div id="attemptsInfo" class="attempts-info">
                         <span id="attemptsText">Intentos restantes: 3</span>
+                    </div>
+
+                    <!-- Registration Link -->
+                    <div class="mt-6 pt-4 border-t border-gray-200 text-center">
+                        <p class="text-sm text-gray-600">
+                            ¿No tienes una cuenta?
+                            <a href="{% url 'auth:register' %}"
+                                class="font-medium text-primary hover:text-primary-dark transition-colors">
+                                Regístrate aquí
+                            </a>
+                        </p>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-    
+
     <!-- Notifications Container -->
     <div id="notificationContainer" class="notification-container"></div>
-    
+
     <!-- Lockout Modal -->
     <div id="lockoutModal" class="lockout-modal">
         <div class="lockout-content">
             <div class="lockout-icon">
                 <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z">
+                    </path>
                 </svg>
             </div>
             <h3 class="text-xl font-semibold text-gray-900 mb-2">Cuenta Bloqueada</h3>
-            <p class="text-gray-600 mb-4">Demasiados intentos fallidos. Tu cuenta ha sido bloqueada temporalmente por seguridad.</p>
+            <p class="text-gray-600 mb-4">Demasiados intentos fallidos. Tu cuenta ha sido bloqueada temporalmente por
+                seguridad.</p>
             <div class="countdown-number">
                 <span id="countdownNumber">20</span>
             </div>
@@ -496,7 +531,8 @@
             </div>
         </div>
     </div>
-    
+
     <script src="{% static 'Js/login.js' %}"></script>
 </body>
+
 </html>

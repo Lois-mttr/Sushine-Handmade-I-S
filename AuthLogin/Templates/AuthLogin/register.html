@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXO - Registro</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4ECDC4',
+                        'primary-dark': '#39bfb2',
+                        'primary-light': '#5DD5CC',
+                        'nexo-gray': '#6B7280',
+                        'nexo-light-gray': '#9CA3AF',
+                        'nexo-bg': '#F3F4F6',
+                        'error-red': '#EF4444',
+                        'success-green': '#10B981',
+                        'warning-yellow': '#F59E0B',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'nexo': '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    },
+                }
+            }
+        }
+    </script>
+
+    {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Estilos consistentes con el login */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F3F4F6;
+        }
+
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .register-form {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+            padding: 3rem 2.5rem;
+        }
+
+        .register-form h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #4ECDC4;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            color: #374151;
+            background: white;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4ECDC4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+        }
+
+        .error {
+            color: #EF4444;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .btn-register {
+            width: 100%;
+            background: #4ECDC4;
+            color: white;
+            font-weight: 600;
+            padding: 0.875rem 1.5rem;
+            border-radius: 0.75rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn-register:hover {
+            background: #39bfb2;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px -3px rgba(78, 205, 196, 0.3);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+
+        .login-link a {
+            color: #4ECDC4;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .alert-error {
+            background-color: #FEE2E2;
+            color: #B91C1C;
+            border-left: 4px solid #EF4444;
+        }
+
+        .alert-success {
+            background-color: #D1FAE5;
+            color: #065F46;
+            border-left: 4px solid #10B981;
+        }
+
+        @media (max-width: 640px) {
+            .register-form {
+                padding: 2rem 1.5rem;
+            }
+            
+            .register-form h2 {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="register-container">
+        <form method="post" class="register-form">
+            <h2>Registro de Usuario</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_username">Nombre de usuario</label>
+                <input type="text" id="id_username" name="username" required maxlength="15" placeholder="Usuario">
+                {% if form.username.errors %}
+                    <div class="error">{{ form.username.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_email">Correo electrónico</label>
+                <input type="email" id="id_email" name="email" required placeholder="tu@email.com">
+                {% if form.email.errors %}
+                    <div class="error">{{ form.email.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password">Contraseña</label>
+                <input type="password" id="id_password" name="password" required placeholder="••••••••">
+                {% if form.password.errors %}
+                    <div class="error">{{ form.password.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_confirm_password">Confirmar contraseña</label>
+                <input type="password" id="id_confirm_password" name="confirm_password" required placeholder="••••••••">
+                {% if form.confirm_password.errors %}
+                    <div class="error">{{ form.confirm_password.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn-register">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                </svg>
+                <span>Registrarse</span>
+            </button>
+            
+            <div class="login-link">
+                ¿Ya tienes una cuenta? <a href="{% url 'auth:login' %}">Inicia sesión</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+    document.querySelector('.register-form').addEventListener('submit', function(e) {
+        const submitButton = this.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.innerHTML;
+        
+        // Show loading state
+        submitButton.disabled = true;
+        submitButton.innerHTML = `
+            <div class="loading-spinner"></div>
+            <span>Registrando...</span>
+        `;
+        
+        // You can add AJAX submission here if needed
+        // Otherwise, the form will submit normally
+    });
+    </script>
+</body>
+</html>
