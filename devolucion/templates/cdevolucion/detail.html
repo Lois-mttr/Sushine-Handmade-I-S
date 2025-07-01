@@ -1,0 +1,409 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Detalle Devolucion #{{ produccion.idproduccion }} - NEXO{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-eye mr-2" style="color: {{ colores.primary }};"></i>Detalle Devolucion #{{ produccion.idproduccion }}
+{% endblock %}
+
+{% block page_subtitle %}
+    {{ page_subtitle }}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card {
+        background: {{ colores.white }};
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(57, 191, 178, 0.1);
+        border: 1px solid {{ colores.bg_light }};
+        transition: all 0.3s ease;
+    }
+    
+    .detail-card:hover {
+        box-shadow: 0 8px 15px -3px rgba(57, 191, 178, 0.15);
+    }
+    
+    .status-badge-activo {
+        background: linear-gradient(135deg, {{ colores.success }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(57, 191, 178, 0.2);
+    }
+    
+    .status-badge-inactivo {
+        background: linear-gradient(135deg, {{ colores.danger }} 0%, #d07010 100%);
+        color: {{ colores.white }};
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(242, 134, 39, 0.2);
+    }
+    
+    .btn-nexo-primary {
+        background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(57, 191, 178, 0.2);
+    }
+    
+    .btn-nexo-primary:hover {
+        background: linear-gradient(135deg, #2da89e 0%, #258a7f 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(57, 191, 178, 0.3);
+        color: {{ colores.white }};
+        text-decoration: none;
+    }
+    
+    .btn-nexo-warning {
+        background: linear-gradient(135deg, {{ colores.warning }} 0%, {{ colores.accent_orange }} 100%);
+        color: {{ colores.text_dark }};
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(242, 206, 22, 0.2);
+    }
+    
+    .btn-nexo-warning:hover {
+        background: linear-gradient(135deg, #e0b800 0%, #e08a20 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(242, 206, 22, 0.3);
+        color: {{ colores.text_dark }};
+        text-decoration: none;
+    }
+    
+    .btn-nexo-danger {
+        background: linear-gradient(135deg, {{ colores.danger }} 0%, #d07010 100%);
+        color: {{ colores.white }};
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(242, 134, 39, 0.2);
+    }
+    
+    .btn-nexo-danger:hover {
+        background: linear-gradient(135deg, #d07010 0%, #b85c0a 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(242, 134, 39, 0.3);
+        color: {{ colores.white }};
+        text-decoration: none;
+    }
+    
+    .btn-disabled {
+        background: #9ca3af !important;
+        color: {{ colores.white }} !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+        pointer-events: none !important;
+        border: none !important;
+    }
+    
+    .btn-disabled:hover {
+        background: #9ca3af !important;
+        transform: none !important;
+        box-shadow: none !important;
+        color: {{ colores.white }} !important;
+    }
+    
+    .info-item {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background: {{ colores.bg_very_light }};
+        border-left: 4px solid {{ colores.primary }};
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: {{ colores.text_dark }};
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+        color: {{ colores.text_medium }};
+        font-size: 1rem;
+    }
+    
+    .summary-card {
+        background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);
+        color: {{ colores.white }};
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 6px -1px rgba(57, 191, 178, 0.2);
+    }
+    
+    .summary-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .summary-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+    }
+    
+    .product-row {
+        transition: all 0.2s ease;
+    }
+    
+    .product-row:hover {
+        background-color: {{ colores.bg_very_light }};
+        transform: translateX(4px);
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @media (max-width: 768px) {
+        .detail-card {
+            margin: 0 -0.5rem;
+        }
+        
+        .summary-value {
+            font-size: 1.5rem;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .btn-group .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
+    <div class="max-w-6xl mx-auto">
+        <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <a href="{% url 'devolucion:devolucion_list' %}"
+               class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>Volver a Lista
+            </a>
+            <div class="btn-group flex flex-wrap gap-2">
+                <a href="{% url 'devolucion:devolucion_edit' devolucion.idDevolucion %}"
+                   class="btn-nexo-warning inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium">
+                    <i class="fas fa-edit mr-2"></i>Editar
+                </a>
+            </div>
+        </div>
+
+        <div class="detail-card p-6 mb-6 fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold flex items-center" style="color: {{ colores.primary }};">
+                    <i class="fas fa-info-circle mr-2"></i>Información General
+                </h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-hashtag mr-1"></i>ID Devolución
+                    </div>
+                    <div class="info-value font-bold">#{{ devolucion.idDevolucion }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-calendar mr-1"></i>Fecha de Devolución
+                    </div>
+                    <div class="info-value">{{ devolucion.fechaDevolucion|date:"d/m/Y" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-user mr-1"></i>Registrada Por
+                    </div>
+                    <div class="info-value">{{ devolucion.nombreusuario }}</div>
+                </div>
+            </div>
+            {% if devolucion.motivo %}
+            <div class="mt-6">
+                <div class="info-label">
+                    <i class="fas fa-sticky-note mr-1"></i>Motivo de la Devolución
+                </div>
+                <div class="info-value bg-gray-50 p-3 rounded-lg mt-2">
+                    {{ devolucion.motivo|linebreaksbr }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="summary-card fade-in">
+                <div class="summary-value">{{ detalles|length }}</div>
+                <div class="summary-label">
+                    <i class="fas fa-boxes mr-1"></i>Productos Devueltos
+                </div>
+            </div>
+            <div class="summary-card fade-in">
+                <div class="summary-value">{{ total_items|intcomma }}</div>
+                <div class="summary-label">
+                    <i class="fas fa-cubes mr-1"></i>Total de Unidades
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-card p-6 fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold flex items-center" style="color: {{ colores.primary }};">
+                    <i class="fas fa-list-ul mr-2"></i>Detalle de Productos Devueltos
+                </h2>
+                <span class="text-sm text-gray-500">{{ detalles|length }} producto{{ detalles|length|pluralize }}</span>
+            </div>
+            {% if detalles %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-cube mr-1"></i>Producto
+                            </th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-sort-numeric-up mr-1"></i>Cantidad Devuelta
+                            </th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-warehouse mr-1"></i>Existencia Actual
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for detalle in detalles %}
+                        <tr class="product-row">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ detalle.nombreproducto }}</div>
+                                <div class="text-sm text-gray-500">ID: {{ detalle.id_producto }}</div>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ detalle.cantidadDevuelta|intcomma }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right text-sm text-gray-900">
+                                {{ detalle.existenciaProducto|default:"N/D" }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-box-open fa-4x text-gray-400 mb-4"></i>
+                <h4 class="text-lg font-medium text-gray-700 mb-2">No hay productos devueltos registrados</h4>
+                <p class="text-gray-500">Esta devolución no tiene detalles asociados.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productRows = document.querySelectorAll('.product-row');
+    productRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(-20px)';
+        setTimeout(() => {
+            row.style.transition = 'all 0.3s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateX(0)';
+        }, index * 100 + 500);
+    });
+});
+    // Cerrar modal
+    const cancelButton = document.getElementById('cancelDeleteButton');
+    const modal = document.getElementById('confirmDeleteModal');
+
+    if (cancelButton && modal) {
+        cancelButton.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+        
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape" && !modal.classList.contains('hidden')) {
+                modal.classList.add('hidden');
+            }
+        });
+        
+        // Cerrar modal al hacer clic fuera
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+    {% endif %}
+
+    // Auto-cerrar mensajes después de 8 segundos
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            if (alert.parentElement) {
+                alert.style.transition = 'all 0.3s ease';
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    alert.remove();
+                }, 300);
+            }
+        }, 8000);
+    });
+
+    // Animación de entrada para las filas de productos
+    const productRows = document.querySelectorAll('.product-row');
+    productRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(-20px)';
+        setTimeout(() => {
+            row.style.transition = 'all 0.3s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateX(0)';
+        }, index * 100 + 500);
+
+    });
+
+    // Tooltip para botones deshabilitados
+    const disabledButtons = document.querySelectorAll('.btn-disabled');
+    disabledButtons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'absolute bg-gray-800 text-white text-xs rounded py-1 px-2 z-50';
+            tooltip.textContent = this.getAttribute('title');
+            tooltip.style.bottom = '100%';
+            tooltip.style.left = '50%';
+            tooltip.style.transform = 'translateX(-50%)';
+            tooltip.style.marginBottom = '5px';
+            
+            this.style.position = 'relative';
+            this.appendChild(tooltip);
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            const tooltip = this.querySelector('.absolute');
+            if (tooltip) {
+                tooltip.remove();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
