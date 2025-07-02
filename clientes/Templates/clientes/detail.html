@@ -178,31 +178,17 @@
 
 <div class="detail-container">
     <div class="max-w-4xl mx-auto">
-<<<<<<< HEAD
         <div class="form-container p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold flex items-center">
                     <i class="fas fa-user-circle mr-2" style="color: {{ colores.primary }};"></i>
-=======
-        <div class="detail-card">
-            <!-- Encabezado -->
-            <div class="detail-header">
-                <h2 class="detail-title">
-                    <i class="fas fa-user-circle mr-2" style="color: #39bfb2;"></i>
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                     {{ datos.persona.nombre_completo }}
                 </h2>
                 <span class="{% if datos.cliente.estadoCliente %}status-badge-activo{% else %}status-badge-inactivo{% endif %}">
                     {{ datos.cliente.estadoCliente|yesno:"Activo,Inactivo" }}
                 </span>
             </div>
-<<<<<<< HEAD
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-=======
-
-            <!-- Datos -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                 <div>
                     <h3 class="section-title">
                         <i class="fas fa-id-card mr-2"></i>Información Personal

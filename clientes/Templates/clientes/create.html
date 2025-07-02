@@ -251,17 +251,9 @@
         {% endif %}
         <form method="post" id="clienteForm" novalidate>
             {% csrf_token %}
-<<<<<<< HEAD
             <div class="form-container p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <i class="fas fa-id-card mr-2" style="color: {{ colores.primary }};"></i>
-=======
-
-            <!-- Sección Datos Persona -->
-            <div class="form-container">
-                <h2 class="form-title">
-                    <i class="fas fa-id-card mr-2"></i>
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                     Datos Personales
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -283,17 +275,9 @@
                     {% endfor %}
                 </div>
             </div>
-<<<<<<< HEAD
             <div class="form-container p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <i class="fas fa-envelope mr-2" style="color: {{ colores.primary }};"></i>
-=======
-
-            <!-- Sección Datos Cliente -->
-            <div class="form-container">
-                <h2 class="form-title">
-                    <i class="fas fa-envelope mr-2"></i>
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                     Datos del Cliente
                 </h2>
                 <div class="grid grid-cols-1">
@@ -315,7 +299,6 @@
                     {% endfor %}
                 </div>
             </div>
-<<<<<<< HEAD
             <div class="flex justify-end space-x-4 pt-6">
                 <a href="{% url 'clientes:list' %}" class="btn-cancel-form">
                     <i class="fas fa-times mr-2"></i>Cancelar
@@ -323,16 +306,6 @@
                 <button type="submit" class="btn-submit-form" id="submitBtn">
                     <i class="fas fa-save mr-2"></i>
                     <span id="submitText">Guardar Cliente</span>
-=======
-
-            <!-- Botones -->
-            <div class="flex justify-end space-x-4 mt-6">
-                <a href="{% url 'clientes:list' %}" class="btn-cancel-form">
-                    <i class="fas fa-times mr-2"></i>Cancelar
-                </a>
-                <button type="submit" class="btn-submit-form">
-                    <i class="fas fa-save mr-2"></i>Guardar Cliente
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                 </button>
             </div>
         </form>

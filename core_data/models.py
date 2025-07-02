@@ -1,3 +1,5 @@
+import hashlib
+
 from django.db import models
 
 class Categoria(models.Model):
@@ -64,10 +66,10 @@ class Empleado(models.Model):
     salario = models.FloatField(blank=True, null=True)
     correo = models.CharField(max_length=30, blank=True, null=True)
     idpersonaemp = models.ForeignKey(
-        Persona, 
-        models.DO_NOTHING, 
-        db_column='idPersonaEmp', 
-        blank=True, 
+        Persona,
+        models.DO_NOTHING,
+        db_column='idPersonaEmp',
+        blank=True,
         null=True
     )
     estadoempleado = models.BooleanField(db_column='estadoEmpleado', default=True)
@@ -83,17 +85,29 @@ class Empleado(models.Model):
             return f"{self.idpersonaemp.nombre_completo} - {self.rolempleado or 'Sin rol'}"
         return f"Empleado {self.idempleado}"
 
+
+import hashlib
+from django.db import models
+
+
 class Usuario(models.Model):
     idusuario = models.AutoField(db_column='idUsuario', primary_key=True)
     nombreusuario = models.CharField(db_column='nombreUsuario', unique=True, max_length=15)
     passusuario = models.CharField(db_column='passUsuario', max_length=64)
-    rol = models.CharField(max_length=30, blank=True, null=True)
-    activo = models.BooleanField(default=True)
+    rol = models.CharField(max_length=30, blank=True, null=True, default='usuario')
+    correo = models.EmailField(max_length=50, blank=True, null=True)
+
+    # Campo activo como BooleanField (ya que en la BD es TINYINT(1))
+    activo = models.BooleanField(db_column='activo', default=True)
+
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    ultimo_login = models.DateTimeField(null=True, blank=True)
+    intentos_fallidos = models.SmallIntegerField(default=0)
     idempusuario = models.ForeignKey(
-        Empleado, 
-        models.DO_NOTHING, 
-        db_column='idEmpUsuario', 
-        blank=True, 
+        'Empleado',
+        on_delete=models.DO_NOTHING,
+        db_column='idEmpUsuario',
+        blank=True,
         null=True
     )
 
@@ -108,7 +122,7 @@ class Usuario(models.Model):
 
     @property
     def is_active(self):
-        return bool(self.activo)
+        return self.activo
 
     @property
     def empleado_nombre(self):
@@ -116,14 +130,37 @@ class Usuario(models.Model):
             return self.idempusuario.idpersonaemp.nombre_completo
         return None
 
+    def set_password(self, raw_password):
+        """Actualiza la contraseña evitando problemas con el ORM"""
+        if not raw_password or len(raw_password) < 8:
+            raise ValueError("La contraseña debe tener al menos 8 caracteres")
+
+        password_hash = hashlib.sha256(raw_password.encode('utf-8')).hexdigest()
+
+        # Actualización directa con SQL crudo
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE usuario SET passUsuario = %s, intentos_fallidos = 0 WHERE idUsuario = %s",
+                [password_hash, self.idusuario]
+            )
+
+        # Actualizar los atributos en memoria
+        self.passusuario = password_hash
+        self.intentos_fallidos = 0
+
+    def verify_password(self, raw_password):
+        """Verifica si una contraseña en texto plano coincide con el hash almacenado"""
+        return hashlib.sha256(raw_password.encode('utf-8')).hexdigest() == self.passusuario
+
 class Cliente(models.Model):
     idcliente = models.AutoField(db_column='idCliente', primary_key=True)
     correo = models.CharField(max_length=30, blank=True, null=True)
     idpersonacliente = models.ForeignKey(
-        Persona, 
-        models.DO_NOTHING, 
-        db_column='idPersonaCliente', 
-        blank=True, 
+        Persona,
+        models.DO_NOTHING,
+        db_column='idPersonaCliente',
+        blank=True,
         null=True
     )
     estadocliente = models.BooleanField(db_column='estadoCliente', default=True)
@@ -142,43 +179,43 @@ class Cliente(models.Model):
 class Producto(models.Model):
     id_producto = models.CharField(max_length=15, primary_key=True)
     idubicacionpro = models.ForeignKey(
-        Ubicacion, 
-        models.DO_NOTHING, 
+        Ubicacion,
+        models.DO_NOTHING,
         db_column='idUbicacionPro'
     )
     nombreproducto = models.CharField(db_column='nombreProducto', max_length=30)
     descripcionproducto = models.CharField(
-        db_column='descripcionProducto', 
-        max_length=70, 
-        blank=True, 
+        db_column='descripcionProducto',
+        max_length=70,
+        blank=True,
         null=True
     )
     existenciaproducto = models.IntegerField(db_column='existenciaProducto')
     imagenproductoruta = models.CharField(
-        db_column='imagenProductoRuta', 
-        max_length=250, 
-        blank=True, 
+        db_column='imagenProductoRuta',
+        max_length=250,
+        blank=True,
         null=True
     )
     idcategoriapro = models.ForeignKey(
-        Categoria, 
-        models.DO_NOTHING, 
-        db_column='idCategoriaPro', 
-        blank=True, 
+        Categoria,
+        models.DO_NOTHING,
+        db_column='idCategoriaPro',
+        blank=True,
         null=True
     )
     precioproducto = models.DecimalField(
-        db_column='precioProducto', 
-        max_digits=10, 
-        decimal_places=2, 
-        blank=True, 
+        db_column='precioProducto',
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
         null=True
     )
     estado = models.BooleanField(default=True)
     existenciaminima = models.IntegerField(
-        db_column='existenciaMinima', 
-        blank=True, 
-        null=True, 
+        db_column='existenciaMinima',
+        blank=True,
+        null=True,
         default=5
     )
 
@@ -200,22 +237,23 @@ class Venta(models.Model):
         ('REALIZADA', 'Realizada'),
         ('ANULADA', 'Anulada'),
     ]
-    id_venta = models.AutoField(primary_key=True, db_column='id_venta')  # Asegura el mapeo correcto
+    
+    id_venta = models.AutoField(primary_key=True)
     fechaventa = models.DateTimeField(db_column='fechaVenta', blank=True, null=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     estado = models.CharField(max_length=9, choices=ESTADO_CHOICES, default='REALIZADA')
     idusuarioventa = models.ForeignKey(
-        Usuario, 
-        models.DO_NOTHING, 
-        db_column='idUsuarioVenta', 
-        blank=True, 
+        Usuario,
+        models.DO_NOTHING,
+        db_column='idUsuarioVenta',
+        blank=True,
         null=True
     )
     codcliente = models.ForeignKey(
-        Cliente, 
-        models.DO_NOTHING, 
-        db_column='codCliente', 
-        blank=True, 
+        Cliente,
+        models.DO_NOTHING,
+        db_column='codCliente',
+        blank=True,
         null=True
     )
 
@@ -236,14 +274,13 @@ class Detalleventa(models.Model):
         Venta,
         db_column='idVenta',
         to_field='id_venta',  # Relaciona con el campo correcto de Venta
-        on_delete=models.CASCADE,
-        primary_key=True  # Cambiado a clave primaria
+        on_delete=models.CASCADE, # Cambiado a clave primaria
     )
     idproventa = models.ForeignKey(
         Producto,
         db_column='idProVenta',
         on_delete=models.CASCADE,
-        primary_key=False
+
     )
     cantidadventa = models.IntegerField(db_column='cantidadVenta')
     subtotal = models.DecimalField(db_column='subtotal', max_digits=10, decimal_places=2)
@@ -313,10 +350,10 @@ class Detalleproduccion(models.Model):
     cantidad = models.IntegerField()
     costo_unitario = models.DecimalField(max_digits=10, decimal_places=2)
     idfabricante = models.ForeignKey(
-        Empleado, 
-        models.DO_NOTHING, 
-        db_column='idFabricante', 
-        blank=True, 
+        Empleado,
+        models.DO_NOTHING,
+        db_column='idFabricante',
+        blank=True,
         null=True
     )
 

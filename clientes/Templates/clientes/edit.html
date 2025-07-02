@@ -180,17 +180,9 @@
         <form method="post" id="editarClienteForm" novalidate>
             {% csrf_token %}
             <input type="hidden" name="cedula" value="{{ cliente.persona.cedula }}">
-<<<<<<< HEAD
             <div class="form-container p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <i class="fas fa-id-card mr-2" style="color: {{ colores.primary }};"></i>
-=======
-
-            <!-- Sección Datos Personales -->
-            <div class="form-container">
-                <h2 class="form-title">
-                    <i class="fas fa-id-card mr-2"></i>
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                     Datos Personales
                 </h2>
                 {% if persona_form.non_field_errors %}
@@ -209,15 +201,8 @@
                         <label for="id_primer_nombre" class="form-label required-field">Primer Nombre</label>
                         <input type="text" name="primer_nombre" value="{{ persona_form.instance.primer_nombre }}" class="form-input {% if persona_form.primer_nombre.errors %}border-red-500{% endif %}" maxlength="15" required id="id_primer_nombre">
                         {% if persona_form.primer_nombre.errors %}
-<<<<<<< HEAD
                         <div class="mt-1 text-sm text-red-600">
                             {% for error in persona_form.primer_nombre.errors %}<p>{{ error }}</p>{% endfor %}
-=======
-                        <div class="form-error-message">
-                            {% for error in persona_form.primer_nombre.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                         </div>
                         {% endif %}
                     </div>
@@ -225,15 +210,8 @@
                         <label for="id_segundo_nombre" class="form-label">Segundo Nombre</label>
                         <input type="text" name="segundo_nombre" value="{{ persona_form.instance.segundo_nombre }}" class="form-input {% if persona_form.segundo_nombre.errors %}border-red-500{% endif %}" maxlength="15" id="id_segundo_nombre">
                         {% if persona_form.segundo_nombre.errors %}
-<<<<<<< HEAD
                         <div class="mt-1 text-sm text-red-600">
                             {% for error in persona_form.segundo_nombre.errors %}<p>{{ error }}</p>{% endfor %}
-=======
-                        <div class="form-error-message">
-                            {% for error in persona_form.segundo_nombre.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                         </div>
                         {% endif %}
                     </div>
@@ -241,15 +219,8 @@
                         <label for="id_primer_apellido" class="form-label required-field">Primer Apellido</label>
                         <input type="text" name="primer_apellido" value="{{ persona_form.instance.primer_apellido }}" class="form-input {% if persona_form.primer_apellido.errors %}border-red-500{% endif %}" maxlength="15" required id="id_primer_apellido">
                         {% if persona_form.primer_apellido.errors %}
-<<<<<<< HEAD
                         <div class="mt-1 text-sm text-red-600">
                             {% for error in persona_form.primer_apellido.errors %}<p>{{ error }}</p>{% endfor %}
-=======
-                        <div class="form-error-message">
-                            {% for error in persona_form.primer_apellido.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                         </div>
                         {% endif %}
                     </div>
@@ -257,15 +228,8 @@
                         <label for="id_segundo_apellido" class="form-label">Segundo Apellido</label>
                         <input type="text" name="segundo_apellido" value="{{ persona_form.instance.segundo_apellido }}" class="form-input {% if persona_form.segundo_apellido.errors %}border-red-500{% endif %}" maxlength="15" id="id_segundo_apellido">
                         {% if persona_form.segundo_apellido.errors %}
-<<<<<<< HEAD
                         <div class="mt-1 text-sm text-red-600">
                             {% for error in persona_form.segundo_apellido.errors %}<p>{{ error }}</p>{% endfor %}
-=======
-                        <div class="form-error-message">
-                            {% for error in persona_form.segundo_apellido.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                         </div>
                         {% endif %}
                     </div>
@@ -273,31 +237,16 @@
                         <label for="id_direccion" class="form-label">Dirección</label>
                         <input type="text" name="direccion" value="{{ persona_form.instance.direccion }}" class="form-input {% if persona_form.direccion.errors %}border-red-500{% endif %}" maxlength="100" id="id_direccion">
                         {% if persona_form.direccion.errors %}
-<<<<<<< HEAD
                         <div class="mt-1 text-sm text-red-600">
                             {% for error in persona_form.direccion.errors %}<p>{{ error }}</p>{% endfor %}
-=======
-                        <div class="form-error-message">
-                            {% for error in persona_form.direccion.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                         </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
-<<<<<<< HEAD
             <div class="form-container p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <i class="fas fa-envelope mr-2" style="color: {{ colores.primary }};"></i>
-=======
-
-            <!-- Sección Datos Cliente -->
-            <div class="form-container">
-                <h2 class="form-title">
-                    <i class="fas fa-envelope mr-2"></i>
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                     Datos del Cliente
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -305,15 +254,8 @@
                         <label for="id_correo" class="form-label">Correo</label>
                         <input type="email" name="correo" value="{{ cliente_form.instance.correo }}" class="form-input {% if cliente_form.correo.errors %}border-red-500{% endif %}" maxlength="50" id="id_correo">
                         {% if cliente_form.correo.errors %}
-<<<<<<< HEAD
                         <div class="mt-1 text-sm text-red-600">
                             {% for error in cliente_form.correo.errors %}<p>{{ error }}</p>{% endfor %}
-=======
-                        <div class="form-error-message">
-                            {% for error in cliente_form.correo.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                         </div>
                         {% endif %}
                     </div>
@@ -323,13 +265,8 @@
                 <a href="{% if cliente.id %}{% url 'clientes:detail' cliente.id %}{% else %}{% url 'clientes:list' %}{% endif %}" class="btn-cancel-nexo inline-flex items-center px-6 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                     <i class="fas fa-times mr-2"></i>Cancelar
                 </a>
-<<<<<<< HEAD
                 <button type="submit" class="btn-submit-nexo inline-flex items-center px-6 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2" style="background-color: {{ colores.warning }}; color: black;">
                     <i class="fas fa-save mr-2"></i>Actualizar Cliente
-=======
-                <button type="submit" class="btn-submit-form">
-                    <i class="fas fa-save mr-2"></i> Guardar Cambios
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                 </button>
             </div>
         </form>

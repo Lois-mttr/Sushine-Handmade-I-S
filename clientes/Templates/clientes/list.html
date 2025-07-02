@@ -4,7 +4,6 @@
 
 {% block title %}Lista de Clientes - NEXO{% endblock %}
 
-<<<<<<< HEAD
 {% block page_title %}
     <i class="fas fa-users mr-2" style="color: {{ colores.primary }};"></i>Gestión de Clientes
 {% endblock %}
@@ -95,8 +94,6 @@
 </style>
 {% endblock %}
 
-=======
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
 {% block content %}
 <style>
     /* Estilos para la lista de clientes */
@@ -216,7 +213,6 @@
 
 <div class="cliente-container">
     <div class="max-w-7xl mx-auto">
-<<<<<<< HEAD
         <div class="mb-6 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Clientes</h1>
@@ -227,10 +223,6 @@
             </a>
         </div>
         <div class="filtros-card p-6 mb-6">
-=======
-        <!-- Filtros de Búsqueda -->
-        <div class="filtros-card">
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
             <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="form-label">Cédula</label>
@@ -254,20 +246,11 @@
                 </div>
             </form>
         </div>
-<<<<<<< HEAD
         <div class="bg-white shadow-md rounded-lg overflow-hidden table-responsive">
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center" style="background: linear-gradient(135deg, {{ colores.primary }} 0%, #2da89e 100%);">
                 <h3 class="text-lg font-semibold text-white flex items-center">
                     <i class="fas fa-list-ul mr-2"></i>
                     Registros de Clientes
-=======
-
-        <!-- Tabla de Clientes -->
-        <div class="table-container">
-            <div class="table-header flex justify-between items-center">
-                <h3 class="text-lg font-semibold">
-                    <i class="fas fa-list-ul mr-2"></i>Registros de Clientes
->>>>>>> 82f78568f13c6ff5860f0c30feb576333e7158f6
                 </h3>
                 <span class="text-white text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">
                     {{ clientes|length }} registro{{ clientes|length|pluralize }}

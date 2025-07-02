@@ -2,13 +2,14 @@ use nexodb
 -- INSERCCION TABLA CATEGORIA
 INSERT INTO Categoria (nombreCategoria, descripcionCategoria, estadoCategoria) 
 VALUES 
-('Carteras', 'Productos de cuero, hecho a mano', 1),
-('Bolsos', 'Productos de cuero y tela', 1),
-('Billeteras', 'Productos de cuero pequeños de tela', 1);
+('Carteras', 'Estuche pequeño de cuero, que se pliega por la mitad apta para el bolsillo', 1),
+('Bolsos', ' Accesorio versátil de mano y funcional utilizado para transportar objetos personales', 1),
+('Mochilas', 'bolsa de cuero, tela y lona provista de correas que permiten llevarla en la espalda', 1);
+
 -- INSERCCION TABLA UBICACION
 Insert into Ubicacion (nombreUbicacion, direccion) values 
-('Taller','ubicada en el km21 carretera masaya -managua' ), 
-('Sucursal','ubicada en Galeria piso 2');
+('Taller',' Sunshine Handmade Taller, Km. 20, 3 Carr. a Masaya, Los Madrigales' ), 
+('Sucursal','Sunshine Handmade, Centro Comercial Galerías, Pista Jean Paul Genie, Managua');
 -- INSERCCION TABLA PRODUCTO
 INSERT INTO Producto (id_producto, idUbicacionPro, nombreProducto, descripcionProducto, existenciaProducto, imagenProductoRuta, idCategoriaPro, precioProducto, estado, existenciaMinima)
 VALUES 
