@@ -199,6 +199,7 @@ def inventario_general(request):
     user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
     nexo_user_role = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
 
+    productos_iter = []
     if form.is_valid():
         filtros = {}
         # Ubicación: solo ID
@@ -229,8 +230,8 @@ def inventario_general(request):
             if valor not in [None, '', 'null']:
                 filtros[campo] = valor
 
+        productos_iter = productos_iterador_sql(filtros)
         resultado = ReportService.get_inventario_general(filtros)
-        data = resultado.get('data', [])
         stats = resultado.get('stats', {})
 
         # Exportación
@@ -238,18 +239,13 @@ def inventario_general(request):
             return export_to_pdf(request, 'Inventario General', data, stats)
         elif form.cleaned_data.get('formato_exportacion') == 'excel':
             return export_to_excel(request, 'Inventario General', data, stats)
-
-    paginator = Paginator(data, 25)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    else:
+        stats = {}
 
     context = {
         'form': form,
-        'page_obj': page_obj,
-        'data': page_obj.object_list,
+        'productos_iter': productos_iter,
         'stats': stats,
-        'is_paginated': paginator.num_pages > 1,
-        'paginator': paginator,
         'page_title': 'Reporte de Inventario General',
         'page_subtitle': 'Existencias actuales por producto y ubicación',
         'usuario_actual': usuario_actual,
@@ -1010,3 +1006,68 @@ def dashboard_stats_api(request):
         'stats': stats,
     }
     return JsonResponse({'stats': stats})
+
+from django.db import connection
+
+def productos_iterador_sql(filtros):
+    """
+    Devuelve un generador de productos usando SQL crudo.
+    """
+    base_query = """
+        SELECT 
+            p.id_producto,
+            p.nombreProducto,
+            p.descripcionProducto,
+            p.existenciaProducto,
+            p.existenciaMinima,
+            p.precioProducto,
+            c.nombreCategoria,
+            u.direccion,
+            CASE 
+                WHEN p.existenciaProducto <= 0 THEN 'SIN_STOCK'
+                WHEN p.existenciaProducto <= p.existenciaMinima THEN 'CRITICO'
+                WHEN p.existenciaProducto <= (p.existenciaMinima * 2) THEN 'BAJO'
+                WHEN p.existenciaProducto <= (p.existenciaMinima * 5) THEN 'NORMAL'
+                ELSE 'ALTO'
+            END as nivel_stock,
+            (p.existenciaProducto * COALESCE(p.precioProducto, 0)) as valor_total_stock
+        FROM Producto p
+        INNER JOIN Categoria c ON p.idCategoriaPro = c.idCategoria
+        INNER JOIN Ubicacion u ON p.idUbicacionPro = u.id_ubicacion
+        WHERE p.estado = 1
+    """
+    params = []
+    conditions = []
+
+    if filtros.get('ubicacion'):
+        conditions.append("p.idUbicacionPro = %s")
+        params.append(filtros['ubicacion'])
+    if filtros.get('categoria'):
+        conditions.append("p.idCategoriaPro = %s")
+        params.append(filtros['categoria'])
+    if filtros.get('stock_estado'):
+        estado = filtros['stock_estado']
+        if estado == 'sin_stock':
+            conditions.append("p.existenciaProducto <= 0")
+        elif estado == 'critico':
+            conditions.append("p.existenciaProducto > 0 AND p.existenciaProducto <= p.existenciaMinima")
+        elif estado == 'bajo':
+            conditions.append("p.existenciaProducto > p.existenciaMinima AND p.existenciaProducto <= (p.existenciaMinima * 2)")
+        elif estado == 'normal':
+            conditions.append("p.existenciaProducto > (p.existenciaMinima * 2) AND p.existenciaProducto <= (p.existenciaMinima * 5)")
+        elif estado == 'alto':
+            conditions.append("p.existenciaProducto > (p.existenciaMinima * 5)")
+    if filtros.get('buscar'):
+        conditions.append("(p.nombreProducto LIKE %s OR p.descripcionProducto LIKE %s)")
+        search_term = f"%{filtros['buscar']}%"
+        params.extend([search_term, search_term])
+
+    if conditions:
+        base_query += " AND " + " AND ".join(conditions)
+    base_query += " ORDER BY u.nombreUbicacion, c.nombreCategoria, p.nombreProducto"
+
+    with connection.cursor() as cursor:
+        cursor.execute(base_query, params)
+        columns = [col[0] for col in cursor.description]
+        for row in cursor:
+            yield dict(zip(columns, row))

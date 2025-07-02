@@ -1,0 +1,97 @@
+{% extends 'errors/base_error.html' %}
+
+{% block error_content %}
+<!-- Icono de error -->
+<div class="error-icon error-403">
+    <i class="fas fa-lock"></i>
+</div>
+
+<!-- Código y título del error -->
+<div class="text-center mb-8">
+    <h1 class="text-6xl font-bold text-blue-600 mb-4">{{ error_code }}</h1>
+    <h2 class="text-3xl font-bold text-gray-900 mb-4">{{ error_title }}</h2>
+    <p class="text-lg text-gray-600 leading-relaxed">{{ error_message }}</p>
+</div>
+
+<!-- Información de permisos -->
+<div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+    <div class="flex items-start">
+        <i class="fas fa-shield-alt text-blue-600 mt-1 mr-3"></i>
+        <div>
+            <h4 class="font-semibold text-blue-800 mb-2">Información de Seguridad</h4>
+            <p class="text-blue-700 text-sm mb-3">
+                Esta página o acción requiere permisos especiales que su cuenta actual no posee.
+            </p>
+            {% if user_info.name and user_info.name != 'Usuario' %}
+            <div class="bg-white rounded p-3 text-sm">
+                <strong>Su cuenta actual:</strong><br>
+                <i class="fas fa-user mr-1"></i> {{ user_info.name }}<br>
+                <i class="fas fa-tag mr-1"></i> Rol: {{ user_info.role|title }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Sugerencias -->
+<div class="mb-8">
+    <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+        <i class="fas fa-key text-green-500 mr-2"></i>
+        Opciones Disponibles
+    </h3>
+    <div class="space-y-3">
+        {% for suggestion in error_suggestions %}
+        <div class="suggestion-item py-3 px-4 rounded-lg">
+            <div class="flex items-start">
+                <i class="fas fa-unlock text-green-500 mt-1 mr-3 flex-shrink-0"></i>
+                <span class="text-gray-700">{{ suggestion }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Información de contacto -->
+<div class="mb-8 bg-gray-50 border border-gray-200 rounded-lg p-6">
+    <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+        <i class="fas fa-headset mr-2"></i>
+        ¿Necesita Acceso?
+    </h4>
+    <p class="text-gray-600 text-sm mb-4">
+        Si considera que debería tener acceso a esta funcionalidad, contacte al administrador del sistema.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-3">
+        <a href="mailto:admin@nexo.com?subject=Solicitud de Acceso - Sistema NEXO" 
+           class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors flex items-center justify-center">
+            <i class="fas fa-envelope mr-2"></i>
+            Enviar Solicitud
+        </a>
+        <a href="tel:+505-1234-5678" 
+           class="px-4 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors flex items-center justify-center">
+            <i class="fas fa-phone mr-2"></i>
+            Llamar Soporte
+        </a>
+    </div>
+</div>
+
+<!-- Botones de acción -->
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+    <button onclick="goBack()" 
+            class="back-button px-6 py-3 text-white rounded-lg font-medium flex items-center justify-center">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Página Anterior
+    </button>
+    
+    <button onclick="goHome()" 
+            class="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center justify-center">
+        <i class="fas fa-home mr-2"></i>
+        Ir al Inicio
+    </button>
+    
+    <a href="{% url 'dashboard:logout' %}" 
+       class="px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center">
+        <i class="fas fa-sign-out-alt mr-2"></i>
+        Cambiar Usuario
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'errors/base_error.html' %}
+
+{% block error_content %}
+<!-- Icono de error -->
+<div class="error-icon error-500">
+    <i class="fas fa-exclamation-triangle"></i>
+</div>
+
+<!-- Código y título del error -->
+<div class="text-center mb-8">
+    <h1 class="text-6xl font-bold text-yellow-600 mb-4">{{ error_code }}</h1>
+    <h2 class="text-3xl font-bold text-gray-900 mb-4">{{ error_title }}</h2>
+    <p class="text-lg text-gray-600 leading-relaxed">{{ error_message }}</p>
+</div>
+
+<!-- Información técnica -->
+<div class="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+    <div class="flex items-start">
+        <i class="fas fa-info-circle text-yellow-600 mt-1 mr-3"></i>
+        <div>
+            <h4 class="font-semibold text-yellow-800 mb-2">Información Técnica</h4>
+            <p class="text-yellow-700 text-sm">
+                Se ha producido un error interno en el servidor. El equipo técnico ha sido notificado automáticamente 
+                y está trabajando para resolver el problema lo antes posible.
+            </p>
+            <p class="text-yellow-700 text-sm mt-2">
+                <strong>Hora del error:</strong> {{ "now"|date:"d/m/Y H:i:s" }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Sugerencias -->
+<div class="mb-8">
+    <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+        <i class="fas fa-tools text-blue-500 mr-2"></i>
+        Acciones Recomendadas
+    </h3>
+    <div class="space-y-3">
+        {% for suggestion in error_suggestions %}
+        <div class="suggestion-item py-3 px-4 rounded-lg">
+            <div class="flex items-start">
+                <i class="fas fa-wrench text-blue-500 mt-1 mr-3 flex-shrink-0"></i>
+                <span class="text-gray-700">{{ suggestion }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Estado del sistema -->
+<div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+    <h4 class="font-semibold text-blue-800 mb-3 flex items-center">
+        <i class="fas fa-server mr-2"></i>
+        Estado del Sistema
+    </h4>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div class="flex items-center">
+            <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+            <span class="text-blue-700">Base de Datos: Operativa</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+            <span class="text-blue-700">Servidor Web: Verificando</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+            <span class="text-blue-700">Servicios: Activos</span>
+        </div>
+    </div>
+</div>
+
+<!-- Botones de acción -->
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+    <button onclick="reloadPage()" 
+            class="back-button px-6 py-3 text-white rounded-lg font-medium flex items-center justify-center">
+        <i class="fas fa-sync-alt mr-2"></i>
+        Reintentar
+    </button>
+    
+    <button onclick="goHome()" 
+            class="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center justify-center">
+        <i class="fas fa-home mr-2"></i>
+        Ir al Inicio
+    </button>
+    
+    <a href="mailto:soporte@nexo.com?subject=Error 500 - Sistema NEXO" 
+       class="px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center">
+        <i class="fas fa-envelope mr-2"></i>
+        Reportar Error
+    </a>
+</div>
+{% endblock %}

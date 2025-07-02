@@ -28,5 +28,8 @@ urlpatterns = [
     path('ajustes/', include('ajustes.urls')),
     path('devolucion/', include('devolucion.urls')),
     path('Informes/', include('Informes.urls')),
-    path('devolucion/', include('devolucion.urls')), 
 ]
+
+handler404 = 'core_data.views.custom_404_view'
+handler500 = 'core_data.views.custom_500_view'
+handler403 = 'core_data.views.custom_403_view'

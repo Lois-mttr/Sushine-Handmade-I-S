@@ -1,0 +1,97 @@
+{% extends 'errors/base_error.html' %}
+
+{% block error_content %}
+<!-- Icono de error -->
+<div class="error-icon error-csrf">
+    <i class="fas fa-shield-alt"></i>
+</div>
+
+<!-- Código y título del error -->
+<div class="text-center mb-8">
+    <h1 class="text-6xl font-bold text-pink-600 mb-4">{{ error_code }}</h1>
+    <h2 class="text-3xl font-bold text-gray-900 mb-4">{{ error_title }}</h2>
+    <p class="text-lg text-gray-600 leading-relaxed">{{ error_message }}</p>
+</div>
+
+<!-- Información de seguridad -->
+<div class="mb-8 bg-pink-50 border border-pink-200 rounded-lg p-6">
+    <div class="flex items-start">
+        <i class="fas fa-security text-pink-600 mt-1 mr-3"></i>
+        <div>
+            <h4 class="font-semibold text-pink-800 mb-2">¿Qué es CSRF?</h4>
+            <p class="text-pink-700 text-sm mb-3">
+                CSRF (Cross-Site Request Forgery) es una medida de seguridad que protege contra ataques maliciosos. 
+                Este error indica que el token de seguridad ha expirado o es inválido.
+            </p>
+            {% if csrf_reason %}
+            <div class="bg-white rounded p-3 text-sm">
+                <strong>Motivo específico:</strong> {{ csrf_reason }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Sugerencias -->
+<div class="mb-8">
+    <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+        <i class="fas fa-shield-check text-green-500 mr-2"></i>
+        Cómo Solucionarlo
+    </h3>
+    <div class="space-y-3">
+        {% for suggestion in error_suggestions %}
+        <div class="suggestion-item py-3 px-4 rounded-lg">
+            <div class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 mt-1 mr-3 flex-shrink-0"></i>
+                <span class="text-gray-700">{{ suggestion }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Información técnica adicional -->
+<div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+    <h4 class="font-semibold text-blue-800 mb-3 flex items-center">
+        <i class="fas fa-info-circle mr-2"></i>
+        Información Técnica
+    </h4>
+    <div class="text-blue-700 text-sm space-y-2">
+        <p><strong>Causa común:</strong> La página estuvo abierta por mucho tiempo antes de enviar el formulario.</p>
+        <p><strong>Solución rápida:</strong> Recargar la página y volver a intentar la acción.</p>
+        <p><strong>Prevención:</strong> No usar el botón "Atrás" del navegador después de enviar formularios.</p>
+    </div>
+</div>
+
+<!-- Botones de acción -->
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+    <button onclick="reloadPage()" 
+            class="back-button px-6 py-3 text-white rounded-lg font-medium flex items-center justify-center">
+        <i class="fas fa-sync-alt mr-2"></i>
+        Recargar y Reintentar
+    </button>
+    
+    <button onclick="goHome()" 
+            class="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center justify-center">
+        <i class="fas fa-home mr-2"></i>
+        Ir al Inicio
+    </button>
+    
+    <button onclick="clearCacheAndReload()" 
+            class="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center">
+        <i class="fas fa-broom mr-2"></i>
+        Limpiar Caché
+    </button>
+</div>
+
+<script>
+function clearCacheAndReload() {
+    // Limpiar localStorage y sessionStorage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Recargar con caché limpio
+    window.location.reload(true);
+}
+</script>
+{% endblock %}
