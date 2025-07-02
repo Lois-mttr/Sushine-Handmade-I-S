@@ -131,6 +131,16 @@ CREATE TABLE DetalleProduccion (
     PRIMARY KEY (id_produccion, id_producto)
 );
 
+-- ALTERACION BASE POR USUARIO
+
+ALTER TABLE usuario 
+ADD COLUMN correo VARCHAR(50) NULL AFTER rol,
+ADD COLUMN fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP AFTER activo,
+ADD COLUMN ultimo_login TIMESTAMP NULL AFTER fecha_creacion,
+ADD COLUMN intentos_fallidos TINYINT DEFAULT 0 AFTER ultimo_login;
+ALTER TABLE usuario MODIFY COLUMN activo TINYINT(1) DEFAULT 1;
+ALTER TABLE Usuario MODIFY idEmpUsuario INT NULL;
+ALTER TABLE Usuario MODIFY rol VARCHAR(30) DEFAULT'usuario';
 
 -- Alteracion de Tablas
 ALTER TABLE Persona MODIFY estadoPersona TINYINT(1);

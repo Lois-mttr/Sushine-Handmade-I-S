@@ -1161,7 +1161,7 @@ BEGIN
     UPDATE Producto p
     JOIN DetalleProduccion dp ON p.id_producto = dp.id_producto AND p.idUbicacionPro = 1
     SET p.existenciaProducto = p.existenciaProducto - dp.cantidad
-    WHERE dp.id_produccion = p_idProduccion;
+    WHERE dp.id_produccion = p_idProduccion;report_log_idUsuario_63cadd2e_fk_usuario_idUsuario
 
     -- Marcar como inactiva
     UPDATE ProductosProduccion
