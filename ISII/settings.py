@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'clientes',
     'ajustes',
     'Informes',
+
 ]
 
 MIDDLEWARE = [

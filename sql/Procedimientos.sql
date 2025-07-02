@@ -398,28 +398,44 @@ DELIMITER ;
 
 -- CIFRADO DE CONTRASEÑA
 /*PROCEDIMIENTO DE INGRESAR USUARIO Y CIFRAR CONTRASEÑA*/
+
 DELIMITER $$
 CREATE PROCEDURE RegistrarUsuario (
     IN p_nombreUsuario VARCHAR(15),
     IN p_contrasena VARCHAR(64),
     IN p_rol VARCHAR(30),
+    IN p_correo VARCHAR(50),
     IN p_idEmpleado INT
 )
 BEGIN
-    INSERT INTO Usuario (nombreUsuario, passUsuario, rol, activo, idEmpUsuario)
+    INSERT INTO Usuario (
+        nombreUsuario,
+        passUsuario,
+        rol,
+        correo,
+        activo,
+        fecha_creacion,
+        ultimo_login,
+        intentos_fallidos,
+        idEmpUsuario
+    )
     VALUES (
         p_nombreUsuario,
         SHA2(p_contrasena, 256),
         p_rol,
-        1,
+        p_correo,
+        1, -- activo por defecto
+        CURRENT_TIMESTAMP, -- fecha de creación
+        NULL, -- último login aún no ha ocurrido
+        0, -- sin intentos fallidos al inicio
         p_idEmpleado
     );
 END$$
-
 DELIMITER ;
+
 -- Funcionamiento
-CALL RegistrarUsuario('Campary', 'Camp*2520', 'admin', 1);
-CALL RegistrarUsuario('Maria','Maria*2520','encargado_sucursal','2')
+CALL RegistrarUsuario('Campary','Camp*2520','admin', 'ccarbajal1307@gmail.com',1);
+CALL RegistrarUsuario('Maria','Maria*2520','encargado_sucursal','luisacrossway@gmail.com','2')
 
 -- FUNCIONAMIENTO--
 -- Vista de Alertas por bajo Inventario
@@ -434,8 +450,6 @@ FROM Producto
 WHERE existenciaProducto < existenciaMinima;
 
 Select* from ProductosBajoStock 
-
-
 
 ---------------------------------------------------------------------
 -- PROCEDIMIENTOS RELIZAR VENTA
@@ -1156,4 +1170,4 @@ BEGIN
 END //
 DELIMITER ;
 
---Alteracion de Base
+
