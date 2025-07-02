@@ -4,23 +4,22 @@ URLs para el módulo de reportes NEXO
 from django.urls import path
 from . import views
 
-app_name = 'Informes'
+app_name = 'informes'
 
 urlpatterns = [
-    # Dashboard principal de reportes
-    path('', views.reports_dashboard, name='reports_dashboard'),
+    # Vista principal de informes
+    path('', views.lista_informes, name='lista_informes'),
     
-    # Reportes individuales
+    # Informes específicos
     path('inventario-general/', views.inventario_general, name='inventario_general'),
     path('produccion/', views.produccion, name='produccion'),
-    path('reabastecimientos/', views.reabastecimientos, name='reabastecimientos'),
     path('ventas/', views.ventas, name='ventas'),
     path('devoluciones/', views.devoluciones, name='devoluciones'),
     path('clientes/', views.clientes, name='clientes'),
     path('usuarios-empleados/', views.usuarios_empleados, name='usuarios_empleados'),
     path('productos-categoria/', views.productos_categoria, name='productos_categoria'),
-    path('auditoria/', views.auditoria, name='auditoria'),
-
-    # API para estadísticas del dashboard
-    path('dashboard-stats/', views.dashboard_stats_api, name='dashboard_stats_api'),
+    
+    # Exportación
+    path('exportar/pdf/<str:tipo_informe>/', views.exportar_pdf, name='exportar_pdf'),
+    path('exportar/excel/<str:tipo_informe>/', views.exportar_excel, name='exportar_excel'),
 ]

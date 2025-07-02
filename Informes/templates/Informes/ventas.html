@@ -1,83 +1,405 @@
 {% extends 'layouts/base.html' %}
+{% load static %}
 
-{% block filter_fields %}
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.fecha_desde.label }}</label>
-    {{ form.fecha_desde }}
-</div>
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.fecha_hasta.label }}</label>
-    {{ form.fecha_hasta }}
-</div>
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.cliente.label }}</label>
-    {{ form.cliente }}
-</div>
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.vendedor.label }}</label>
-    {{ form.vendedor }}
-</div>
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.estado.label }}</label>
-    {{ form.estado }}
-</div>
-{% endblock %}
+{% block title %}Reporte de Ventas - NEXO{% endblock %}
 
-{% block report_stats %}
-<div class="stat-card">
-    <div class="stat-value">{{ stats.total_ventas|default:0 }}</div>
-    <div class="stat-label">Total Ventas</div>
-</div>
-<div class="stat-card">
-    <div class="stat-value">{{ stats.ventas_realizadas|default:0 }}</div>
-    <div class="stat-label">Realizadas</div>
-</div>
-<div class="stat-card">
-    <div class="stat-value">{{ stats.ventas_anuladas|default:0 }}</div>
-    <div class="stat-label">Anuladas</div>
-</div>
-<div class="stat-card">
-    <div class="stat-value">C$ {{ stats.total_facturado|floatformat:2|default:"0.00" }}</div>
-    <div class="stat-label">Total Facturado</div>
-</div>
-{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Encabezado del informe -->
+        <div class="nexo-report-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="nexo-title mb-1">
+                        <i class="fas fa-shopping-cart me-2"></i>{{ titulo_informe }}
+                    </h1>
+                    <p class="text-muted mb-0">Registro de ventas realizadas, filtrables por cliente, fecha y vendedor</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="nexo-report-info">
+                        <small class="text-muted">
+                            <strong>Usuario:</strong> {{ usuario_generador }}<br>
+                            <strong>Generado:</strong> {{ fecha_generacion|date:"d/m/Y H:i:s" }}<br>
+                            {% if fecha_inicio and fecha_fin %}
+                            <strong>Período:</strong> {{ fecha_inicio|date:"d/m/Y" }} - {{ fecha_fin|date:"d/m/Y" }}
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-{% block table_headers %}
-<tr>
-    <th>Venta #</th>
-    <th>Fecha</th>
-    <th>Cliente</th>
-    <th>Vendedor</th>
-    <th>Producto</th>
-    <th>Cantidad</th>
-    <th>Subtotal</th>
-    <th>Total Venta</th>
-    <th>Estado</th>
-</tr>
-{% endblock %}
+        <!-- Resumen ejecutivo -->
+        <div class="row mb-4">
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card nexo-summary-card">
+                    <div class="card-body text-center">
+                        <div class="nexo-summary-icon bg-success">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <h4 class="nexo-summary-number">{{ resumen.total_ventas }}</h4>
+                        <p class="nexo-summary-label">Total Ventas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card nexo-summary-card">
+                    <div class="card-body text-center">
+                        <div class="nexo-summary-icon bg-primary">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <h4 class="nexo-summary-number">${{ resumen.monto_total|floatformat:2 }}</h4>
+                        <p class="nexo-summary-label">Monto Total</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card nexo-summary-card">
+                    <div class="card-body text-center">
+                        <div class="nexo-summary-icon bg-info">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4 class="nexo-summary-number">${{ resumen.promedio_venta|floatformat:2 }}</h4>
+                        <p class="nexo-summary-label">Promedio por Venta</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-{% block table_rows %}
-{% for item in page_obj %}
-<tr>
-    <td class="font-mono">{{ item.id_venta }}</td>
-    <td>{{ item.fechaVenta|date:"d/m/Y H:i" }}</td>
-    <td>{{ item.cliente|default:"Cliente no registrado" }}</td>
-    <td>{{ item.vendedor|default:"N/A" }}</td>
-    <td>{{ item.nombreProducto|default:"N/A" }}</td>
-    <td class="text-center">{{ item.cantidadVenta|default:"N/A" }}</td>
-    <td class="text-right">C$ {{ item.subtotal|floatformat:2|default:"0.00" }}</td>
-    <td class="text-right font-medium">C$ {{ item.total|floatformat:2|default:"0.00" }}</td>
-    <td class="text-center">
-        {% if item.estado == 'REALIZADA' %}
-            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                Realizada
-            </span>
-        {% else %}
-            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                Anulada
-            </span>
+        <!-- Filtros y acciones -->
+        <div class="card nexo-filters-card mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                        <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control"
+                               value="{{ fecha_inicio|date:'Y-m-d' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                        <input type="date" name="fecha_fin" id="fecha_fin" class="form-control"
+                               value="{{ fecha_fin|date:'Y-m-d' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="cliente" class="form-label">Cliente</label>
+                        <select name="cliente" id="cliente" class="form-select">
+                            <option value="">Todos los clientes</option>
+                            {% for cliente in clientes %}
+                            <option value="{{ cliente.idcliente }}" 
+                                {% if filtros_aplicados.cliente == cliente.idcliente|stringformat:"s" %}selected{% endif %}>
+                                {{ cliente.idpersonacliente.nombre_completo }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="vendedor" class="form-label">Vendedor</label>
+                        <select name="vendedor" id="vendedor" class="form-select">
+                            <option value="">Todos los vendedores</option>
+                            {% for vendedor in vendedores %}
+                            <option value="{{ vendedor.idusuario }}" 
+                                {% if filtros_aplicados.vendedor == vendedor.idusuario|stringformat:"s" %}selected{% endif %}>
+                                {{ vendedor.empleado_nombre|default:vendedor.nombreusuario }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 d-flex gap-2">
+                        <button type="submit" class="btn nexo-btn-primary">
+                            <i class="fas fa-filter me-1"></i>Filtrar
+                        </button>
+                        <a href="{% url 'informes:ventas' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Limpiar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Acciones de exportación -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Tabla de Resultados</h5>
+            <div class="btn-group">
+                <a href="{% url 'informes:exportar_pdf' 'ventas' %}?{{ request.GET.urlencode }}" 
+                   class="btn nexo-btn-secondary btn-sm">
+                    <i class="fas fa-file-pdf me-1"></i>Exportar PDF
+                </a>
+                <a href="{% url 'informes:exportar_excel' 'ventas' %}?{{ request.GET.urlencode }}" 
+                   class="btn nexo-btn-accent btn-sm">
+                    <i class="fas fa-file-excel me-1"></i>Exportar Excel
+                </a>
+            </div>
+        </div>
+
+        <!-- Tabla de ventas -->
+        <div class="card nexo-table-card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table nexo-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID Venta</th>
+                                <th>Fecha y Hora</th>
+                                <th>Cliente</th>
+                                <th>Vendedor</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for venta in ventas %}
+                            <tr>
+                                <td>
+                                    <code class="nexo-code">#{{ venta.id_venta }}</code>
+                                </td>
+                                <td>
+                                    {% if venta.fechaventa %}
+                                    <div>
+                                        <strong>{{ venta.fechaventa|date:"d/m/Y" }}</strong><br>
+                                        <small class="text-muted">{{ venta.fechaventa|date:"H:i:s" }}</small>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">No especificada</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if venta.codcliente and venta.codcliente.idpersonacliente %}
+                                    <div class="d-flex align-items-center">
+                                        <div class="nexo-avatar me-2">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div>
+                                            <strong>{{ venta.codcliente.idpersonacliente.nombre_completo }}</strong><br>
+                                            {% if venta.codcliente.correo %}
+                                            <small class="text-muted">{{ venta.codcliente.correo }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">Cliente no especificado</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if venta.idusuarioventa %}
+                                    <div class="d-flex align-items-center">
+                                        <div class="nexo-avatar me-2">
+                                            <i class="fas fa-user-tie"></i>
+                                        </div>
+                                        <div>
+                                            <strong>{{ venta.idusuarioventa.empleado_nombre|default:venta.idusuarioventa.nombreusuario }}</strong><br>
+                                            <small class="text-muted">{{ venta.idusuarioventa.rol|default:"Vendedor" }}</small>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">No especificado</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <strong class="nexo-price">${{ venta.total|default:0|floatformat:2 }}</strong>
+                                </td>
+                                <td class="text-center">
+                                    {% if venta.estado == 'REALIZADA' %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check me-1"></i>Realizada
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times me-1"></i>Anulada
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                data-bs-toggle="tooltip" title="Ver detalles"
+                                                onclick="verDetallesVenta({{ venta.id_venta }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        {% if request.nexo_user.rol == 'admin' %}
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                                data-bs-toggle="tooltip" title="Imprimir factura">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="nexo-empty-state">
+                                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                                        <h5 class="text-muted">No se encontraron ventas</h5>
+                                        <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paginación -->
+        {% if ventas.has_other_pages %}
+        <nav aria-label="Paginación de ventas" class="mt-4">
+            <ul class="pagination justify-content-center nexo-pagination">
+                {% if ventas.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ ventas.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in ventas.paginator.page_range %}
+                {% if ventas.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > ventas.number|add:'-3' and num < ventas.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">{{ num }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                {% if ventas.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ ventas.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ ventas.paginator.num_pages }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
         {% endif %}
-    </td>
-</tr>
-{% endfor %}
+
+        <!-- Información adicional -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card nexo-info-card">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="fas fa-info-circle me-2"></i>Información del Informe
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Total de ventas encontradas:</strong> {{ resumen.total_ventas }}</p>
+                                <p class="mb-1"><strong>Período consultado:</strong> 
+                                    {% if fecha_inicio and fecha_fin %}
+                                        {{ fecha_inicio|date:"d/m/Y" }} - {{ fecha_fin|date:"d/m/Y" }}
+                                    {% else %}
+                                        Últimos 30 días
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Monto total vendido:</strong> ${{ resumen.monto_total|floatformat:2 }}</p>
+                                <p class="mb-0"><strong>Promedio por venta:</strong> ${{ resumen.promedio_venta|floatformat:2 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para detalles de venta -->
+<div class="modal fade" id="modalDetallesVenta" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-receipt me-2"></i>Detalles de la Venta
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoDetallesVenta">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nexo-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #39bfb2, #F2CE16);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.9rem;
+    }
+    
+    .nexo-price {
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        color: #39bfb2;
+    }
+    
+    .nexo-code {
+        background-color: #f8f9fa;
+        color: #39bfb2;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function verDetallesVenta(idVenta) {
+    const modal = new bootstrap.Modal(document.getElementById('modalDetallesVenta'));
+    const contenido = document.getElementById('contenidoDetallesVenta');
+    
+    // Mostrar spinner de carga
+    contenido.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2 text-muted">Cargando detalles de la venta...</p>
+        </div>
+    `;
+    
+    modal.show();
+    
+    // Aquí podrías hacer una llamada AJAX para obtener los detalles
+    // Por ahora, simularemos la carga
+    setTimeout(function() {
+        contenido.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Funcionalidad en desarrollo:</strong> Los detalles de la venta se mostrarán aquí.
+                <br>ID de venta: <code>#${idVenta}</code>
+            </div>
+            <p>Esta funcionalidad requiere implementar una vista AJAX adicional para obtener los detalles de cada venta.</p>
+        `;
+    }, 1000);
+}
+</script>
 {% endblock %}
