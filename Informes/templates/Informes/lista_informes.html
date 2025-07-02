@@ -1,85 +1,306 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
 
-{% block title %}Informes del Sistema - NEXO{% endblock %}
+{% block title %}Centro de Reportes - NEXO{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <!-- Encabezado de la página -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="nexo-title">
-                    <i class="fas fa-chart-bar me-2"></i>Informes del Sistema
-                </h1>
-                <p class="text-muted">Genera y consulta informes detallados del inventario y operaciones</p>
+<div class="space-y-8">
+    <!-- Header Principal -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-dark rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-chart-line text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Centro de Reportes NEXO</h1>
+                    <p class="text-gray-600 text-lg">Genera y analiza reportes detallados del sistema de inventario y ventas</p>
+                </div>
             </div>
-            <div class="nexo-user-info">
-                <small class="text-muted">
-                    Usuario: <strong>{{ usuario.empleado_nombre|default:usuario.nombreusuario }}</strong><br>
-                    Rol: <span class="badge nexo-badge-primary">{{ usuario.rol|default:'Encargado de Sucursal' }}</span>
-                </small>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Actualizar
+                </button>
+                <button class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors duration-200">
+                    <i class="fas fa-calendar-plus mr-2"></i>
+                    Programar Reportes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="bg-gradient-to-r from-primary to-primary-dark rounded-2xl p-6 text-white">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+                <div class="flex items-center space-x-2 mb-2">
+                    <i class="fas fa-bolt text-xl"></i>
+                    <h2 class="text-xl font-semibold">Acciones Rápidas</h2>
+                </div>
+                <p class="text-primary-100">Genera reportes frecuentes con un solo clic</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <a href="{% url 'informes:inventario_general' %}" 
+                   class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-xl hover:bg-white/30 transition-all duration-200">
+                    <i class="fas fa-file-pdf mr-2"></i>
+                    Inventario PDF
+                </a>
+                <a href="{% url 'informes:ventas' %}" 
+                   class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-xl hover:bg-white/30 transition-all duration-200">
+                    <i class="fas fa-shopping-cart mr-2"></i>
+                    Ventas Hoy
+                </a>
+                <a href="{% url 'informes:clientes' %}" 
+                   class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-xl hover:bg-white/30 transition-all duration-200">
+                    <i class="fas fa-users mr-2"></i>
+                    Clientes
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métricas Clave -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Reportes Generados Hoy -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-file-alt text-white text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                    <i class="fas fa-arrow-up mr-1"></i>+0% vs ayer
+                </span>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-600 mb-1">Reportes Generados Hoy</h3>
+                <div class="text-3xl font-bold text-gray-900">{{ reportes_hoy|default:0 }}</div>
             </div>
         </div>
 
-        <!-- Grid de informes disponibles -->
-        <div class="row g-4">
-            {% for informe in informes %}
-            <div class="col-lg-4 col-md-6">
-                <div class="card nexo-card h-100">
-                    <div class="card-body d-flex flex-column">
-                        <div class="text-center mb-3">
-                            <div class="nexo-icon-circle mb-3">
-                                <i class="fas fa-{{ informe.icono }} fa-2x"></i>
-                            </div>
-                            <h5 class="card-title nexo-card-title">{{ informe.nombre }}</h5>
-                            <p class="card-text text-muted">{{ informe.descripcion }}</p>
-                        </div>
-                        
-                        <div class="mt-auto">
-                            <a href="{% url informe.url %}" class="btn nexo-btn-primary w-100">
-                                <i class="fas fa-eye me-2"></i>Ver Informe
-                            </a>
-                        </div>
+        <!-- Productos en Inventario -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-boxes text-white text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>{{ productos_stock_bajo|default:0 }} con stock bajo
+                </span>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-600 mb-1">Productos en Inventario</h3>
+                <div class="text-3xl font-bold text-gray-900">{{ total_productos|default:0 }}</div>
+            </div>
+        </div>
+
+        <!-- Ventas del Mes -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-chart-line text-white text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                    <i class="fas fa-arrow-up mr-1"></i>{{ ventas_realizadas|default:0 }} ventas realizadas
+                </span>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-600 mb-1">Ventas del Mes</h3>
+                <div class="text-3xl font-bold text-gray-900">C$ {{ ventas_mes_total|default:"0.00" }}</div>
+            </div>
+        </div>
+
+        <!-- Clientes Activos -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-users text-white text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+                    <i class="fas fa-user-plus mr-1"></i>+{{ clientes_nuevos|default:0 }} nuevos este mes
+                </span>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-600 mb-1">Clientes Activos</h3>
+                <div class="text-3xl font-bold text-gray-900">{{ clientes_activos|default:0 }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid de Reportes -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        {% for informe in informes %}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group">
+            <!-- Header del reporte -->
+            <div class="p-6 pb-4">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center
+                        {% if informe.id == 'inventario_general' %}bg-gradient-to-br from-teal-500 to-teal-600
+                        {% elif informe.id == 'ventas' %}bg-gradient-to-br from-orange-500 to-orange-600
+                        {% elif informe.id == 'produccion' %}bg-gradient-to-br from-green-500 to-green-600
+                        {% elif informe.id == 'clientes' %}bg-gradient-to-br from-purple-500 to-purple-600
+                        {% elif informe.id == 'devoluciones' %}bg-gradient-to-br from-red-500 to-red-600
+                        {% elif informe.id == 'usuarios_empleados' %}bg-gradient-to-br from-blue-500 to-blue-600
+                        {% elif informe.id == 'productos_categoria' %}bg-gradient-to-br from-indigo-500 to-indigo-600
+                        {% else %}bg-gradient-to-br from-gray-500 to-gray-600{% endif %}">
+                        <i class="fas fa-{{ informe.icono }} text-white text-2xl"></i>
+                    </div>
+                    <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                        Disponible
+                    </span>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-900 mb-2">{{ informe.nombre }}</h3>
+                <p class="text-gray-600 text-sm mb-4">{{ informe.descripcion }}</p>
+                
+                <!-- Métricas específicas del reporte -->
+                {% if informe.id == 'inventario_general' %}
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <div class="text-sm text-gray-500">Productos</div>
+                        <div class="text-lg font-bold text-gray-900">{{ total_productos|default:0 }}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Valor Total</div>
+                        <div class="text-lg font-bold text-gray-900">C$ {{ valor_inventario|default:"0.00" }}</div>
+                    </div>
+                </div>
+                {% elif informe.id == 'ventas' %}
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <div class="text-sm text-gray-500">Ventas Hoy</div>
+                        <div class="text-lg font-bold text-gray-900">{{ ventas_hoy|default:0 }}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Facturado</div>
+                        <div class="text-lg font-bold text-gray-900">C$ {{ facturado_hoy|default:"0.00" }}</div>
+                    </div>
+                </div>
+                {% elif informe.id == 'produccion' %}
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <div class="text-sm text-gray-500">Producciones</div>
+                        <div class="text-lg font-bold text-gray-900">{{ producciones_mes|default:0 }}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Costo Total</div>
+                        <div class="text-lg font-bold text-gray-900">C$ {{ costo_produccion|default:"0.00" }}</div>
+                    </div>
+                </div>
+                {% elif informe.id == 'clientes' %}
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <div class="text-sm text-gray-500">Clientes</div>
+                        <div class="text-lg font-bold text-gray-900">{{ total_clientes|default:0 }}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Activos</div>
+                        <div class="text-lg font-bold text-gray-900">{{ clientes_activos|default:0 }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Acciones -->
+            <div class="px-6 pb-6">
+                <div class="flex gap-2">
+                    <a href="{% url informe.url %}" 
+                       class="flex-1 inline-flex items-center justify-center px-4 py-3 
+                       {% if informe.id == 'inventario_general' %}bg-teal-500 hover:bg-teal-600
+                       {% elif informe.id == 'ventas' %}bg-orange-500 hover:bg-orange-600
+                       {% elif informe.id == 'produccion' %}bg-green-500 hover:bg-green-600
+                       {% elif informe.id == 'clientes' %}bg-purple-500 hover:bg-purple-600
+                       {% elif informe.id == 'devoluciones' %}bg-red-500 hover:bg-red-600
+                       {% elif informe.id == 'usuarios_empleados' %}bg-blue-500 hover:bg-blue-600
+                       {% elif informe.id == 'productos_categoria' %}bg-indigo-500 hover:bg-indigo-600
+                       {% else %}bg-gray-500 hover:bg-gray-600{% endif %}
+                       text-white rounded-xl font-medium transition-colors duration-200">
+                        <i class="fas fa-eye mr-2"></i>
+                        Ver Reporte
+                    </a>
+                    <div class="flex gap-1">
+                        <a href="{% url 'informes:exportar_pdf' informe.id %}" 
+                           class="inline-flex items-center justify-center w-12 h-12 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors duration-200"
+                           title="Exportar PDF">
+                            <i class="fas fa-file-pdf"></i>
+                        </a>
+                        <a href="{% url 'informes:exportar_excel' informe.id %}" 
+                           class="inline-flex items-center justify-center w-12 h-12 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors duration-200"
+                           title="Exportar Excel">
+                            <i class="fas fa-file-excel"></i>
+                        </a>
                     </div>
                 </div>
             </div>
-            {% empty %}
-            <div class="col-12">
-                <div class="alert nexo-alert-info text-center">
-                    <i class="fas fa-info-circle fa-2x mb-3"></i>
-                    <h5>No hay informes disponibles</h5>
-                    <p class="mb-0">No tienes permisos para acceder a ningún informe en este momento.</p>
-                </div>
-            </div>
-            {% endfor %}
         </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div class="text-center py-12">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-chart-bar text-gray-400 text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No hay reportes disponibles</h3>
+                <p class="text-gray-600">No tienes permisos para acceder a ningún reporte en este momento.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 
-        <!-- Información adicional -->
-        <div class="row mt-5">
-            <div class="col-12">
-                <div class="card nexo-card-info">
-                    <div class="card-body">
-                        <h6 class="card-title">
-                            <i class="fas fa-lightbulb me-2"></i>Información sobre los Informes
-                        </h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6 class="text-primary">Características de los Informes:</h6>
-                                <ul class="list-unstyled">
-                                    <li><i class="fas fa-check text-success me-2"></i>Datos en tiempo real</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Filtros personalizables</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Exportación a PDF y Excel</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Resúmenes ejecutivos</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <h6 class="text-primary">Control de Acceso:</h6>
-                                <ul class="list-unstyled">
-                                    <li><i class="fas fa-user text-info me-2"></i><strong>Encargado de Sucursal:</strong> Inventario, Ventas, Devoluciones</li>
-                                    <li><i class="fas fa-user-shield text-warning me-2"></i><strong>Administrador:</strong> Acceso completo a todos los informes</li>
-                                </ul>
-                            </div>
+    <!-- Información sobre los Reportes -->
+    <div class="bg-blue-50 rounded-2xl border border-blue-200 overflow-hidden">
+        <div class="bg-blue-500 px-6 py-4">
+            <div class="flex items-center text-white">
+                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-3">
+                    <i class="fas fa-info-circle text-xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold">Información sobre los Reportes</h3>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <h4 class="text-sm font-semibold text-blue-900 mb-4 flex items-center">
+                        <i class="fas fa-file-alt mr-2"></i>
+                        Formatos Disponibles:
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center text-sm text-blue-800">
+                            <i class="fas fa-eye text-blue-500 mr-3 w-4"></i>
+                            <span>Vista en pantalla con filtros avanzados</span>
+                        </div>
+                        <div class="flex items-center text-sm text-blue-800">
+                            <i class="fas fa-file-pdf text-red-500 mr-3 w-4"></i>
+                            <span>Exportación a PDF con gráficos</span>
+                        </div>
+                        <div class="flex items-center text-sm text-blue-800">
+                            <i class="fas fa-file-excel text-green-500 mr-3 w-4"></i>
+                            <span>Exportación a Excel con fórmulas</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-sm font-semibold text-blue-900 mb-4 flex items-center">
+                        <i class="fas fa-star mr-2"></i>
+                        Características Avanzadas:
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center text-sm text-blue-800">
+                            <i class="fas fa-filter text-teal-500 mr-3 w-4"></i>
+                            <span>Filtros inteligentes y búsqueda</span>
+                        </div>
+                        <div class="flex items-center text-sm text-blue-800">
+                            <i class="fas fa-chart-line text-blue-500 mr-3 w-4"></i>
+                            <span>Estadísticas y métricas en tiempo real</span>
+                        </div>
+                        <div class="flex items-center text-sm text-blue-800">
+                            <i class="fas fa-shield-alt text-purple-500 mr-3 w-4"></i>
+                            <span>Control de acceso por roles</span>
+                        </div>
+                        <div class="flex items-center text-sm text-blue-800">
+                            <i class="fas fa-history text-orange-500 mr-3 w-4"></i>
+                            <span>Historial y auditoría completa</span>
                         </div>
                     </div>
                 </div>
@@ -91,32 +312,28 @@
 
 {% block extra_css %}
 <style>
-    .nexo-icon-circle {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #39bfb2, #F2CE16);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto;
-        color: white;
+.primary-100 { 
+    color: rgba(57, 191, 178, 0.1); 
+}
+
+@media (max-width: 768px) {
+    .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
     }
     
-    .nexo-card {
-        border: none;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-2 {
+        grid-template-columns: 1fr;
     }
-    
-    .nexo-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 640px) {
+    .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4 {
+        grid-template-columns: 1fr;
     }
-    
-    .nexo-card-info {
-        background: linear-gradient(135deg, #eaeef3, #ffffff);
-        border-left: 4px solid #39bfb2;
-    }
+}
+
+.group:hover .group-hover\:scale-105 {
+    transform: scale(1.05);
+}
 </style>
 {% endblock %}

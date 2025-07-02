@@ -4,402 +4,542 @@
 {% block title %}Reporte de Ventas - NEXO{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <!-- Encabezado del informe -->
-        <div class="nexo-report-header mb-4">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="nexo-title mb-1">
-                        <i class="fas fa-shopping-cart me-2"></i>{{ titulo_informe }}
-                    </h1>
-                    <p class="text-muted mb-0">Registro de ventas realizadas, filtrables por cliente, fecha y vendedor</p>
+<div class="space-y-6">
+    <!-- Encabezado del informe -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-shopping-cart text-white text-2xl"></i>
                 </div>
-                <div class="col-md-4 text-end">
-                    <div class="nexo-report-info">
-                        <small class="text-muted">
-                            <strong>Usuario:</strong> {{ usuario_generador }}<br>
-                            <strong>Generado:</strong> {{ fecha_generacion|date:"d/m/Y H:i:s" }}<br>
-                            {% if fecha_inicio and fecha_fin %}
-                            <strong>Período:</strong> {{ fecha_inicio|date:"d/m/Y" }} - {{ fecha_fin|date:"d/m/Y" }}
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ titulo_informe }}</h1>
+                    <p class="text-gray-600">Registro de ventas realizadas, filtrables por cliente, fecha y vendedor</p>
+                </div>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4">
+                <div class="text-sm text-gray-600">
+                    <div><strong>Usuario:</strong> {{ usuario_generador }}</div>
+                    <div><strong>Generado:</strong> {{ fecha_generacion|date:"d/m/Y H:i:s" }}</div>
+                    {% if fecha_inicio and fecha_fin %}
+                    <div><strong>Período:</strong> {{ fecha_inicio|date:"d/m/Y" }} - {{ fecha_fin|date:"d/m/Y" }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen ejecutivo mejorado -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-receipt text-white text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                    <i class="fas fa-arrow-up mr-1"></i>Activo
+                </span>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-600 mb-1">Total Ventas</h3>
+                <div class="text-3xl font-bold text-gray-900">{{ resumen.total_ventas }}</div>
+                <div class="text-xs text-gray-500 mt-1">En el período seleccionado</div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-dollar-sign text-white text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+                    <i class="fas fa-chart-line mr-1"></i>Ingresos
+                </span>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-600 mb-1">Monto Total</h3>
+                <div class="text-3xl font-bold text-gray-900">C$ {{ resumen.monto_total|floatformat:2 }}</div>
+                <div class="text-xs text-gray-500 mt-1">Facturación total</div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-chart-bar text-white text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
+                    <i class="fas fa-calculator mr-1"></i>Promedio
+                </span>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-600 mb-1">Promedio por Venta</h3>
+                <div class="text-3xl font-bold text-gray-900">C$ {{ resumen.promedio_venta|floatformat:2 }}</div>
+                <div class="text-xs text-gray-500 mt-1">Ticket promedio</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-clock text-white text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full">
+                    <i class="fas fa-calendar mr-1"></i>Hoy
+                </span>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-600 mb-1">Ventas de Hoy</h3>
+                <div class="text-3xl font-bold text-gray-900">{{ ventas_hoy|default:0 }}</div>
+                <div class="text-xs text-gray-500 mt-1">{{ fecha_generacion|date:"d/m/Y" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros mejorados -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-filter text-primary mr-2"></i>Filtros de Búsqueda
+            </h3>
+            <button onclick="toggleAdvancedFilters()" class="text-sm text-primary hover:text-primary-dark font-medium">
+                <i class="fas fa-cog mr-1"></i>Filtros Avanzados
+            </button>
+        </div>
+        
+        <form method="GET" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label for="fecha_inicio" class="block text-sm font-medium text-gray-700 mb-2">Fecha Inicio</label>
+                    <input type="date" name="fecha_inicio" id="fecha_inicio" 
+                           value="{{ fecha_inicio|date:'Y-m-d' }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                </div>
+                
+                <div>
+                    <label for="fecha_fin" class="block text-sm font-medium text-gray-700 mb-2">Fecha Fin</label>
+                    <input type="date" name="fecha_fin" id="fecha_fin" 
+                           value="{{ fecha_fin|date:'Y-m-d' }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                </div>
+                
+                <div>
+                    <label for="cliente" class="block text-sm font-medium text-gray-700 mb-2">Cliente</label>
+                    <select name="cliente" id="cliente" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                        <option value="">Todos los clientes</option>
+                        {% for cliente in clientes %}
+                        <option value="{{ cliente.idcliente }}" 
+                            {% if filtros_aplicados.cliente == cliente.idcliente|stringformat:"s" %}selected{% endif %}>
+                            {{ cliente.idpersonacliente.nombre_completo }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="vendedor" class="block text-sm font-medium text-gray-700 mb-2">Vendedor</label>
+                    <select name="vendedor" id="vendedor" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                        <option value="">Todos los vendedores</option>
+                        {% for vendedor in vendedores %}
+                        <option value="{{ vendedor.idusuario }}" 
+                            {% if filtros_aplicados.vendedor == vendedor.idusuario|stringformat:"s" %}selected{% endif %}>
+                            {{ vendedor.empleado_nombre|default:vendedor.nombreusuario }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Filtros avanzados (ocultos por defecto) -->
+            <div id="advanced-filters" class="hidden border-t border-gray-200 pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="monto_min" class="block text-sm font-medium text-gray-700 mb-2">Monto Mínimo</label>
+                        <input type="number" name="monto_min" id="monto_min" step="0.01" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                               placeholder="0.00">
+                    </div>
+                    <div>
+                        <label for="monto_max" class="block text-sm font-medium text-gray-700 mb-2">Monto Máximo</label>
+                        <input type="number" name="monto_max" id="monto_max" step="0.01" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                               placeholder="999999.99">
+                    </div>
+                    <div>
+                        <label for="estado" class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                        <select name="estado" id="estado" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                            <option value="">Todos los estados</option>
+                            <option value="REALIZADA">Realizadas</option>
+                            <option value="ANULADA">Anuladas</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button type="submit" class="flex-1 sm:flex-none bg-primary text-white px-6 py-3 rounded-xl hover:bg-primary-dark transition-colors duration-200 font-medium">
+                    <i class="fas fa-search mr-2"></i>Aplicar Filtros
+                </button>
+                <a href="{% url 'informes:ventas' %}" class="flex-1 sm:flex-none px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200 text-center font-medium">
+                    <i class="fas fa-times mr-2"></i>Limpiar
+                </a>
+                <button type="button" onclick="exportQuickReport()" class="flex-1 sm:flex-none bg-green-600 text-white px-6 py-3 rounded-xl hover:bg-green-700 transition-colors duration-200 font-medium">
+                    <i class="fas fa-download mr-2"></i>Exportar Rápido
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Acciones de exportación mejoradas -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <h3 class="text-lg font-semibold text-gray-900">Resultados de Ventas</h3>
+            <p class="text-sm text-gray-600">{{ ventas.paginator.count }} ventas encontradas</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'informes:exportar_pdf' 'ventas' %}?{{ request.GET.urlencode }}" 
+               class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors duration-200 font-medium">
+                <i class="fas fa-file-pdf mr-2"></i>Exportar PDF
+            </a>
+            <a href="{% url 'informes:exportar_excel' 'ventas' %}?{{ request.GET.urlencode }}" 
+               class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors duration-200 font-medium">
+                <i class="fas fa-file-excel mr-2"></i>Exportar Excel
+            </a>
+            <button onclick="printReport()" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200 font-medium">
+                <i class="fas fa-print mr-2"></i>Imprimir
+            </button>
+            <button onclick="shareReport()" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 font-medium">
+                <i class="fas fa-share mr-2"></i>Compartir
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabla de ventas mejorada -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <button onclick="sortTable('id')" class="flex items-center hover:text-primary transition-colors">
+                                ID Venta <i class="fas fa-sort ml-1"></i>
+                            </button>
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <button onclick="sortTable('fecha')" class="flex items-center hover:text-primary transition-colors">
+                                Fecha y Hora <i class="fas fa-sort ml-1"></i>
+                            </button>
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Cliente</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Vendedor</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <button onclick="sortTable('total')" class="flex items-center hover:text-primary transition-colors ml-auto">
+                                Total <i class="fas fa-sort ml-1"></i>
+                            </button>
+                        </th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Estado</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    {% for venta in ventas %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mr-3">
+                                    <i class="fas fa-receipt text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-gray-900">#{{ venta.id_venta }}</div>
+                                    <div class="text-xs text-gray-500">{{ venta.fechaventa|date:"H:i" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if venta.fechaventa %}
+                            <div>
+                                <div class="font-medium text-gray-900">{{ venta.fechaventa|date:"d/m/Y" }}</div>
+                                <div class="text-sm text-gray-500">{{ venta.fechaventa|date:"H:i:s" }}</div>
+                            </div>
+                            {% else %}
+                            <span class="text-gray-400">No especificada</span>
                             {% endif %}
-                        </small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Resumen ejecutivo -->
-        <div class="row mb-4">
-            <div class="col-lg-4 col-md-6 mb-3">
-                <div class="card nexo-summary-card">
-                    <div class="card-body text-center">
-                        <div class="nexo-summary-icon bg-success">
-                            <i class="fas fa-receipt"></i>
-                        </div>
-                        <h4 class="nexo-summary-number">{{ resumen.total_ventas }}</h4>
-                        <p class="nexo-summary-label">Total Ventas</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6 mb-3">
-                <div class="card nexo-summary-card">
-                    <div class="card-body text-center">
-                        <div class="nexo-summary-icon bg-primary">
-                            <i class="fas fa-dollar-sign"></i>
-                        </div>
-                        <h4 class="nexo-summary-number">${{ resumen.monto_total|floatformat:2 }}</h4>
-                        <p class="nexo-summary-label">Monto Total</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6 mb-3">
-                <div class="card nexo-summary-card">
-                    <div class="card-body text-center">
-                        <div class="nexo-summary-icon bg-info">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <h4 class="nexo-summary-number">${{ resumen.promedio_venta|floatformat:2 }}</h4>
-                        <p class="nexo-summary-label">Promedio por Venta</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filtros y acciones -->
-        <div class="card nexo-filters-card mb-4">
-            <div class="card-body">
-                <form method="GET" class="row g-3">
-                    <div class="col-md-3">
-                        <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
-                        <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control"
-                               value="{{ fecha_inicio|date:'Y-m-d' }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="fecha_fin" class="form-label">Fecha Fin</label>
-                        <input type="date" name="fecha_fin" id="fecha_fin" class="form-control"
-                               value="{{ fecha_fin|date:'Y-m-d' }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="cliente" class="form-label">Cliente</label>
-                        <select name="cliente" id="cliente" class="form-select">
-                            <option value="">Todos los clientes</option>
-                            {% for cliente in clientes %}
-                            <option value="{{ cliente.idcliente }}" 
-                                {% if filtros_aplicados.cliente == cliente.idcliente|stringformat:"s" %}selected{% endif %}>
-                                {{ cliente.idpersonacliente.nombre_completo }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="vendedor" class="form-label">Vendedor</label>
-                        <select name="vendedor" id="vendedor" class="form-select">
-                            <option value="">Todos los vendedores</option>
-                            {% for vendedor in vendedores %}
-                            <option value="{{ vendedor.idusuario }}" 
-                                {% if filtros_aplicados.vendedor == vendedor.idusuario|stringformat:"s" %}selected{% endif %}>
-                                {{ vendedor.empleado_nombre|default:vendedor.nombreusuario }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-12 d-flex gap-2">
-                        <button type="submit" class="btn nexo-btn-primary">
-                            <i class="fas fa-filter me-1"></i>Filtrar
-                        </button>
-                        <a href="{% url 'informes:ventas' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-times me-1"></i>Limpiar
-                        </a>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Acciones de exportación -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">Tabla de Resultados</h5>
-            <div class="btn-group">
-                <a href="{% url 'informes:exportar_pdf' 'ventas' %}?{{ request.GET.urlencode }}" 
-                   class="btn nexo-btn-secondary btn-sm">
-                    <i class="fas fa-file-pdf me-1"></i>Exportar PDF
-                </a>
-                <a href="{% url 'informes:exportar_excel' 'ventas' %}?{{ request.GET.urlencode }}" 
-                   class="btn nexo-btn-accent btn-sm">
-                    <i class="fas fa-file-excel me-1"></i>Exportar Excel
-                </a>
-            </div>
-        </div>
-
-        <!-- Tabla de ventas -->
-        <div class="card nexo-table-card">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table nexo-table mb-0">
-                        <thead>
-                            <tr>
-                                <th>ID Venta</th>
-                                <th>Fecha y Hora</th>
-                                <th>Cliente</th>
-                                <th>Vendedor</th>
-                                <th class="text-end">Total</th>
-                                <th class="text-center">Estado</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for venta in ventas %}
-                            <tr>
-                                <td>
-                                    <code class="nexo-code">#{{ venta.id_venta }}</code>
-                                </td>
-                                <td>
-                                    {% if venta.fechaventa %}
-                                    <div>
-                                        <strong>{{ venta.fechaventa|date:"d/m/Y" }}</strong><br>
-                                        <small class="text-muted">{{ venta.fechaventa|date:"H:i:s" }}</small>
-                                    </div>
-                                    {% else %}
-                                    <span class="text-muted">No especificada</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if venta.codcliente and venta.codcliente.idpersonacliente %}
-                                    <div class="d-flex align-items-center">
-                                        <div class="nexo-avatar me-2">
-                                            <i class="fas fa-user"></i>
-                                        </div>
-                                        <div>
-                                            <strong>{{ venta.codcliente.idpersonacliente.nombre_completo }}</strong><br>
-                                            {% if venta.codcliente.correo %}
-                                            <small class="text-muted">{{ venta.codcliente.correo }}</small>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    {% else %}
-                                    <span class="text-muted">Cliente no especificado</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if venta.idusuarioventa %}
-                                    <div class="d-flex align-items-center">
-                                        <div class="nexo-avatar me-2">
-                                            <i class="fas fa-user-tie"></i>
-                                        </div>
-                                        <div>
-                                            <strong>{{ venta.idusuarioventa.empleado_nombre|default:venta.idusuarioventa.nombreusuario }}</strong><br>
-                                            <small class="text-muted">{{ venta.idusuarioventa.rol|default:"Vendedor" }}</small>
-                                        </div>
-                                    </div>
-                                    {% else %}
-                                    <span class="text-muted">No especificado</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-end">
-                                    <strong class="nexo-price">${{ venta.total|default:0|floatformat:2 }}</strong>
-                                </td>
-                                <td class="text-center">
-                                    {% if venta.estado == 'REALIZADA' %}
-                                    <span class="badge bg-success">
-                                        <i class="fas fa-check me-1"></i>Realizada
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if venta.codcliente and venta.codcliente.idpersonacliente %}
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mr-3">
+                                    <span class="text-white text-xs font-semibold">
+                                        {{ venta.codcliente.idpersonacliente.primernombre|slice:":1" }}{{ venta.codcliente.idpersonacliente.primerapellido|slice:":1" }}
                                     </span>
-                                    {% else %}
-                                    <span class="badge bg-danger">
-                                        <i class="fas fa-times me-1"></i>Anulada
-                                    </span>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900">{{ venta.codcliente.idpersonacliente.nombre_completo }}</div>
+                                    {% if venta.codcliente.correo %}
+                                    <div class="text-xs text-gray-500">{{ venta.codcliente.correo }}</div>
                                     {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    <div class="btn-group btn-group-sm">
-                                        <button type="button" class="btn btn-outline-primary btn-sm" 
-                                                data-bs-toggle="tooltip" title="Ver detalles"
-                                                onclick="verDetallesVenta({{ venta.id_venta }})">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        {% if request.nexo_user.rol == 'admin' %}
-                                        <button type="button" class="btn btn-outline-secondary btn-sm" 
-                                                data-bs-toggle="tooltip" title="Imprimir factura">
-                                            <i class="fas fa-print"></i>
-                                        </button>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="7" class="text-center py-4">
-                                    <div class="nexo-empty-state">
-                                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                                        <h5 class="text-muted">No se encontraron ventas</h5>
-                                        <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <span class="text-gray-400">Cliente no especificado</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if venta.idusuarioventa %}
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-user-tie text-white text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900">{{ venta.idusuarioventa.empleado_nombre|default:venta.idusuarioventa.nombreusuario }}</div>
+                                    <div class="text-xs text-gray-500">{{ venta.idusuarioventa.rol|default:"Vendedor" }}</div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <span class="text-gray-400">No especificado</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="font-bold text-lg text-gray-900">C$ {{ venta.total|default:0|floatformat:2 }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {% if venta.estado == 'REALIZADA' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check mr-1"></i>Realizada
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-times mr-1"></i>Anulada
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                <button onclick="verDetallesVenta({{ venta.id_venta }})" 
+                                        class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors duration-200 flex items-center justify-center"
+                                        title="Ver detalles">
+                                    <i class="fas fa-eye text-xs"></i>
+                                </button>
+                                {% if request.nexo_user.rol == 'admin' %}
+                                <button onclick="imprimirFactura({{ venta.id_venta }})" 
+                                        class="w-8 h-8 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center"
+                                        title="Imprimir factura">
+                                    <i class="fas fa-print text-xs"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-search text-gray-400 text-4xl mb-4"></i>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">No se encontraron ventas</h3>
+                                <p class="text-gray-600">Intenta ajustar los filtros de búsqueda</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+    </div>
 
-        <!-- Paginación -->
-        {% if ventas.has_other_pages %}
-        <nav aria-label="Paginación de ventas" class="mt-4">
-            <ul class="pagination justify-content-center nexo-pagination">
-                {% if ventas.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page=1{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
-                        <i class="fas fa-angle-double-left"></i>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ ventas.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
-                        <i class="fas fa-angle-left"></i>
-                    </a>
-                </li>
-                {% endif %}
+    <!-- Paginación mejorada -->
+    {% if ventas.has_other_pages %}
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="text-sm text-gray-700">
+            Mostrando <span class="font-medium">{{ ventas.start_index }}</span> - <span class="font-medium">{{ ventas.end_index }}</span> 
+            de <span class="font-medium">{{ ventas.paginator.count }}</span> ventas
+        </div>
+        <nav class="flex items-center justify-center sm:justify-end space-x-1">
+            {% if ventas.has_previous %}
+            <a href="?page=1{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" 
+               class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200">
+                <i class="fas fa-angle-double-left"></i>
+            </a>
+            <a href="?page={{ ventas.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" 
+               class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200">
+                <i class="fas fa-angle-left"></i>
+            </a>
+            {% endif %}
 
-                {% for num in ventas.paginator.page_range %}
-                {% if ventas.number == num %}
-                <li class="page-item active">
-                    <span class="page-link">{{ num }}</span>
-                </li>
-                {% elif num > ventas.number|add:'-3' and num < ventas.number|add:'3' %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">{{ num }}</a>
-                </li>
-                {% endif %}
-                {% endfor %}
+            {% for num in ventas.paginator.page_range %}
+            {% if ventas.number == num %}
+            <span class="w-10 h-10 flex items-center justify-center font-medium text-white bg-primary border border-primary rounded-lg">{{ num }}</span>
+            {% elif num > ventas.number|add:'-3' and num < ventas.number|add:'3' %}
+            <a href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" 
+               class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200">{{ num }}</a>
+            {% endif %}
+            {% endfor %}
 
-                {% if ventas.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ ventas.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
-                        <i class="fas fa-angle-right"></i>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ ventas.paginator.num_pages }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
-                        <i class="fas fa-angle-double-right"></i>
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
+            {% if ventas.has_next %}
+            <a href="?page={{ ventas.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" 
+               class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200">
+                <i class="fas fa-angle-right"></i>
+            </a>
+            <a href="?page={{ ventas.paginator.num_pages }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" 
+               class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200">
+                <i class="fas fa-angle-double-right"></i>
+            </a>
+            {% endif %}
         </nav>
-        {% endif %}
+    </div>
+    {% endif %}
 
-        <!-- Información adicional -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card nexo-info-card">
-                    <div class="card-body">
-                        <h6 class="card-title">
-                            <i class="fas fa-info-circle me-2"></i>Información del Informe
-                        </h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p class="mb-1"><strong>Total de ventas encontradas:</strong> {{ resumen.total_ventas }}</p>
-                                <p class="mb-1"><strong>Período consultado:</strong> 
-                                    {% if fecha_inicio and fecha_fin %}
-                                        {{ fecha_inicio|date:"d/m/Y" }} - {{ fecha_fin|date:"d/m/Y" }}
-                                    {% else %}
-                                        Últimos 30 días
-                                    {% endif %}
-                                </p>
-                            </div>
-                            <div class="col-md-6">
-                                <p class="mb-1"><strong>Monto total vendido:</strong> ${{ resumen.monto_total|floatformat:2 }}</p>
-                                <p class="mb-0"><strong>Promedio por venta:</strong> ${{ resumen.promedio_venta|floatformat:2 }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Información adicional -->
+    <div class="bg-orange-50 rounded-2xl p-6 border border-orange-200">
+        <h3 class="text-lg font-semibold text-orange-900 mb-4">
+            <i class="fas fa-info-circle mr-2"></i>Información del Informe
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+                <p class="mb-2"><strong>Total de ventas encontradas:</strong> {{ resumen.total_ventas }}</p>
+                <p class="mb-2"><strong>Período consultado:</strong> 
+                    {% if fecha_inicio and fecha_fin %}
+                        {{ fecha_inicio|date:"d/m/Y" }} - {{ fecha_fin|date:"d/m/Y" }}
+                    {% else %}
+                        Últimos 30 días
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="mb-2"><strong>Monto total vendido:</strong> C$ {{ resumen.monto_total|floatformat:2 }}</p>
+                <p class="mb-0"><strong>Promedio por venta:</strong> C$ {{ resumen.promedio_venta|floatformat:2 }}</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal para detalles de venta -->
-<div class="modal fade" id="modalDetallesVenta" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-receipt me-2"></i>Detalles de la Venta
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Modal para detalles de venta mejorado -->
+<div id="modalDetallesVenta" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 text-white">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold flex items-center">
+                    <i class="fas fa-receipt mr-2"></i>Detalles de la Venta
+                </h3>
+                <button onclick="cerrarModalDetalles()" class="text-white hover:text-gray-200 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
-            <div class="modal-body" id="contenidoDetallesVenta">
-                <div class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Cargando...</span>
-                    </div>
+        </div>
+        <div class="p-6 overflow-y-auto max-h-[calc(90vh-80px)]" id="contenidoDetallesVenta">
+            <div class="text-center py-8">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-spinner fa-spin text-gray-400 text-2xl"></i>
                 </div>
+                <p class="text-gray-600">Cargando detalles de la venta...</p>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-    .nexo-avatar {
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #39bfb2, #F2CE16);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 0.9rem;
-    }
-    
-    .nexo-price {
-        font-family: 'Courier New', monospace;
-        font-weight: 600;
-        color: #39bfb2;
-    }
-    
-    .nexo-code {
-        background-color: #f8f9fa;
-        color: #39bfb2;
-        font-weight: 600;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-    }
-</style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+function toggleAdvancedFilters() {
+    const advancedFilters = document.getElementById('advanced-filters');
+    advancedFilters.classList.toggle('hidden');
+}
+
 function verDetallesVenta(idVenta) {
-    const modal = new bootstrap.Modal(document.getElementById('modalDetallesVenta'));
+    const modal = document.getElementById('modalDetallesVenta');
     const contenido = document.getElementById('contenidoDetallesVenta');
     
-    // Mostrar spinner de carga
-    contenido.innerHTML = `
-        <div class="text-center py-4">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
-            </div>
-            <p class="mt-2 text-muted">Cargando detalles de la venta...</p>
-        </div>
-    `;
+    // Mostrar modal
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
     
-    modal.show();
-    
-    // Aquí podrías hacer una llamada AJAX para obtener los detalles
-    // Por ahora, simularemos la carga
+    // Simular carga de datos (aquí podrías hacer una llamada AJAX real)
     setTimeout(function() {
         contenido.innerHTML = `
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                <strong>Funcionalidad en desarrollo:</strong> Los detalles de la venta se mostrarán aquí.
-                <br>ID de venta: <code>#${idVenta}</code>
+            <div class="space-y-6">
+                <div class="bg-gray-50 rounded-xl p-4">
+                    <h4 class="font-semibold text-gray-900 mb-2">Información de la Venta #${idVenta}</h4>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</div>
+                        <div><strong>Estado:</strong> <span class="text-green-600">Realizada</span></div>
+                        <div><strong>Cliente:</strong> Cliente Ejemplo</div>
+                        <div><strong>Vendedor:</strong> Usuario Ejemplo</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-3">Productos Vendidos</h4>
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <p class="text-gray-600">Esta funcionalidad requiere implementar una vista AJAX adicional para obtener los detalles de cada venta.</p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button onclick="imprimirFactura(${idVenta})" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-print mr-2"></i>Imprimir Factura
+                    </button>
+                    <button onclick="cerrarModalDetalles()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
+                        Cerrar
+                    </button>
+                </div>
             </div>
-            <p>Esta funcionalidad requiere implementar una vista AJAX adicional para obtener los detalles de cada venta.</p>
         `;
     }, 1000);
 }
+
+function cerrarModalDetalles() {
+    const modal = document.getElementById('modalDetallesVenta');
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function imprimirFactura(idVenta) {
+    // Implementar lógica de impresión
+    console.log('Imprimiendo factura de venta:', idVenta);
+    NEXO.showNotification('Preparando factura para impresión...', 'info');
+}
+
+function exportQuickReport() {
+    // Implementar exportación rápida
+    NEXO.showNotification('Generando reporte rápido...', 'info');
+}
+
+function printReport() {
+    window.print();
+}
+
+function shareReport() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Reporte de Ventas - NEXO',
+            text: 'Reporte de ventas generado desde el sistema NEXO',
+            url: window.location.href
+        });
+    } else {
+        // Fallback para navegadores que no soportan Web Share API
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            NEXO.showNotification('Enlace copiado al portapapeles', 'success');
+        });
+    }
+}
+
+function sortTable(column) {
+    // Implementar ordenamiento de tabla
+    console.log('Ordenando por:', column);
+    NEXO.showNotification('Función de ordenamiento en desarrollo', 'info');
+}
+
+// Cerrar modal con Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        cerrarModalDetalles();
+    }
+});
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('modalDetallesVenta').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarModalDetalles();
+    }
+});
 </script>
 {% endblock %}
