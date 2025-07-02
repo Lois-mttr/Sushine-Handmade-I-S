@@ -58,9 +58,9 @@ class DetalleDevolucionForm(forms.Form):
     """
     Formulario para cada producto devuelto
     """
-    id_producto = forms.ModelChoiceField(
+    id_producto = forms.ChoiceField(
         label='Producto Devuelto',
-        queryset=Producto.objects.filter(estado=True),
+        choices=[],
         widget=forms.Select(attrs={
             'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 producto-select',
             'style': 'border-color: #eaeef3;',
@@ -81,6 +81,14 @@ class DetalleDevolucionForm(forms.Form):
         })
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        productos = Producto.objects.filter(estado=True)
+        self.fields['id_producto'].choices = [
+            (f"{p.id_producto}|{p.idubicacionpro}", f"{p.nombreproducto} (ID: {p.id_producto}, Ubicación: {p.idubicacionpro})")
+            for p in productos
+        ]
+
     def clean_cantidadDevuelta(self):
         cantidad = self.cleaned_data.get('cantidadDevuelta')
         if cantidad <= 0:
@@ -89,11 +97,15 @@ class DetalleDevolucionForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        producto = cleaned_data.get('id_producto')
-
-        if producto and not producto.estado:
-            raise ValidationError('El producto seleccionado no está activo.')
-
+        id_prod_ubi = cleaned_data.get('id_producto')
+        if id_prod_ubi:
+            try:
+                id_prod, id_ubi = id_prod_ubi.split('|')
+                producto = Producto.objects.filter(id_producto=id_prod, id_ubicacion=id_ubi, estado=True).first()
+                if not producto:
+                    raise ValidationError('El producto seleccionado no está activo o no existe.')
+            except Exception:
+                raise ValidationError('Selección de producto inválida.')
         return cleaned_data
 
 DetalleDevolucionFormSet = formset_factory(

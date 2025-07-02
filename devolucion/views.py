@@ -99,8 +99,10 @@ def devolucion_create(request):
                 detalles_data = []
                 for detalle_form in detalle_formset.cleaned_data:
                     if detalle_form and not detalle_form.get('DELETE', False):
+                        id_prod, id_ubi = detalle_form['id_producto'].split('|')
                         detalles_data.append({
-                            'id_producto': detalle_form['id_producto'].id_producto,
+                            'id_producto': int(id_prod),
+                            'id_ubicacion': int(id_ubi),
                             'cantidadDevuelta': detalle_form['cantidadDevuelta']
                         })
                 if not detalles_data:
