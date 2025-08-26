@@ -473,7 +473,7 @@
                     </div>
 
                     <!-- Forgot Password Link -->
-                    <div class="forgot-password">
+                    <div class="forgot-password" style="text-align: center;">
                         <a href="{% url 'auth:forgot_password' %}" id="forgotPasswordLink">¿Olvidaste tu contraseña?</a>
                     </div>
 
@@ -491,16 +491,6 @@
                         <span id="attemptsText">Intentos restantes: 3</span>
                     </div>
 
-                    <!-- Registration Link -->
-                    <div class="mt-6 pt-4 border-t border-gray-200 text-center">
-                        <p class="text-sm text-gray-600">
-                            ¿No tienes una cuenta?
-                            <a href="{% url 'auth:register' %}"
-                                class="font-medium text-primary hover:text-primary-dark transition-colors">
-                                Regístrate aquí
-                            </a>
-                        </p>
-                    </div>
                 </form>
             </div>
         </div>

@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-y!vekminbl+_+gaxg=q49c4uo)&m!a%4x-u=lano_=46kq*1bc'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -107,15 +107,15 @@ CACHES = {
 
 
 DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.mysql',
-         'NAME': 'nexodb',
-         'USER': 'root',
-         'PASSWORD': 'Luisa*2006',
-        'HOST': '127.0.0.1',
-         'PORT': '3306',
-     }
- }
+    'default': {
+    'ENGINE': 'django.db.backends.mysql',
+    'NAME': 'nexodb',
+    'USER': 'root',
+    'PASSWORD': 'Luisa*2006',
+    'HOST': '127.0.0.1',
+    'PORT': '3306',
+    }
+}
 
 # DATABASES = {
 #     'default': {

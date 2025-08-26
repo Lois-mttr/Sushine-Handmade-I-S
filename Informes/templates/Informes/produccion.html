@@ -58,7 +58,7 @@
                     <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
                 </div>
                 <div class="ml-4">
-                    <div class="text-2xl font-bold text-gray-900">${{ resumen.costo_total|floatformat:2 }}</div>
+                    <div class="text-2xl font-bold text-gray-900">C${{ resumen.costo_total|floatformat:2 }}</div>
                     <div class="text-sm text-gray-600">Costo Total</div>
                 </div>
             </div>
@@ -176,7 +176,7 @@
                             <span class="text-lg font-semibold text-gray-900">{{ detalle.detalle.cantidad }}</span>
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <span class="font-mono text-gray-900">${{ detalle.detalle.costo_unitario|floatformat:2 }}</span>
+                            <span class="font-mono text-gray-900">C${{ detalle.detalle.costo_unitario|floatformat:2 }}</span>
                         </td>
                         <td class="px-6 py-4 text-right">
                             <span class="font-mono font-semibold text-gray-900">
@@ -260,12 +260,12 @@
                 <p class="mb-2"><strong>Productos producidos:</strong> {{ resumen.total_productos_producidos }}</p>
             </div>
             <div>
-                <p class="mb-2"><strong>Costo total de producción:</strong> ${{ resumen.costo_total|floatformat:2 }}</p>
+                <p class="mb-2"><strong>Costo total de producción:</strong> C${{ resumen.costo_total|floatformat:2 }}</p>
                 <p class="mb-2"><strong>Promedio por orden:</strong> 
                     {% if resumen.total_ordenes > 0 %}
-                        ${% widthratio resumen.costo_total 1 resumen.total_ordenes %}
+                        C${% widthratio resumen.costo_total 1 resumen.total_ordenes %}
                     {% else %}
-                        $0.00
+                        C$0.00
                     {% endif %}
                 </p>
             </div>

@@ -24,7 +24,7 @@
     </div>
 
     <!-- Resumen ejecutivo -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
             <div class="flex items-center">
                 <div class="p-3 bg-blue-100 rounded-lg">
@@ -48,6 +48,18 @@
                 </div>
             </div>
         </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div class="flex items-center">
+                <div class="p-3 bg-purple-100 rounded-lg">
+                    <i class="fas fa-percentage text-purple-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-gray-900">{{ resumen.porcentaje_activos }}%</div>
+                    <div class="text-sm text-gray-600">% Activos</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Filtros -->
@@ -55,15 +67,23 @@
         <h3 class="text-lg font-semibold text-gray-900 mb-4">
             <i class="fas fa-filter text-primary mr-2"></i>Filtros de Búsqueda
         </h3>
-        <form method="GET" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
                 <label for="activos_solo" class="block text-sm font-medium text-gray-700 mb-2">Tipo de Cliente</label>
                 <select name="activos_solo" id="activos_solo" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
                     <option value="">Todos los clientes</option>
                     <option value="1" {% if filtros_aplicados.activos_solo %}selected{% endif %}>
-                        Solo clientes activos (con compras recientes)
+                        Solo clientes activos
                     </option>
                 </select>
+            </div>
+            
+            <div>
+                <label for="buscar" class="block text-sm font-medium text-gray-700 mb-2">Buscar Cliente</label>
+                <input type="text" name="buscar" id="buscar" 
+                       value="{{ filtros_aplicados.buscar|default:'' }}"
+                       placeholder="Nombre, cédula o correo..."
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
             </div>
             
             <div class="flex items-end gap-2">
@@ -94,7 +114,7 @@
         </div>
     </div>
 
-    <!-- Grid de clientes -->
+    <!-- Grid de clientes CORREGIDO -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for cliente_data in clientes %}
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-shadow duration-200">
@@ -102,7 +122,7 @@
             <div class="flex items-center mb-4">
                 <div class="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-semibold mr-4">
                     {% if cliente_data.cliente.idpersonacliente %}
-                        {{ cliente_data.cliente.idpersonacliente.primernombre|slice:":1" }}{{ cliente_data.cliente.idpersonacliente.primerapellido|slice:":1" }}
+                        {{ cliente_data.cliente.idpersonacliente.primernombre|slice:":1"|upper }}{{ cliente_data.cliente.idpersonacliente.primerapellido|slice:":1"|upper }}
                     {% else %}
                         <i class="fas fa-user"></i>
                     {% endif %}
@@ -118,7 +138,7 @@
                     <p class="text-sm text-gray-500">ID: {{ cliente_data.cliente.idcliente }}</p>
                 </div>
                 <div class="text-right">
-                    {% if cliente_data.ultima_compra %}
+                    {% if cliente_data.cliente.estadocliente %}
                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         <i class="fas fa-check mr-1"></i>Activo
                     </span>
@@ -138,13 +158,15 @@
                     <span class="truncate">{{ cliente_data.cliente.correo }}</span>
                 </div>
                 {% endif %}
-                {% if cliente_data.cliente.telefono %}
+                
+                {% if cliente_data.cliente.idpersonacliente.cedula %}
                 <div class="flex items-center text-sm text-gray-600">
-                    <i class="fas fa-phone w-4 mr-2"></i>
-                    <span>{{ cliente_data.cliente.telefono }}</span>
+                    <i class="fas fa-id-card w-4 mr-2"></i>
+                    <span>{{ cliente_data.cliente.idpersonacliente.cedula }}</span>
                 </div>
                 {% endif %}
-                {% if cliente_data.cliente.idpersonacliente and cliente_data.cliente.idpersonacliente.direccion %}
+                
+                {% if cliente_data.cliente.idpersonacliente.direccion %}
                 <div class="flex items-center text-sm text-gray-600">
                     <i class="fas fa-map-marker-alt w-4 mr-2"></i>
                     <span class="truncate">{{ cliente_data.cliente.idpersonacliente.direccion }}</span>
@@ -160,7 +182,7 @@
                         <div class="text-xs text-gray-500">Compras</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-lg font-bold text-gray-900">${{ cliente_data.monto_total|floatformat:2 }}</div>
+                        <div class="text-lg font-bold text-gray-900">C$ {{ cliente_data.monto_total|floatformat:2 }}</div>
                         <div class="text-xs text-gray-500">Total Gastado</div>
                     </div>
                 </div>
@@ -180,10 +202,12 @@
             <!-- Acciones -->
             <div class="mt-4 pt-4 border-t border-gray-100">
                 <div class="flex gap-2">
-                    <button class="flex-1 bg-primary text-white px-3 py-2 rounded-lg text-sm hover:bg-primary-dark transition-colors duration-200">
+                    <button onclick="verDetallesCliente({{ cliente_data.cliente.idcliente }})" 
+                            class="flex-1 bg-primary text-white px-3 py-2 rounded-lg text-sm hover:bg-primary-dark transition-colors duration-200">
                         <i class="fas fa-eye mr-1"></i>Ver Detalles
                     </button>
-                    <button class="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors duration-200">
+                    <button onclick="editarCliente({{ cliente_data.cliente.idcliente }})" 
+                            class="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors duration-200">
                         <i class="fas fa-edit"></i>
                     </button>
                 </div>
@@ -251,12 +275,16 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
                 <p class="mb-2"><strong>Total de clientes registrados:</strong> {{ resumen.total_clientes }}</p>
-                <p class="mb-2"><strong>Clientes con compras recientes:</strong> {{ resumen.clientes_activos }}</p>
+                <p class="mb-2"><strong>Clientes activos:</strong> {{ resumen.clientes_activos }}</p>
+                <p class="mb-2"><strong>Clientes inactivos:</strong> {{ resumen.clientes_inactivos }}</p>
             </div>
             <div>
+                <p class="mb-2"><strong>Porcentaje de activos:</strong> {{ resumen.porcentaje_activos }}%</p>
                 <p class="mb-2"><strong>Filtros aplicados:</strong> 
                     {% if filtros_aplicados.activos_solo %}
                         Solo clientes activos
+                    {% elif filtros_aplicados.buscar %}
+                        Búsqueda: "{{ filtros_aplicados.buscar }}"
                     {% else %}
                         Todos los clientes
                     {% endif %}
@@ -270,4 +298,18 @@
         </div>
     </div>
 </div>
+
+<script>
+function verDetallesCliente(idCliente) {
+    // Implementar lógica para ver detalles del cliente
+    console.log('Ver detalles del cliente:', idCliente);
+    alert('Funcionalidad de detalles del cliente en desarrollo');
+}
+
+function editarCliente(idCliente) {
+    // Implementar lógica para editar cliente
+    console.log('Editar cliente:', idCliente);
+    alert('Funcionalidad de edición de cliente en desarrollo');
+}
+</script>
 {% endblock %}
