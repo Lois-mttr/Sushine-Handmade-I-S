@@ -14,6 +14,7 @@ urlpatterns = [
     # Vista de detalle de producto (requiere autenticación)
     path('producto/<str:producto_id>/', views.detalle_producto, name='detalle_producto'),
     path('producto/<int:ubicacion_id>/<str:producto_id>/', views.detalle_producto, name='detalle_producto_ubicacion'),
+    path('producto/<int:ubicacion_id>/<str:producto_id>/foto/', views.actualizar_foto_producto, name='actualizar_foto_producto'),
     
     # API endpoints para AJAX (requieren autenticación AJAX)
     path('api/stats/', views.inventario_stats_ajax, name='inventario_stats_ajax'),

@@ -5,12 +5,15 @@ from django.db.models import Q, Count, Sum, F
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.urls import reverse
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView, DetailView
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 import json
 import csv
+import os
 from datetime import datetime
 
 # Importar decoradores de autenticación personalizados
@@ -33,6 +36,7 @@ from .models import (
     obtener_ubicaciones_con_productos,
     obtener_categorias_activas
 )
+from .forms import ProductoImagenForm
 
 import logging
 
@@ -284,7 +288,7 @@ def inventario_por_ubicacion(request, ubicacion_id):
         return redirect('inventario:inventario_general')
 
 @nexo_login_required
-def detalle_producto(request, ubicacion_id, producto_id):
+def detalle_producto(request, producto_id, ubicacion_id=None):
     """
     Vista detallada de un producto específico por ubicación
     Requiere autenticación NEXO
@@ -293,9 +297,11 @@ def detalle_producto(request, ubicacion_id, producto_id):
         usuario_actual = getattr(request, 'nexo_user', None)
         nombreusuario = getattr(usuario_actual, 'nombreusuario', 'Invitado')
         rol_usuario = getattr(usuario_actual, 'rol', 'encargado_sucursal')
-        logger.info(f"Usuario {nombreusuario} accedió al detalle del producto {producto_id} en ubicación {ubicacion_id}")
+        logger.info(f"Usuario {nombreusuario} accedió al detalle del producto {producto_id} en ubicación {ubicacion_id or 'general'}")
 
-        productos = Producto.objects.filter(id_producto=producto_id, idubicacionpro_id=ubicacion_id, estado=True).select_related('idubicacionpro', 'idcategoriapro')
+        productos = Producto.objects.filter(id_producto=producto_id, estado=True).select_related('idubicacionpro', 'idcategoriapro')
+        if ubicacion_id is not None:
+            productos = productos.filter(idubicacionpro_id=ubicacion_id)
 
         # Validar acceso para encargado_sucursal
         if rol_usuario == 'encargado_sucursal':
@@ -340,6 +346,7 @@ def detalle_producto(request, ubicacion_id, producto_id):
             'stock_status': stock_status,
             'productos_relacionados': productos_relacionados,
             'necesita_reposicion': producto.necesita_reposicion,
+            'imagen_form': ProductoImagenForm(),
             'usuario_actual': usuario_actual,
             'user_iniciales': user_iniciales,
             'nexo_user_role': nexo_user_role,
@@ -353,6 +360,41 @@ def detalle_producto(request, ubicacion_id, producto_id):
         logger.error(f"Error en detalle_producto para usuario {nombreusuario}: {str(e)}")
         messages.error(request, f'Error al cargar detalle del producto: {str(e)}')
         return redirect('inventario:inventario_general')
+
+@nexo_role_required(['admin', 'gerente', 'encargado_inventario'])
+@require_http_methods(["POST"])
+def actualizar_foto_producto(request, ubicacion_id, producto_id):
+    """
+    Sube una foto del producto y guarda la ruta relativa en imagenProductoRuta.
+    La tabla ya tiene esa columna como texto, por eso no hace falta migrar la BD.
+    """
+    producto = get_object_or_404(
+        Producto,
+        id_producto=producto_id,
+        idubicacionpro_id=ubicacion_id,
+        estado=True
+    )
+    form = ProductoImagenForm(request.POST, request.FILES)
+
+    if not form.is_valid():
+        messages.error(request, 'Seleccione una imagen valida para el producto.')
+        return redirect('inventario:detalle_producto_ubicacion', ubicacion_id, producto_id)
+
+    imagen = form.cleaned_data['imagen']
+    extension = os.path.splitext(imagen.name)[1].lower() or '.jpg'
+    nombre_archivo = f"{producto.id_producto}{extension}"
+    ruta_relativa = f"inventario/productos/{nombre_archivo}"
+    storage = FileSystemStorage(location=settings.MEDIA_ROOT, base_url=settings.MEDIA_URL)
+
+    if storage.exists(ruta_relativa):
+        storage.delete(ruta_relativa)
+
+    ruta_guardada = storage.save(ruta_relativa, imagen)
+    producto.imagenproductoruta = ruta_guardada.replace('\\', '/')
+    producto.save(update_fields=['imagenproductoruta'])
+
+    messages.success(request, f'Foto actualizada para {producto.nombreproducto}.')
+    return redirect('inventario:detalle_producto_ubicacion', ubicacion_id, producto_id)
 
 @ajax_login_required
 @require_http_methods(["GET"])

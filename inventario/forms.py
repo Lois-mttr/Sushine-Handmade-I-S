@@ -2,6 +2,16 @@
 from django import forms
 from core_data.models import Ubicacion, Categoria
 
+class ProductoImagenForm(forms.Form):
+    imagen = forms.ImageField(
+        label='Foto del producto',
+        required=True,
+        widget=forms.ClearableFileInput(attrs={
+            'class': 'producto-image-input',
+            'accept': 'image/*',
+        })
+    )
+
 class FiltroInventarioForm(forms.Form):
     """
     Formulario para filtrar el inventario por diferentes criterios

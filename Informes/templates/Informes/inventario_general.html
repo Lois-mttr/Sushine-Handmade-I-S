@@ -165,8 +165,8 @@
                     <tr class="hover:bg-gray-50 {% if producto.necesita_reposicion %}bg-yellow-50{% endif %}">
                         <td class="px-6 py-4">
                             <div class="flex items-center">
-                                {% if producto.imagenproductoruta %}
-                                <img src="{{ producto.imagenproductoruta }}" 
+                                {% if producto.imagen_url %}
+                                <img src="{{ producto.imagen_url }}" 
                                      alt="{{ producto.nombreproducto }}" 
                                      class="w-10 h-10 rounded-lg object-cover mr-3">
                                 {% else %}

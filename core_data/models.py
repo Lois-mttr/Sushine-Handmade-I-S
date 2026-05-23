@@ -1,6 +1,7 @@
 import hashlib
 
 from django.db import models
+from django.conf import settings
 
 class Categoria(models.Model):
     idcategoria = models.AutoField(db_column='idCategoria', primary_key=True)
@@ -231,6 +232,19 @@ class Producto(models.Model):
     @property
     def necesita_reposicion(self):
         return self.existenciaproducto <= (self.existenciaminima or 5)
+
+    @property
+    def imagen_url(self):
+        ruta = (self.imagenproductoruta or '').strip()
+        if not ruta:
+            return ''
+        if ruta.startswith(('http://', 'https://', '/')):
+            return ruta
+        if ruta.startswith('static/'):
+            return f"{settings.STATIC_URL}{ruta[len('static/'):].lstrip('/')}"
+        if ruta.startswith('images/'):
+            return f"{settings.STATIC_URL}{ruta}"
+        return f"{settings.MEDIA_URL}{ruta.lstrip('/')}"
 
 class Venta(models.Model):
     ESTADO_CHOICES = [

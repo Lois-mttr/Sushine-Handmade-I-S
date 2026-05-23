@@ -39,6 +39,57 @@
         object-fit: cover;
         border-radius: 12px;
     }
+
+    .producto-image-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .upload-control {
+        border: 1px dashed #39bfb2;
+        background: #f8fffe;
+        border-radius: 10px;
+        padding: 0.875rem;
+    }
+
+    .upload-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #0f766e;
+        border: 1px solid #99e6df;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .upload-button:hover {
+        background: #ecfdfb;
+        border-color: #39bfb2;
+        box-shadow: 0 4px 12px rgba(57, 191, 178, 0.16);
+    }
+
+    .upload-file-name {
+        display: block;
+        margin-top: 0.65rem;
+        color: #6b7280;
+        font-size: 0.82rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 </style>
 {% endblock %}
 
@@ -85,8 +136,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Imagen del Producto -->
                         <div>
-                            {% if producto.imagenproductoruta %}
-                                <img src="{{ producto.imagenproductoruta }}" 
+                            {% if producto.imagen_url %}
+                                <img src="{{ producto.imagen_url }}" 
                                      alt="{{ producto.nombreproducto }}"
                                      class="w-full imagen-producto">
                             {% else %}
@@ -96,6 +147,29 @@
                                         <p class="text-gray-500">Sin imagen disponible</p>
                                     </div>
                                 </div>
+                            {% endif %}
+                            {% if usuario_actual.rol == 'admin' or usuario_actual.rol == 'gerente' or usuario_actual.rol == 'encargado_inventario' %}
+                                <form method="post"
+                                      enctype="multipart/form-data"
+                                      action="{% url 'inventario:actualizar_foto_producto' producto.idubicacionpro.id_ubicacion producto.id_producto %}"
+                                      class="mt-4 space-y-3">
+                                    {% csrf_token %}
+                                    <label for="{{ imagen_form.imagen.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                        Actualizar foto del inventario
+                                    </label>
+                                    <div class="upload-control">
+                                        {{ imagen_form.imagen }}
+                                        <label for="{{ imagen_form.imagen.id_for_label }}" class="upload-button">
+                                            <i class="fas fa-image"></i>
+                                            Elegir imagen
+                                        </label>
+                                        <span id="selected-image-name" class="upload-file-name">Ningun archivo seleccionado</span>
+                                    </div>
+                                    <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded-lg transition-colors">
+                                        <i class="fas fa-upload mr-2"></i>Subir Foto
+                                    </button>
+                                    <p class="text-xs text-gray-500">Las fotos se guardan en media/inventario/productos/.</p>
+                                </form>
                             {% endif %}
                         </div>
                         
@@ -280,6 +354,14 @@
         var fill = document.querySelector('.stock-fill');
         if (fill) {
             setTimeout(function() { fill.style.width = porcentaje + '%'; }, 300);
+        }
+
+        var imageInput = document.querySelector('.producto-image-input');
+        var imageName = document.getElementById('selected-image-name');
+        if (imageInput && imageName) {
+            imageInput.addEventListener('change', function() {
+                imageName.textContent = imageInput.files.length ? imageInput.files[0].name : 'Ningun archivo seleccionado';
+            });
         }
     });
 </script>

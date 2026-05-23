@@ -162,8 +162,8 @@
                     <div class="producto-card bg-white rounded-xl overflow-hidden">
                         <!-- Imagen del producto -->
                         <div class="aspect-w-1 aspect-h-1 bg-gray-200 relative">
-                            {% if producto.imagenproductoruta %}
-                                <img src="{{ producto.imagenproductoruta }}" 
+                            {% if producto.imagen_url %}
+                                <img src="{{ producto.imagen_url }}" 
                                     alt="{{ producto.nombreproducto }}"
                                     class="w-full h-48 object-cover">
                             {% else %}
