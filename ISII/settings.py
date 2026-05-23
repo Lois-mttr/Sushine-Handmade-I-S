@@ -101,7 +101,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'nexodb',
         'USER': 'root',
-        'PASSWORD': 'Luisa*2006',
+        'PASSWORD': '****',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
