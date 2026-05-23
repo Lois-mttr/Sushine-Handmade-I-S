@@ -22,7 +22,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
-from .forms import RegisterForm, ForgotPasswordForm, ResetPasswordForm
+from .forms import RegisterForm, ForgotPasswordForm, ResetPasswordForm, PerfilUsuarioForm, ConfiguracionCuentaForm
 from core_data.models import Usuario
 import hashlib
 import secrets
@@ -30,6 +30,35 @@ import logging
 
 # Create your views here.
 logger = logging.getLogger('nexo.auth')
+
+def obtener_persona_usuario(user):
+    if user and user.idempusuario and user.idempusuario.idpersonaemp:
+        return user.idempusuario.idpersonaemp
+    return None
+
+def contexto_usuario_base(user, page_title):
+    nombre = user.nombreusuario if user and user.nombreusuario else 'Invitado'
+    return {
+        'page_title': page_title,
+        'usuario_actual': user,
+        'user_iniciales': nombre[:2].upper(),
+        'nexo_user_role': user.rol if user and user.rol else 'Usuario',
+    }
+
+def usuario_requerido(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return None
+    try:
+        user = Usuario.objects.select_related('idempusuario__idpersonaemp').get(
+            idusuario=user_id,
+            activo=True
+        )
+        request.nexo_user = user
+        return user
+    except Usuario.DoesNotExist:
+        request.session.flush()
+        return None
 
 @never_cache
 @csrf_protect
@@ -430,6 +459,84 @@ def check_session_ajax(request):
             'message': 'Sesión no válida o expirada'
         })
     
+
+@never_cache
+@require_http_methods(["GET"])
+def perfil_view(request):
+    user = usuario_requerido(request)
+    if not user:
+        messages.warning(request, 'Debes iniciar sesion para ver tu perfil.')
+        return redirect('auth:login')
+
+    persona = obtener_persona_usuario(user)
+    context = contexto_usuario_base(user, 'Mi Perfil')
+    context.update({'persona': persona, 'empleado': user.idempusuario})
+    return render(request, 'AuthLogin/profile.html', context)
+
+@never_cache
+@csrf_protect
+@require_http_methods(["GET", "POST"])
+def editar_perfil_view(request):
+    user = usuario_requerido(request)
+    if not user:
+        messages.warning(request, 'Debes iniciar sesion para editar tu perfil.')
+        return redirect('auth:login')
+
+    persona = obtener_persona_usuario(user)
+    initial = {'nombreusuario': user.nombreusuario, 'correo': user.correo or ''}
+    if persona:
+        initial.update({
+            'primernombre': persona.primernombre,
+            'segundonombre': persona.segundonombre or '',
+            'primerapellido': persona.primerapellido,
+            'segundoapellido': persona.segundoapellido or '',
+            'direccion': persona.direccion,
+        })
+
+    if request.method == 'POST':
+        form = PerfilUsuarioForm(request.POST, user=user, persona=persona)
+        if form.is_valid():
+            form.save()
+            request.session['username'] = user.nombreusuario
+            messages.success(request, 'Perfil actualizado correctamente.')
+            return redirect('auth:perfil')
+        messages.error(request, 'Revise los campos marcados antes de guardar.')
+    else:
+        form = PerfilUsuarioForm(initial=initial, user=user, persona=persona)
+
+    context = contexto_usuario_base(user, 'Editar Perfil')
+    context.update({'form': form, 'persona': persona})
+    return render(request, 'AuthLogin/edit_profile.html', context)
+
+@never_cache
+@csrf_protect
+@require_http_methods(["GET", "POST"])
+def configuracion_view(request):
+    user = usuario_requerido(request)
+    if not user:
+        messages.warning(request, 'Debes iniciar sesion para ver la configuracion.')
+        return redirect('auth:login')
+
+    if request.method == 'POST':
+        form = ConfiguracionCuentaForm(request.POST, user=user)
+        if form.is_valid():
+            if form.cleaned_data.get('new_password'):
+                form.save()
+                messages.success(request, 'Contrasena actualizada correctamente. Usala en tu proximo inicio de sesion.')
+            else:
+                messages.info(request, 'No se realizaron cambios en la configuracion.')
+            return redirect('auth:configuracion')
+        messages.error(request, 'No se pudo actualizar la configuracion.')
+    else:
+        form = ConfiguracionCuentaForm(user=user)
+
+    context = contexto_usuario_base(user, 'Configuracion')
+    context.update({
+        'form': form,
+        'session_expiry': request.session.get_expiry_date(),
+        'login_time': request.session.get('login_time'),
+    })
+    return render(request, 'AuthLogin/settings.html', context)
 
 @never_cache
 @csrf_protect

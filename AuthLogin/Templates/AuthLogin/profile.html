@@ -1,0 +1,101 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Mi Perfil - NEXO{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                <div class="flex items-center gap-4">
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-2xl font-bold shadow">
+                        {{ user_iniciales|default:"IN" }}
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">{{ usuario_actual.nombreusuario }}</h1>
+                        <p class="text-gray-500">{{ usuario_actual.rol|default:"Usuario" }}</p>
+                        <p class="text-xs text-gray-400 mt-1">ID usuario: {{ usuario_actual.idusuario }}</p>
+                        {% if usuario_actual.correo %}
+                            <p class="text-sm text-gray-500 mt-1">{{ usuario_actual.correo }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'auth:editar_perfil' %}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+                        <i class="fas fa-edit mr-2"></i>Editar Perfil
+                    </a>
+                    <a href="{% url 'auth:configuracion' %}" class="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-cog mr-2"></i>Configuracion
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Datos de cuenta</h2>
+                <dl class="space-y-4">
+                    <div>
+                        <dt class="text-sm text-gray-500">Usuario</dt>
+                        <dd class="font-medium text-gray-900">{{ usuario_actual.nombreusuario }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">ID de usuario</dt>
+                        <dd class="font-medium text-gray-900">{{ usuario_actual.idusuario }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">Correo</dt>
+                        <dd class="font-medium text-gray-900">{{ usuario_actual.correo|default:"Sin correo registrado" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">Rol</dt>
+                        <dd class="font-medium text-gray-900">{{ usuario_actual.rol|default:"Usuario" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">Estado</dt>
+                        <dd>
+                            {% if usuario_actual.activo %}
+                                <span class="inline-flex px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">Activo</span>
+                            {% else %}
+                                <span class="inline-flex px-3 py-1 rounded-full text-sm bg-red-100 text-red-800">Inactivo</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Datos personales</h2>
+                {% if persona %}
+                    <dl class="space-y-4">
+                        <div>
+                            <dt class="text-sm text-gray-500">Nombre completo</dt>
+                            <dd class="font-medium text-gray-900">{{ persona.nombre_completo }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm text-gray-500">Cedula</dt>
+                            <dd class="font-medium text-gray-900">{{ persona.cedula }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm text-gray-500">Direccion</dt>
+                            <dd class="font-medium text-gray-900">{{ persona.direccion }}</dd>
+                        </div>
+                        {% if empleado %}
+                            <div>
+                                <dt class="text-sm text-gray-500">Empleado</dt>
+                                <dd class="font-medium text-gray-900">{{ empleado.rolempleado|default:"Sin rol de empleado" }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm text-gray-500">ID de empleado vinculado</dt>
+                                <dd class="font-medium text-gray-900">{{ empleado.idempleado }}</dd>
+                            </div>
+                        {% endif %}
+                    </dl>
+                {% else %}
+                    <p class="text-gray-600">Este usuario no tiene una persona o empleado vinculado.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
