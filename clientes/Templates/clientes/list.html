@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block page_subtitle %}
-    Administra los registros de clientes del sistema. Aquí puedes ver, editar o dar de baja clientes.
+    Administra los registros de clientes del sistema. Aquí puedes editar o dar de baja clientes.
 {% endblock %}
 
 {% block extra_css %}
@@ -73,8 +73,6 @@
         transform: scale(1.1);
         text-decoration: none;
     }
-    .action-btn-view { color: {{ colores.info }}; }
-    .action-btn-view:hover { background: rgba(39, 82, 242, 0.1); color: #1e40af; }
     .action-btn-edit { color: {{ colores.warning }}; }
     .action-btn-edit:hover { background: rgba(242, 206, 22, 0.1); color: #d97706; }
     .action-btn-delete { color: {{ colores.danger }}; background: none; border: none; cursor: pointer; }
@@ -179,11 +177,6 @@
         font-weight: 500;
     }
 
-    .action-btn-view {
-        color: #3b82f6;
-        transition: all 0.2s ease;
-    }
-
     .action-btn-edit {
         color: #f59e0b;
         transition: all 0.2s ease;
@@ -194,7 +187,6 @@
         transition: all 0.2s ease;
     }
 
-    .action-btn-view:hover,
     .action-btn-edit:hover,
     .action-btn-delete:hover {
         transform: scale(1.1);
@@ -315,9 +307,6 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <a href="{% url 'clientes:detail' cliente.idCliente %}" class="action-btn action-btn-view" title="Ver Detalle">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
                                     {% if cliente.estadoCliente %}
                                         <a href="{% url 'clientes:edit' cliente.idCliente %}" class="action-btn action-btn-edit" title="Editar">
                                             <i class="fas fa-edit"></i>

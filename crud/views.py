@@ -188,7 +188,7 @@ def produccion_create(request):
                         else:
                             user_name = 'Usuario'
                         messages.success(request, f'{message_pm} (Registrado por: {user_name})')
-                        return redirect('crud:produccion_detail', pk=id_produccion)
+                        return redirect('crud:produccion_list')
                     else:
                         messages.error(request, f'Error al registrar: {message_pm}')
             except Exception as e:
@@ -224,49 +224,10 @@ def produccion_create(request):
 @nexo_role_required(['admin'])
 def produccion_detail(request, pk):
     """
-    Vista para mostrar detalle de una producción con validaciones mejoradas
+    Redirige al listado porque la vista de detalle ya no forma parte del flujo.
     """
-    try:
-        # Obtener producción
-        produccion = get_object_or_404(Productosproduccion, idproduccion=pk)
-        
-        # Obtener detalles
-        detalles = ProduccionManager.obtener_detalle_produccion(pk)
-        
-        # Calcular totales
-        total_cantidad_items = sum(d.get('cantidad', 0) for d in detalles)
-        total_costo_produccion = sum(
-            Decimal(str(d.get('subtotal', '0.00'))) for d in detalles
-        )
-        
-        # USAR EL MANAGER PARA OBTENER EL ESTADO REAL
-        estado_real, _ = ProduccionManager.verificar_estado_produccion(pk)
-
-        usuario_actual = getattr(request, 'nexo_user', None)
-        user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
-        nexo_user_role = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
-        
-        context = {
-            'produccion': produccion,
-            'detalles': detalles,
-            'total_cantidad_items': total_cantidad_items,
-            'total_costo_produccion': total_costo_produccion,
-            'page_title': f'Detalle Producción #{pk}',
-            'page_subtitle': f'Información completa del registro de producción del {produccion.fechaentrada.strftime("%d de %B de %Y")}.',
-            'usuario_actual': usuario_actual,
-            'user_iniciales': user_iniciales,
-            'nexo_user_role': nexo_user_role,
-            'colores': COLORES_NEXO,
-            'estado_real': estado_real,  
-        }
-        
-        return render(request, 'produccion/detail.html', context)
-        
-    except Exception as e:
-        logger.error(f"Error al cargar detalle de producción {pk}: {str(e)}")
-        clear_messages(request)
-        messages.error(request, f'Error al cargar el detalle: {str(e)}')
-        return redirect('crud:produccion_list')
+    messages.info(request, 'Los detalles de producción se gestionan desde el listado.')
+    return redirect('crud:produccion_list')
 
 @nexo_role_required(['admin'])
 def produccion_edit(request, pk):
@@ -281,7 +242,7 @@ def produccion_edit(request, pk):
             return redirect('crud:produccion_list')
         if not estado:
             messages.warning(request, 'No se puede editar una producción inactiva.')
-            return redirect('crud:produccion_detail', pk=pk)
+            return redirect('crud:produccion_list')
     except Productosproduccion.DoesNotExist:
         messages.error(request, 'La producción que intenta editar no existe.')
         return redirect('crud:produccion_list')
@@ -319,7 +280,7 @@ def produccion_edit(request, pk):
                     )
                     if success:
                         messages.success(request, message_pm)
-                        return redirect('crud:produccion_detail', pk=pk)
+                        return redirect('crud:produccion_list')
                     else:
                         messages.error(request, f'Error al editar: {message_pm}')
             except Exception as e:

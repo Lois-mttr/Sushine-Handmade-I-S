@@ -64,7 +64,7 @@ class DashboardService:
     
     @staticmethod
     def get_dashboard_metrics():
-        """Obtener mÃ©tricas principales del dashboard separadas por ubicaciÃ³n"""
+        """Obtener métricas principales del dashboard separadas por ubicación"""
         dates = DashboardService.get_date_ranges()
         ubicaciones = DashboardService.get_ubicaciones()
         
@@ -171,8 +171,8 @@ class DashboardService:
                 return metrics
                 
         except Exception as e:
-            logger.error(f"Error calculando mÃ©tricas del dashboard: {str(e)}")
-            # Retornar mÃ©tricas por defecto en caso de error
+            logger.error(f"Error calculando métricas del dashboard: {str(e)}")
+            # Retornar métricas por defecto en caso de error
             return {
                 'total_productos': 0,
                 'total_clientes': 0,
@@ -225,7 +225,7 @@ class DashboardService:
         for key, ubicacion in ubicaciones.items():
             ubicacion_id = ubicacion['id']
             
-            # Productos mÃ¡s vendidos por ubicaciÃ³n
+            # Productos más vendidos por ubicación
             productos_vendidos = Detalleventa.objects.filter(
                 idventa__fechaventa__gte=dates['month_ago'],
                 idventa__estado='REALIZADA',
@@ -238,7 +238,7 @@ class DashboardService:
                 ingresos=Sum('subtotal')
             ).order_by('-total_vendido')[:5]
             
-            # Productos con mÃ¡s devoluciones por ubicaciÃ³n
+            # Productos con más devoluciones por ubicación
             productos_devueltos = Detalledevolucion.objects.filter(
                 id_devolucion__fechadevolucion__gte=dates['month_ago'],
                 id_producto__idubicacionpro_id=ubicacion_id
@@ -277,7 +277,7 @@ def dashboard_view(request):
     """Vista principal del dashboard mejorada con ubicaciones"""
     usuario_actual = getattr(request, 'nexo_user', None)
     if not usuario_actual:
-        messages.error(request, 'Debes iniciar sesiÃ³n para acceder al dashboard')
+        messages.error(request, 'Debes iniciar sesión para acceder al dashboard')
         return redirect('auth:login')
     user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
     try:
@@ -342,12 +342,12 @@ def dashboard_view(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def logout_view(request):
-    """Vista para cerrar sesiÃ³n"""
+    """Vista para cerrar sesión"""
     try:
-        # Limpiar la sesiÃ³n
+        # Limpiar la sesión
         if 'user_id' in request.session:
             user_id = request.session['user_id']
-            logger.info(f"Usuario {user_id} cerrÃ³ sesiÃ³n")
+            logger.info(f"Usuario {user_id} cerró sesión")
             request.session.flush()
         
         return JsonResponse({
@@ -356,10 +356,10 @@ def logout_view(request):
             'redirect_url': '/login/'
         })
     except Exception as e:
-        logger.error(f'Error al cerrar sesiÃ³n: {str(e)}')
+        logger.error(f'Error al cerrar sesión: {str(e)}')
         return JsonResponse({
             'success': False,
-            'error': f'Error al cerrar sesiÃ³n: {str(e)}'
+            'error': f'Error al cerrar sesión: {str(e)}'
         }, status=500)
 
 @require_http_methods(["GET"])
@@ -370,7 +370,7 @@ def get_dashboard_stats_ajax(request):
         return JsonResponse({'error': 'SesiÃ³n no vÃ¡lida'}, status=401)
     
     try:
-        # Obtener mÃ©tricas actualizadas
+        # Obtener métricas actualizadas
         metrics = DashboardService.get_dashboard_metrics()
         chart_data = DashboardService.get_chart_data()
         return JsonResponse({

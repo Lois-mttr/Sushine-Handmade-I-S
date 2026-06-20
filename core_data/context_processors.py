@@ -1,4 +1,5 @@
 from core_data.models import Usuario
+from core_data.permissions import get_menu_permissions_for_role
 
 
 COLORES_NEXO = {
@@ -33,17 +34,7 @@ def nexo_template_context(request):
     nombre = user.nombreusuario if user and user.nombreusuario else ''
     rol = user.rol if user and user.rol else ''
 
-    menu_permissions = {
-        'dashboard': bool(user),
-        'inventario': rol in ['admin', 'gerente', 'encargado_inventario', 'encargado_sucursal'],
-        'produccion': rol == 'admin',
-        'reabastecimiento': False,
-        'ventas': rol in ['admin', 'encargado_sucursal', 'vendedor', 'cajero', 'ventas'],
-        'devolucion': rol == 'admin',
-        'clientes': rol in ['admin', 'ventas'],
-        'reportes': bool(user),
-        'configuracion': bool(user),
-    }
+    menu_permissions = get_menu_permissions_for_role(rol, authenticated=bool(user))
 
     return {
         'usuario_actual': user,

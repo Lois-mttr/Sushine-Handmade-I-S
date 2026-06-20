@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.db.models import Sum, Count, Q, F, Avg
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from AuthLogin.decorators import nexo_login_required, nexo_role_required
 from .services import InformeService
 from .utils import ExportadorInformes
@@ -12,6 +12,8 @@ from core_data.models import Categoria, Ubicacion, Cliente, Usuario, Producto, V
 import logging
 
 logger = logging.getLogger('nexo.informes')
+
+INVENTARIO_GENERAL_LABEL = 'Inventario General'
 
 @nexo_login_required
 def lista_informes(request):
@@ -42,13 +44,10 @@ def lista_informes(request):
         }.get(rol, 'Usuario')
     
     # Definir informes disponibles según el rol del usuario
-    informes_disponibles = []
-    
-    # Informes básicos para todos los roles
     informes_basicos = [
         {
             'id': 'inventario_general',
-            'nombre': 'Inventario General',
+            'nombre': INVENTARIO_GENERAL_LABEL,
             'descripcion': 'Existencias actuales por producto y ubicación',
             'icono': 'boxes',
             'url': 'informes:inventario_general'
@@ -130,11 +129,7 @@ def lista_informes(request):
 
 @nexo_login_required
 def inventario_general(request):
-    """
-    Vista mejorada para el informe de inventario general
-    """
     try:
-        # Obtener filtros del request con validación
         filtros = {}
         if request.GET.get('categoria'):
             try:
@@ -154,15 +149,12 @@ def inventario_general(request):
         if request.GET.get('buscar'):
             filtros['buscar'] = request.GET.get('buscar').strip()
         
-        # Obtener datos del servicio
         datos = InformeService.obtener_inventario_general(filtros)
         
-        # Paginación
         paginator = Paginator(datos['productos'], 25)
         page_number = request.GET.get('page')
         productos_paginados = paginator.get_page(page_number)
         
-        # Datos para filtros
         try:
             categorias = Categoria.objects.filter(estadocategoria=True).order_by('nombrecategoria')
             ubicaciones = Ubicacion.objects.all().order_by('nombreubicacion')
@@ -171,7 +163,6 @@ def inventario_general(request):
             categorias = []
             ubicaciones = []
         
-        # Preparar datos del usuario para el header
         usuario = request.nexo_user
         user_iniciales = "IN"
         empleado_nombre = "Usuario"
@@ -187,12 +178,12 @@ def inventario_general(request):
             'categorias': categorias,
             'ubicaciones': ubicaciones,
             'filtros_aplicados': filtros,
-            'titulo_informe': 'Inventario General',
+            'titulo_informe': INVENTARIO_GENERAL_LABEL,
             'usuario_generador': empleado_nombre,
             'fecha_generacion': timezone.now(),
             
             # Para el header
-            'page_title': 'Inventario General',
+            'page_title': INVENTARIO_GENERAL_LABEL,
             'system_name': 'Sistema NEXO',
             'user_iniciales': user_iniciales,
             'usuario_actual': usuario,
@@ -208,14 +199,7 @@ def inventario_general(request):
 
 @nexo_login_required
 def ventas(request):
-    """
-    Vista mejorada para el informe de ventas con validación robusta
-    """
     try:
-        # Obtener y validar filtros
-        fecha_inicio = request.GET.get('fecha_inicio')
-        fecha_fin = request.GET.get('fecha_fin')
-        
         filtros = {}
         if request.GET.get('cliente'):
             try:
@@ -228,32 +212,33 @@ def ventas(request):
                 filtros['vendedor'] = int(request.GET.get('vendedor'))
             except (ValueError, TypeError):
                 pass
+                
+        if request.GET.get('estado'):
+            estado_val = request.GET.get('estado').upper()
+            if estado_val in ['REALIZADA', 'ANULADA', 'TODOS']:
+                filtros['estado'] = estado_val
+
+        fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
+        fecha_fin_str = request.GET.get('fecha_fin', '').strip()
         
-        # Convertir fechas con manejo de errores
+        fecha_inicio_obj = None
+        fecha_fin_obj = None
+        
         try:
-            if fecha_inicio:
-                fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
-            if fecha_fin:
-                fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            if fecha_inicio_str:
+                fecha_inicio_obj = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+            if fecha_fin_str:
+                fecha_fin_obj = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
         except ValueError as e:
             logger.warning(f"Error en formato de fecha: {str(e)}")
-            messages.warning(request, 'Formato de fecha inválido. Usando fechas por defecto.')
-            fecha_inicio = fecha_fin = None
+            messages.warning(request, 'Formato de fecha inválido. Mostrando historial completo.')
         
-        # Fechas por defecto (último mes)
-        if not fecha_inicio and not fecha_fin:
-            fecha_fin = timezone.now().date()
-            fecha_inicio = fecha_fin - timedelta(days=30)
+        datos = InformeService.obtener_ventas(fecha_inicio_obj, fecha_fin_obj, filtros)
         
-        # Obtener datos
-        datos = InformeService.obtener_ventas(fecha_inicio, fecha_fin, filtros)
-        
-        # Paginación
         paginator = Paginator(datos['ventas'], 20)
         page_number = request.GET.get('page')
         ventas_paginadas = paginator.get_page(page_number)
         
-        # Datos para filtros
         try:
             clientes = Cliente.objects.filter(estadocliente=True).select_related('idpersonacliente').order_by('idpersonacliente__primernombre')
             vendedores = Usuario.objects.filter(activo=True).order_by('nombreusuario')
@@ -262,7 +247,6 @@ def ventas(request):
             clientes = []
             vendedores = []
         
-        # Preparar datos del usuario para el header
         usuario = request.nexo_user
         user_iniciales = "IN"
         empleado_nombre = "Usuario"
@@ -278,13 +262,11 @@ def ventas(request):
             'clientes': clientes,
             'vendedores': vendedores,
             'filtros_aplicados': filtros,
-            'fecha_inicio': fecha_inicio,
-            'fecha_fin': fecha_fin,
+            'fecha_inicio': fecha_inicio_str,
+            'fecha_fin': fecha_fin_str,
             'titulo_informe': 'Reporte de Ventas',
             'usuario_generador': empleado_nombre,
             'fecha_generacion': timezone.now(),
-            
-            # Para el header
             'page_title': 'Reporte de Ventas',
             'system_name': 'Sistema NEXO',
             'user_iniciales': user_iniciales,
@@ -301,33 +283,28 @@ def ventas(request):
 
 @nexo_login_required
 def devoluciones(request):
-    """
-    Vista para el informe de devoluciones con validación mejorada
-    """
     try:
-        # Obtener y validar filtros de fecha
-        fecha_inicio = request.GET.get('fecha_inicio')
-        fecha_fin = request.GET.get('fecha_fin')
+        fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
+        fecha_fin_str = request.GET.get('fecha_fin', '').strip()
+        
+        fecha_inicio_obj = None
+        fecha_fin_obj = None
         
         try:
-            if fecha_inicio:
-                fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
-            if fecha_fin:
-                fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            if fecha_inicio_str:
+                fecha_inicio_obj = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+            if fecha_fin_str:
+                fecha_fin_obj = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
         except ValueError as e:
             logger.warning(f"Error en formato de fecha: {str(e)}")
             messages.warning(request, 'Formato de fecha inválido.')
-            fecha_inicio = fecha_fin = None
         
-        # Obtener datos
-        datos = InformeService.obtener_devoluciones(fecha_inicio, fecha_fin)
+        datos = InformeService.obtener_devoluciones(fecha_inicio_obj, fecha_fin_obj)
         
-        # Paginación
         paginator = Paginator(datos['devoluciones'], 15)
         page_number = request.GET.get('page')
         devoluciones_paginadas = paginator.get_page(page_number)
         
-        # Preparar datos del usuario para el header
         usuario = request.nexo_user
         user_iniciales = "IN"
         empleado_nombre = "Usuario"
@@ -341,13 +318,12 @@ def devoluciones(request):
             'devoluciones': devoluciones_paginadas,
             'detalles': datos['detalles'],
             'resumen': datos['resumen'],
-            'fecha_inicio': fecha_inicio,
-            'fecha_fin': fecha_fin,
+            'fecha_inicio': fecha_inicio_str,
+            'fecha_fin': fecha_fin_str,
             'titulo_informe': 'Reporte de Devoluciones',
             'usuario_generador': empleado_nombre,
             'fecha_generacion': timezone.now(),
             
-            # Para el header
             'page_title': 'Reporte de Devoluciones',
             'system_name': 'Sistema NEXO',
             'user_iniciales': user_iniciales,
@@ -364,38 +340,28 @@ def devoluciones(request):
 
 @nexo_role_required(['admin'])
 def produccion(request):
-    """
-    Vista para el informe de producción (solo administradores)
-    """
     try:
-        # Obtener y validar filtros de fecha
-        fecha_inicio = request.GET.get('fecha_inicio')
-        fecha_fin = request.GET.get('fecha_fin')
+        fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
+        fecha_fin_str = request.GET.get('fecha_fin', '').strip()
+        
+        fecha_inicio_obj = None
+        fecha_fin_obj = None
         
         try:
-            if fecha_inicio:
-                fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
-            if fecha_fin:
-                fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            if fecha_inicio_str:
+                fecha_inicio_obj = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+            if fecha_fin_str:
+                fecha_fin_obj = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
         except ValueError as e:
             logger.warning(f"Error en formato de fecha: {str(e)}")
-            messages.warning(request, 'Formato de fecha inválido. Usando fechas por defecto.')
-            fecha_inicio = fecha_fin = None
+            messages.warning(request, 'Formato de fecha inválido. Mostrando historial completo.')
         
-        # Si no hay fechas, usar últimos 30 días
-        if not fecha_inicio and not fecha_fin:
-            fecha_fin = timezone.now().date()
-            fecha_inicio = fecha_fin - timedelta(days=30)
+        datos = InformeService.obtener_produccion(fecha_inicio_obj, fecha_fin_obj)
         
-        # Obtener datos del servicio
-        datos = InformeService.obtener_produccion(fecha_inicio, fecha_fin)
-        
-        # Paginación
         paginator = Paginator(datos['detalles'], 20)
         page_number = request.GET.get('page')
         detalles_paginados = paginator.get_page(page_number)
         
-        # Preparar datos del usuario para el header
         usuario = request.nexo_user
         user_iniciales = "IN"
         empleado_nombre = "Usuario"
@@ -409,13 +375,12 @@ def produccion(request):
             'producciones': datos['producciones'],
             'detalles': detalles_paginados,
             'resumen': datos['resumen'],
-            'fecha_inicio': fecha_inicio,
-            'fecha_fin': fecha_fin,
+            'fecha_inicio': fecha_inicio_str,
+            'fecha_fin': fecha_fin_str,
             'titulo_informe': 'Reporte de Producción',
             'usuario_generador': empleado_nombre,
             'fecha_generacion': timezone.now(),
             
-            # Para el header
             'page_title': 'Reporte de Producción',
             'system_name': 'Sistema NEXO',
             'user_iniciales': user_iniciales,
@@ -432,11 +397,7 @@ def produccion(request):
 
 @nexo_role_required(['admin'])
 def clientes(request):
-    """
-    Vista para el informe de clientes (solo administradores)
-    """
     try:
-        # Obtener filtros
         filtros = {}
         if request.GET.get('activos_solo') == '1':
             filtros['activos_solo'] = True
@@ -444,15 +405,12 @@ def clientes(request):
         if request.GET.get('buscar'):
             filtros['buscar'] = request.GET.get('buscar').strip()
         
-        # Obtener datos
         datos = InformeService.obtener_clientes(filtros)
         
-        # Paginación
         paginator = Paginator(datos['clientes'], 25)
         page_number = request.GET.get('page')
         clientes_paginados = paginator.get_page(page_number)
         
-        # Preparar datos del usuario para el header
         usuario = request.nexo_user
         user_iniciales = "IN"
         empleado_nombre = "Usuario"
@@ -470,7 +428,6 @@ def clientes(request):
             'usuario_generador': empleado_nombre,
             'fecha_generacion': timezone.now(),
             
-            # Para el header
             'page_title': 'Reporte de Clientes',
             'system_name': 'Sistema NEXO',
             'user_iniciales': user_iniciales,
@@ -487,14 +444,9 @@ def clientes(request):
 
 @nexo_role_required(['admin'])
 def usuarios_empleados(request):
-    """
-    Vista para el informe de usuarios y empleados (solo administradores)
-    """
     try:
-        # Obtener datos
         datos = InformeService.obtener_usuarios_empleados()
         
-        # Preparar datos del usuario para el header
         usuario = request.nexo_user
         user_iniciales = "IN"
         empleado_nombre = "Usuario"
@@ -513,7 +465,6 @@ def usuarios_empleados(request):
             'usuario_generador': empleado_nombre,
             'fecha_generacion': timezone.now(),
             
-            # Para el header
             'page_title': 'Usuarios y Empleados',
             'system_name': 'Sistema NEXO',
             'user_iniciales': user_iniciales,
@@ -530,14 +481,9 @@ def usuarios_empleados(request):
 
 @nexo_login_required
 def productos_categoria(request):
-    """
-    Vista para el informe de productos por categoría
-    """
     try:
-        # Obtener datos
         datos = InformeService.obtener_productos_por_categoria()
         
-        # Preparar datos del usuario para el header
         usuario = request.nexo_user
         user_iniciales = "IN"
         empleado_nombre = "Usuario"
@@ -554,7 +500,6 @@ def productos_categoria(request):
             'usuario_generador': empleado_nombre,
             'fecha_generacion': timezone.now(),
             
-            # Para el header
             'page_title': 'Productos por Categoría',
             'system_name': 'Sistema NEXO',
             'user_iniciales': user_iniciales,
@@ -571,73 +516,67 @@ def productos_categoria(request):
 
 @nexo_login_required
 def exportar_pdf(request, tipo_informe):
-    """
-    Vista mejorada para exportar informes a PDF con filtros preservados
-    """
     try:
         exportador = ExportadorInformes()
-        
-        # Obtener todos los filtros aplicados (preservar estado de la vista)
         filtros = {}
         for key, value in request.GET.items():
-            if key != 'page':  # Excluir parámetro de paginación
+            if key != 'page':
                 filtros[key] = value
         
-        # Generar PDF según el tipo de informe con manejo robusto de errores
         if tipo_informe == 'inventario_general':
             datos = InformeService.obtener_inventario_general(filtros)
             pdf_content = exportador.generar_pdf_inventario(datos, request.nexo_user)
             filename = f"inventario_general_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
             
         elif tipo_informe == 'ventas':
-            # Procesar fechas con validación
-            fecha_inicio = request.GET.get('fecha_inicio')
-            fecha_fin = request.GET.get('fecha_fin')
+            fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
+            fecha_fin_str = request.GET.get('fecha_fin', '').strip()
+            fecha_inicio = None
+            fecha_fin = None
             
             try:
-                if fecha_inicio:
-                    fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
-                if fecha_fin:
-                    fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+                if fecha_inicio_str:
+                    fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+                if fecha_fin_str:
+                    fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
             except ValueError:
-                fecha_inicio = fecha_fin = None
-            
-            # Fechas por defecto si no se especifican
-            if not fecha_inicio and not fecha_fin:
-                fecha_fin = timezone.now().date()
-                fecha_inicio = fecha_fin - timedelta(days=30)
+                pass
             
             datos = InformeService.obtener_ventas(fecha_inicio, fecha_fin, filtros)
             pdf_content = exportador.generar_pdf_ventas(datos, request.nexo_user, fecha_inicio, fecha_fin)
             filename = f"ventas_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
             
         elif tipo_informe == 'devoluciones':
-            fecha_inicio = request.GET.get('fecha_inicio')
-            fecha_fin = request.GET.get('fecha_fin')
+            fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
+            fecha_fin_str = request.GET.get('fecha_fin', '').strip()
+            fecha_inicio = None
+            fecha_fin = None
             
             try:
-                if fecha_inicio:
-                    fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
-                if fecha_fin:
-                    fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+                if fecha_inicio_str:
+                    fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+                if fecha_fin_str:
+                    fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
             except ValueError:
-                fecha_inicio = fecha_fin = None
+                pass
             
             datos = InformeService.obtener_devoluciones(fecha_inicio, fecha_fin)
             pdf_content = exportador.generar_pdf_devoluciones(datos, request.nexo_user, fecha_inicio, fecha_fin)
             filename = f"devoluciones_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
             
         elif tipo_informe == 'produccion':
-            fecha_inicio = request.GET.get('fecha_inicio')
-            fecha_fin = request.GET.get('fecha_fin')
+            fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
+            fecha_fin_str = request.GET.get('fecha_fin', '').strip()
+            fecha_inicio = None
+            fecha_fin = None
             
             try:
-                if fecha_inicio:
-                    fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
-                if fecha_fin:
-                    fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+                if fecha_inicio_str:
+                    fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+                if fecha_fin_str:
+                    fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
             except ValueError:
-                fecha_inicio = fecha_fin = None
+                pass
             
             datos = InformeService.obtener_produccion(fecha_inicio, fecha_fin)
             pdf_content = exportador.generar_pdf_produccion(datos, request.nexo_user, fecha_inicio, fecha_fin)
@@ -662,7 +601,6 @@ def exportar_pdf(request, tipo_informe):
             messages.error(request, f'Tipo de informe "{tipo_informe}" no válido para exportación PDF.')
             return redirect('informes:lista_informes')
         
-        # Crear respuesta HTTP con el PDF
         response = HttpResponse(pdf_content, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response['Content-Length'] = len(pdf_content)
@@ -677,73 +615,67 @@ def exportar_pdf(request, tipo_informe):
 
 @nexo_login_required
 def exportar_excel(request, tipo_informe):
-    """
-    Vista mejorada para exportar informes a Excel con filtros preservados
-    """
     try:
         exportador = ExportadorInformes()
-        
-        # Obtener todos los filtros aplicados (preservar estado de la vista)
         filtros = {}
         for key, value in request.GET.items():
-            if key != 'page':  # Excluir parámetro de paginación
+            if key != 'page':
                 filtros[key] = value
         
-        # Generar Excel según el tipo de informe con manejo robusto de errores
         if tipo_informe == 'inventario_general':
             datos = InformeService.obtener_inventario_general(filtros)
             excel_content = exportador.generar_excel_inventario(datos)
             filename = f"inventario_general_{timezone.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
             
         elif tipo_informe == 'ventas':
-            # Procesar fechas con validación
-            fecha_inicio = request.GET.get('fecha_inicio')
-            fecha_fin = request.GET.get('fecha_fin')
+            fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
+            fecha_fin_str = request.GET.get('fecha_fin', '').strip()
+            fecha_inicio = None
+            fecha_fin = None
             
             try:
-                if fecha_inicio:
-                    fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
-                if fecha_fin:
-                    fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+                if fecha_inicio_str:
+                    fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+                if fecha_fin_str:
+                    fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
             except ValueError:
-                fecha_inicio = fecha_fin = None
-            
-            # Fechas por defecto si no se especifican
-            if not fecha_inicio and not fecha_fin:
-                fecha_fin = timezone.now().date()
-                fecha_inicio = fecha_fin - timedelta(days=30)
+                pass
             
             datos = InformeService.obtener_ventas(fecha_inicio, fecha_fin, filtros)
             excel_content = exportador.generar_excel_ventas(datos)
             filename = f"ventas_{timezone.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
             
         elif tipo_informe == 'devoluciones':
-            fecha_inicio = request.GET.get('fecha_inicio')
-            fecha_fin = request.GET.get('fecha_fin')
+            fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
+            fecha_fin_str = request.GET.get('fecha_fin', '').strip()
+            fecha_inicio = None
+            fecha_fin = None
             
             try:
-                if fecha_inicio:
-                    fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
-                if fecha_fin:
-                    fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+                if fecha_inicio_str:
+                    fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+                if fecha_fin_str:
+                    fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
             except ValueError:
-                fecha_inicio = fecha_fin = None
+                pass
             
             datos = InformeService.obtener_devoluciones(fecha_inicio, fecha_fin)
             excel_content = exportador.generar_excel_devoluciones(datos)
             filename = f"devoluciones_{timezone.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
             
         elif tipo_informe == 'produccion':
-            fecha_inicio = request.GET.get('fecha_inicio')
-            fecha_fin = request.GET.get('fecha_fin')
+            fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
+            fecha_fin_str = request.GET.get('fecha_fin', '').strip()
+            fecha_inicio = None
+            fecha_fin = None
             
             try:
-                if fecha_inicio:
-                    fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
-                if fecha_fin:
-                    fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+                if fecha_inicio_str:
+                    fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+                if fecha_fin_str:
+                    fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
             except ValueError:
-                fecha_inicio = fecha_fin = None
+                pass
             
             datos = InformeService.obtener_produccion(fecha_inicio, fecha_fin)
             excel_content = exportador.generar_excel_produccion(datos)
@@ -768,7 +700,6 @@ def exportar_excel(request, tipo_informe):
             messages.error(request, f'Tipo de informe "{tipo_informe}" no válido para exportación Excel.')
             return redirect('informes:lista_informes')
         
-        # Crear respuesta HTTP con el Excel
         response = HttpResponse(
             excel_content, 
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

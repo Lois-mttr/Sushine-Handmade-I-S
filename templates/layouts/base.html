@@ -39,6 +39,17 @@
     <!-- Custom CSS - Corregido para usar dashboard.css -->
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <style>
+        *, *::before, *::after {
+            animation: none !important;
+            transition: none !important;
+            scroll-behavior: auto !important;
+        }
+
+        *:hover {
+            transform: none !important;
+        }
+    </style>
     
     <!-- Block for additional CSS -->
     {% block extra_css %}{% endblock %}

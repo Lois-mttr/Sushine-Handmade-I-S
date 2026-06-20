@@ -22,7 +22,19 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
-from .forms import RegisterForm, ForgotPasswordForm, ResetPasswordForm, PerfilUsuarioForm, ConfiguracionCuentaForm
+from .forms import (
+    RegisterForm,
+    ForgotPasswordForm,
+    ResetPasswordForm,
+    PerfilUsuarioForm,
+    ConfiguracionCuentaForm,
+    PermisosEncargadoSucursalForm,
+)
+from core_data.permissions import (
+    MODULE_CHOICES,
+    load_menu_permissions_config,
+    save_menu_permissions_config,
+)
 from core_data.models import Usuario
 import hashlib
 import secrets
@@ -65,7 +77,7 @@ def usuario_requerido(request):
 @require_http_methods(["GET", "POST"])
 def login_view(request):
     """
-    Vista principal para el inicio de sesiÃ³n - COMPLETAMENTE CORREGIDA
+    Vista principal para el inicio de sesión.
     """
     logger.debug(f"Login view called - Method: {request.method}, Path: {request.path}")
     
@@ -78,7 +90,7 @@ def login_view(request):
             logger.info(f"Usuario ya autenticado redirigido: {user.nombreusuario}")
             return redirect('/dashboard/')
         except Usuario.DoesNotExist:
-            # Usuario no existe, limpiar sesiÃ³n
+            # Usuario no existe, limpiar sesión
             request.session.flush()
             logger.warning(f"SesiÃ³n limpiada para usuario inexistente: {user_id}")
     
@@ -116,7 +128,7 @@ def process_ajax_login(request):
             logger.warning(f"Intento de login desde IP bloqueada: {client_ip}")
             return JsonResponse({
                 'success': False,
-                'message': 'IP bloqueada temporalmente. Intenta mÃ¡s tarde.',
+                'message': 'IP bloqueada temporalmente. Intenta más tarde.',
                 'blocked': True,
                 'lock_seconds': 20,
                 'attempts_remaining': 0
@@ -184,14 +196,14 @@ def authenticate_user_direct(username, password_hash):
 
 def process_traditional_login(request):
     """
-    Procesar el intento de inicio de sesiÃ³n (mÃ©todo tradicional sin AJAX)
+    Procesar el intento de inicio de sesión (método tradicional sin AJAX)
     """
     # Obtener IP del cliente para control de intentos
     client_ip = get_client_ip(request)
     
     # Verificar si la IP estÃ¡ bloqueada
     if is_ip_blocked(client_ip):
-        messages.error(request, 'IP bloqueada temporalmente. Intenta mÃ¡s tarde.')
+        messages.error(request, 'IP bloqueada temporalmente. Intenta más tarde.')
         return render(request, 'AuthLogin/login.html', {'form': LoginForm()})
     
     # Crear formulario con datos POST
@@ -205,7 +217,7 @@ def process_traditional_login(request):
             # Login exitoso
             response_data = handle_successful_login(request, user, client_ip, as_json=False)
             if response_data.get('success'):
-                messages.success(request, 'Inicio de sesiÃ³n exitoso')
+                messages.success(request, 'Inicio de sesión exitoso')
                 return redirect(response_data.get('redirect_url', '/dashboard/'))
         else:
             # Credenciales incorrectas
@@ -227,14 +239,14 @@ def handle_successful_login(request, user, client_ip, as_json=True):
         # Limpiar intentos fallidos
         clear_failed_attempts(client_ip)
         
-        # Crear sesiÃ³n de usuario
+        # Crear sesión de usuario
         request.session['user_id'] = user.idusuario
         request.session['username'] = user.nombreusuario
         request.session['user_role'] = user.rol or 'Usuario'
         request.session['employee_id'] = user.idempusuario.idempleado if user.idempusuario else None
         request.session['login_time'] = timezone.now().isoformat()
         
-        # Configurar expiraciÃ³n de sesiÃ³n (8 horas)
+        # Configurar expiración de sesión (8 horas)
         request.session.set_expiry(28800)
         
         # Registrar login exitoso en logs
@@ -242,7 +254,7 @@ def handle_successful_login(request, user, client_ip, as_json=True):
         
         response_data = {
             'success': True,
-            'message': 'Inicio de sesion exitoso.',
+            'message': 'Inicio de sesión exitoso.',
             'redirect_url': '/dashboard/',
             'user': {
                 'username': user.nombreusuario,
@@ -386,13 +398,13 @@ def log_login_attempt(username, ip, success, details=''):
 @require_http_methods(["POST"])
 def logout_view(request):
     """
-    Vista para cerrar sesiÃ³n
+    Vista para cerrar sesión
     """
     try:
         username = request.session.get('username', 'unknown')
         client_ip = get_client_ip(request)
         
-        # Limpiar sesiÃ³n
+        # Limpiar sesión
         request.session.flush()
         
         # Registrar logout
@@ -414,15 +426,15 @@ def logout_view(request):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'success': False,
-                'message': 'Error al cerrar sesiÃ³n'
+                'message': 'Error al cerrar sesión'
             })
         else:
-            messages.error(request, 'Error al cerrar sesiÃ³n')
+            messages.error(request, 'Error al cerrar sesión')
             return redirect('auth:login')
 
 def check_session(request):
     """
-    Verificar si la sesiÃ³n del usuario es vÃ¡lida
+    Verificar si la sesión del usuario es válida
     """
     user_id = request.session.get('user_id')
     
@@ -434,7 +446,7 @@ def check_session(request):
         user = Usuario.objects.get(idusuario=user_id, activo=True)
         return user
     except Usuario.DoesNotExist:
-        # Usuario no existe o estÃ¡ inactivo, limpiar sesiÃ³n
+        # Usuario no existe o está inactivo, limpiar sesión
         request.session.flush()
         logger.warning(f"SesiÃ³n limpiada para usuario inexistente o inactivo: {user_id}")
         return False
@@ -442,7 +454,7 @@ def check_session(request):
 @require_http_methods(["GET"])
 def check_session_ajax(request):
     """
-    Endpoint AJAX para verificar estado de sesiÃ³n
+    Endpoint AJAX para verificar estado de sesión
     """
     user = check_session(request)
     
@@ -471,7 +483,7 @@ def check_session_ajax(request):
 def perfil_view(request):
     user = usuario_requerido(request)
     if not user:
-        messages.warning(request, 'Debes iniciar sesion para ver tu perfil.')
+        messages.warning(request, 'Debes iniciar sesión para ver tu perfil.')
         return redirect('auth:login')
 
     persona = obtener_persona_usuario(user)
@@ -485,7 +497,7 @@ def perfil_view(request):
 def editar_perfil_view(request):
     user = usuario_requerido(request)
     if not user:
-        messages.warning(request, 'Debes iniciar sesion para editar tu perfil.')
+        messages.warning(request, 'Debes iniciar sesión para editar tu perfil.')
         return redirect('auth:login')
 
     persona = obtener_persona_usuario(user)
@@ -520,25 +532,57 @@ def editar_perfil_view(request):
 def configuracion_view(request):
     user = usuario_requerido(request)
     if not user:
-        messages.warning(request, 'Debes iniciar sesion para ver la configuracion.')
+        messages.warning(request, 'Debes iniciar sesión para ver la configuración.')
         return redirect('auth:login')
 
+    permissions_config = load_menu_permissions_config()
+    permisos_iniciales = permissions_config.get('encargado_sucursal', [])
+    can_edit_permissions = user.rol == 'admin'
+
     if request.method == 'POST':
-        form = ConfiguracionCuentaForm(request.POST, user=user)
-        if form.is_valid():
-            if form.cleaned_data.get('new_password'):
-                form.save()
-                messages.success(request, 'Contraseña actualizada correctamente. Usala en tu proximo inicio de sesion.')
-            else:
-                messages.info(request, 'No se realizaron cambios en la configuracion.')
-            return redirect('auth:configuracion')
-        messages.error(request, 'No se pudo actualizar la configuracion.')
+        action = request.POST.get('action', 'password')
+        if action == 'permissions':
+            if not can_edit_permissions:
+                messages.error(request, 'No tienes permisos para editar permisos de roles.')
+                return redirect('auth:configuracion')
+            permisos_form = PermisosEncargadoSucursalForm(
+                request.POST,
+                choices=MODULE_CHOICES,
+                initial_permissions=permisos_iniciales,
+            )
+            form = ConfiguracionCuentaForm(user=user)
+            if permisos_form.is_valid():
+                permissions_config['encargado_sucursal'] = permisos_form.cleaned_data['permisos']
+                save_menu_permissions_config(permissions_config)
+                messages.success(request, 'Permisos de encargado de sucursal actualizados correctamente.')
+                return redirect('auth:configuracion')
+            messages.error(request, 'No se pudieron actualizar los permisos.')
+        else:
+            permisos_form = PermisosEncargadoSucursalForm(
+                choices=MODULE_CHOICES,
+                initial_permissions=permisos_iniciales,
+            )
+            form = ConfiguracionCuentaForm(request.POST, user=user)
+            if form.is_valid():
+                if form.cleaned_data.get('new_password'):
+                    form.save()
+                    messages.success(request, 'Contraseña actualizada correctamente. Úsala en tu próximo inicio de sesión.')
+                else:
+                    messages.info(request, 'No se realizaron cambios en la configuración.')
+                return redirect('auth:configuracion')
+            messages.error(request, 'No se pudo actualizar la configuración.')
     else:
         form = ConfiguracionCuentaForm(user=user)
+        permisos_form = PermisosEncargadoSucursalForm(
+            choices=MODULE_CHOICES,
+            initial_permissions=permisos_iniciales,
+        )
 
-    context = contexto_usuario_base(user, 'Configuracion')
+    context = contexto_usuario_base(user, 'Configuración')
     context.update({
         'form': form,
+        'permisos_form': permisos_form,
+        'can_edit_permissions': can_edit_permissions,
         'session_expiry': request.session.get_expiry_date(),
         'login_time': request.session.get('login_time'),
     })
@@ -555,7 +599,7 @@ def register_view(request):
                 user = form.save()
                 messages.success(
                     request,
-                    'Â¡Registro exitoso! Ahora puedes iniciar sesiÃ³n.'
+                    '¡Registro exitoso! Ahora puedes iniciar sesión.'
                 )
                 return redirect('auth:login')
             except IntegrityError as e:
@@ -568,7 +612,7 @@ def register_view(request):
                 logger.error(f"Error al registrar usuario: {str(e)}", exc_info=True)
                 messages.error(
                     request,
-                    'OcurriÃ³ un error inesperado. Por favor intenta nuevamente.'
+                    'Ocurrió un error inesperado. Por favor intenta nuevamente.'
                 )
         else:
             for field, errors in form.errors.items():
@@ -664,7 +708,7 @@ def reset_password_view(request, uidb64, token):
         user = Usuario.objects.get(idusuario=uid)
 
         if not validate_password_reset_token(user, token):
-            raise ValueError("Token invÃ¡lido o expirado")
+            raise ValueError("Token inválido o expirado")
 
     except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist) as e:
         logger.error(f"Error en validaciÃ³n de token: {str(e)}")
@@ -678,11 +722,11 @@ def reset_password_view(request, uidb64, token):
             try:
                 new_password = form.cleaned_data['new_password']
 
-                # ValidaciÃ³n adicional de contraseÃ±a
+                # Validación adicional de contraseña
                 if len(new_password) < 8:
                     raise ValueError("La contraseña debe tener al menos 8 caracteres")
 
-                # Actualizar contraseÃ±a usando el mÃ©todo del modelo
+                # Actualizar contraseña usando el método del modelo
                 user.set_password(new_password)
 
                 # Limpiar token y resetear intentos fallidos
@@ -700,7 +744,7 @@ def reset_password_view(request, uidb64, token):
                         'redirect_url': reverse('auth:login')
                     })
 
-                messages.success(request, 'Â¡Contraseña actualizada! Ya puedes iniciar sesiÃ³n.')
+                messages.success(request, '¡Contraseña actualizada! Ya puedes iniciar sesión.')
                 return redirect('auth:login')
 
             except Exception as e:
@@ -726,7 +770,7 @@ def reset_password_view(request, uidb64, token):
             for field, error in errors.items():
                 messages.error(request, f"{field.capitalize()}: {error}")
 
-    # Mostrar formulario (GET request o formulario invÃ¡lido)
+    # Mostrar formulario (GET request o formulario inválido)
     form = ResetPasswordForm()
     return render(request, 'AuthLogin/reset_password.html', {
         'form': form,
@@ -889,4 +933,4 @@ def update_user_password(request):
         return JsonResponse({'error': str(ve)}, status=400)
     except Exception as e:
         logger.error(f"Error inesperado: {str(e)}", exc_info=True)
-        return JsonResponse({'error': 'OcurriÃ³ un error al procesar la solicitud'}, status=500)
+        return JsonResponse({'error': 'Ocurrió un error al procesar la solicitud'}, status=500)
