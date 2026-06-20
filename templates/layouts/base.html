@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{% block title %}{{ page_title|default:"NEXO" }}{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="/media/Sushine-Logo.svg">
     
     <!-- Meta tags -->
     <meta name="description" content="Sistema de Inventario y Ventas NEXO - Gestión integral de inventarios, ventas y producción">
@@ -131,31 +132,12 @@
             
             <!-- Contenido del modal -->
             <div class="px-6 py-6">
-                <div class="flex items-center mb-4">
+                <div class="flex items-center">
                     <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
                         <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
                     </div>
                     <div>
-                        <p class="text-gray-900 font-medium">¿Estás seguro de que deseas cerrar sesión?</p>
-                        <p class="text-gray-600 text-sm mt-1">Se perderán los datos no guardados.</p>
-                    </div>
-                </div>
-                
-                <!-- Información del usuario desde tabla usuario -->
-                <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold text-sm mr-3">
-                            {# Usar user_iniciales del contexto si existe, si no, fallback seguro #}
-                            {{ user_iniciales|default:"IN" }}
-                        </div>
-                        <div>
-                            <div class="font-medium text-gray-900">
-                                {# Mostrar nombreusuario si existe, si no, 'Invitado' #}
-                                {{ usuario_actual.nombreusuario|default:"Invitado" }}
-                            </div>
-                            <div class="text-sm text-gray-600">{{ usuario_actual.rol|default:"Usuario" }}</div>
-                            <div class="text-xs text-gray-400">ID: {{ usuario_actual.idusuario|default:"-" }}</div>
-                        </div>
+                        <p class="text-gray-900 font-medium">¿Deseas cerrar sesión?</p>
                     </div>
                 </div>
             </div>
@@ -167,7 +149,7 @@
                 </button>
                 <button onclick="confirmLogout()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 flex items-center">
                     <i class="fas fa-sign-out-alt mr-2"></i>
-                    Cerrar Sesión
+                    Salir
                 </button>
             </div>
         </div>

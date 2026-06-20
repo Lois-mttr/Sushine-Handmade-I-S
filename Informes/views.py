@@ -31,10 +31,7 @@ def lista_informes(request):
     
     if usuario:
         usuario_actual = usuario
-        if hasattr(usuario, 'empleado_nombre') and usuario.empleado_nombre:
-            nombres = usuario.empleado_nombre.split()
-            user_iniciales = ''.join([n[0].upper() for n in nombres[:2]])
-        elif usuario.nombreusuario:
+        if usuario.nombreusuario:
             user_iniciales = usuario.nombreusuario[:2].upper()
         
         nexo_user_role = {
@@ -180,11 +177,7 @@ def inventario_general(request):
         empleado_nombre = "Usuario"
         
         if usuario:
-            if hasattr(usuario, 'empleado_nombre') and usuario.empleado_nombre:
-                nombres = usuario.empleado_nombre.split()
-                user_iniciales = ''.join([n[0].upper() for n in nombres[:2]])
-                empleado_nombre = usuario.empleado_nombre
-            elif usuario.nombreusuario:
+            if usuario.nombreusuario:
                 user_iniciales = usuario.nombreusuario[:2].upper()
                 empleado_nombre = usuario.nombreusuario
         
@@ -275,11 +268,7 @@ def ventas(request):
         empleado_nombre = "Usuario"
         
         if usuario:
-            if hasattr(usuario, 'empleado_nombre') and usuario.empleado_nombre:
-                nombres = usuario.empleado_nombre.split()
-                user_iniciales = ''.join([n[0].upper() for n in nombres[:2]])
-                empleado_nombre = usuario.empleado_nombre
-            elif usuario.nombreusuario:
+            if usuario.nombreusuario:
                 user_iniciales = usuario.nombreusuario[:2].upper()
                 empleado_nombre = usuario.nombreusuario
         
@@ -344,11 +333,7 @@ def devoluciones(request):
         empleado_nombre = "Usuario"
         
         if usuario:
-            if hasattr(usuario, 'empleado_nombre') and usuario.empleado_nombre:
-                nombres = usuario.empleado_nombre.split()
-                user_iniciales = ''.join([n[0].upper() for n in nombres[:2]])
-                empleado_nombre = usuario.empleado_nombre
-            elif usuario.nombreusuario:
+            if usuario.nombreusuario:
                 user_iniciales = usuario.nombreusuario[:2].upper()
                 empleado_nombre = usuario.nombreusuario
         
@@ -416,11 +401,7 @@ def produccion(request):
         empleado_nombre = "Usuario"
         
         if usuario:
-            if hasattr(usuario, 'empleado_nombre') and usuario.empleado_nombre:
-                nombres = usuario.empleado_nombre.split()
-                user_iniciales = ''.join([n[0].upper() for n in nombres[:2]])
-                empleado_nombre = usuario.empleado_nombre
-            elif usuario.nombreusuario:
+            if usuario.nombreusuario:
                 user_iniciales = usuario.nombreusuario[:2].upper()
                 empleado_nombre = usuario.nombreusuario
         
@@ -477,11 +458,7 @@ def clientes(request):
         empleado_nombre = "Usuario"
         
         if usuario:
-            if hasattr(usuario, 'empleado_nombre') and usuario.empleado_nombre:
-                nombres = usuario.empleado_nombre.split()
-                user_iniciales = ''.join([n[0].upper() for n in nombres[:2]])
-                empleado_nombre = usuario.empleado_nombre
-            elif usuario.nombreusuario:
+            if usuario.nombreusuario:
                 user_iniciales = usuario.nombreusuario[:2].upper()
                 empleado_nombre = usuario.nombreusuario
         
@@ -523,11 +500,7 @@ def usuarios_empleados(request):
         empleado_nombre = "Usuario"
         
         if usuario:
-            if hasattr(usuario, 'empleado_nombre') and usuario.empleado_nombre:
-                nombres = usuario.empleado_nombre.split()
-                user_iniciales = ''.join([n[0].upper() for n in nombres[:2]])
-                empleado_nombre = usuario.empleado_nombre
-            elif usuario.nombreusuario:
+            if usuario.nombreusuario:
                 user_iniciales = usuario.nombreusuario[:2].upper()
                 empleado_nombre = usuario.nombreusuario
         
@@ -570,11 +543,7 @@ def productos_categoria(request):
         empleado_nombre = "Usuario"
         
         if usuario:
-            if hasattr(usuario, 'empleado_nombre') and usuario.empleado_nombre:
-                nombres = usuario.empleado_nombre.split()
-                user_iniciales = ''.join([n[0].upper() for n in nombres[:2]])
-                empleado_nombre = usuario.empleado_nombre
-            elif usuario.nombreusuario:
+            if usuario.nombreusuario:
                 user_iniciales = usuario.nombreusuario[:2].upper()
                 empleado_nombre = usuario.nombreusuario
         

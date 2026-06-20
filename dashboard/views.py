@@ -1,4 +1,4 @@
-# Create your views here.
+﻿# Create your views here.
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -31,18 +31,20 @@ from decimal import Decimal
 logger = logging.getLogger(__name__)
 
 class DashboardService:
-    """Servicio mejorado para manejar la lógica del dashboard con ubicaciones"""
+    """Servicio mejorado para manejar la lÃ³gica del dashboard con ubicaciones"""
     
     @staticmethod
     def get_date_ranges():
         """Obtener rangos de fechas comunes"""
-        today = timezone.now().date()
+        now = timezone.localtime(timezone.now())
+        today = now.date()
+        start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
         return {
             'today': today,
             'yesterday': today - timedelta(days=1),
-            'week_ago': today - timedelta(days=7),
-            'month_ago': today - timedelta(days=30),
-            'year_ago': today - timedelta(days=365)
+            'week_ago': start_of_today - timedelta(days=7),
+            'month_ago': start_of_today - timedelta(days=30),
+            'year_ago': start_of_today - timedelta(days=365)
         }
     
     @staticmethod
@@ -55,32 +57,32 @@ class DashboardService:
     
     @staticmethod
     def decimal_to_float(obj):
-        """Convertir Decimal a float para serialización JSON"""
+        """Convertir Decimal a float para serializaciÃ³n JSON"""
         if isinstance(obj, Decimal):
             return float(obj)
         return obj
     
     @staticmethod
     def get_dashboard_metrics():
-        """Obtener métricas principales del dashboard separadas por ubicación"""
+        """Obtener mÃ©tricas principales del dashboard separadas por ubicaciÃ³n"""
         dates = DashboardService.get_date_ranges()
         ubicaciones = DashboardService.get_ubicaciones()
         
-        # Cache key único por día
+        # Cache key Ãºnico por dÃ­a
         cache_key = f"dashboard_metrics_{dates['today']}"
         cached_metrics = cache.get(cache_key)
         
         if cached_metrics:
-            logger.info("Métricas obtenidas desde cache")
+            logger.info("MÃ©tricas obtenidas desde cache")
             return cached_metrics
         
         try:
             with transaction.atomic():
-                # Métricas generales
+                # MÃ©tricas generales
                 total_productos = Producto.objects.filter(estado=True).count()
                 total_clientes = Cliente.objects.filter(estadocliente=True).count()
                 
-                # Métricas por ubicación
+                # MÃ©tricas por ubicaciÃ³n
                 metrics = {
                     'total_productos': total_productos,
                     'total_clientes': total_clientes,
@@ -90,7 +92,7 @@ class DashboardService:
                 for key, ubicacion in ubicaciones.items():
                     ubicacion_id = ubicacion['id']
                     
-                    # Productos por ubicación
+                    # Productos por ubicaciÃ³n
                     productos_ubicacion = Producto.objects.filter(
                         estado=True,
                         idubicacionpro_id=ubicacion_id
@@ -104,7 +106,7 @@ class DashboardService:
                         existenciaproducto=0
                     ).count()
                     
-                    # Ventas por ubicación (productos de esa ubicación)
+                    # Ventas por ubicaciÃ³n (productos de esa ubicaciÃ³n)
                     ventas_mes = Venta.objects.filter(
                         fechaventa__gte=dates['month_ago'],
                         estado='REALIZADA',
@@ -117,21 +119,21 @@ class DashboardService:
                         detalleventa__idproventa__idubicacionpro_id=ubicacion_id
                     ).distinct().count()
                     
-                    # Ingresos por ubicación
+                    # Ingresos por ubicaciÃ³n
                     ingresos_mes = Detalleventa.objects.filter(
                         idventa__fechaventa__gte=dates['month_ago'],
                         idventa__estado='REALIZADA',
                         idproventa__idubicacionpro_id=ubicacion_id
                     ).aggregate(total=Sum('subtotal'))['total'] or Decimal('0.00')
                     
-                    # Producciones por ubicación
+                    # Producciones por ubicaciÃ³n
                     producciones_mes = Productosproduccion.objects.filter(
                         fechaentrada__gte=dates['month_ago'],
                         estadoregistro=True,
                         detalleproduccion__id_producto__idubicacionpro_id=ubicacion_id
                     ).distinct().count()
                     
-                    # Devoluciones por ubicación
+                    # Devoluciones por ubicaciÃ³n
                     devoluciones_mes = Devolucion.objects.filter(
                         fechadevolucion__gte=dates['month_ago'],
                         detalledevolucion__id_producto__idubicacionpro_id=ubicacion_id
@@ -152,7 +154,7 @@ class DashboardService:
                         'porcentaje_productos_bajo_stock': (productos_bajo_stock / productos_ubicacion.count() * 100) if productos_ubicacion.count() > 0 else 0
                     }
                 
-                # Métricas globales
+                # MÃ©tricas globales
                 metrics.update({
                     'productos_bajo_stock': sum(ub['productos_bajo_stock'] for ub in metrics['ubicaciones'].values()),
                     'productos_agotados': sum(ub['productos_agotados'] for ub in metrics['ubicaciones'].values()),
@@ -165,12 +167,12 @@ class DashboardService:
                 
                 # Cache por 10 minutos
                 cache.set(cache_key, metrics, 600)
-                logger.info("Métricas calculadas y guardadas en cache")
+                logger.info("MÃ©tricas calculadas y guardadas en cache")
                 return metrics
                 
         except Exception as e:
-            logger.error(f"Error calculando métricas del dashboard: {str(e)}")
-            # Retornar métricas por defecto en caso de error
+            logger.error(f"Error calculando mÃ©tricas del dashboard: {str(e)}")
+            # Retornar mÃ©tricas por defecto en caso de error
             return {
                 'total_productos': 0,
                 'total_clientes': 0,
@@ -189,23 +191,23 @@ class DashboardService:
 
     @staticmethod
     def get_recent_activities():
-        """Obtener actividades recientes por ubicación"""
+        """Obtener actividades recientes por ubicaciÃ³n"""
         dates = DashboardService.get_date_ranges()
         
-        # Entradas recientes por ubicación
+        # Entradas recientes por ubicaciÃ³n
         entradas_recientes = Productosproduccion.objects.filter(
             fechaentrada__gte=dates['week_ago'],
             estadoregistro=True
-        ).select_related('id_usuario').order_by('-fechaentrada')[:10]
+        ).select_related('id_usuario').order_by('-fechaentrada')[:5]
         
-        # Ventas recientes por ubicación
+        # Ventas recientes por ubicaciÃ³n
         ventas_recientes = Venta.objects.filter(
             fechaventa__gte=dates['week_ago'],
             estado='REALIZADA'
         ).select_related(
             'codcliente__idpersonacliente',
             'idusuarioventa'
-        ).order_by('-fechaventa')[:10]
+        ).order_by('-fechaventa')[:5]
         
         return {
             'entradas_recientes': entradas_recientes,
@@ -214,7 +216,7 @@ class DashboardService:
     
     @staticmethod
     def get_chart_data():
-        """Obtener datos para gráficos por ubicación"""
+        """Obtener datos para grÃ¡ficos por ubicaciÃ³n"""
         dates = DashboardService.get_date_ranges()
         ubicaciones = DashboardService.get_ubicaciones()
         
@@ -223,7 +225,7 @@ class DashboardService:
         for key, ubicacion in ubicaciones.items():
             ubicacion_id = ubicacion['id']
             
-            # Productos más vendidos por ubicación
+            # Productos mÃ¡s vendidos por ubicaciÃ³n
             productos_vendidos = Detalleventa.objects.filter(
                 idventa__fechaventa__gte=dates['month_ago'],
                 idventa__estado='REALIZADA',
@@ -236,7 +238,7 @@ class DashboardService:
                 ingresos=Sum('subtotal')
             ).order_by('-total_vendido')[:5]
             
-            # Productos con más devoluciones por ubicación
+            # Productos con mÃ¡s devoluciones por ubicaciÃ³n
             productos_devueltos = Detalledevolucion.objects.filter(
                 id_devolucion__fechadevolucion__gte=dates['month_ago'],
                 id_producto__idubicacionpro_id=ubicacion_id
@@ -249,8 +251,23 @@ class DashboardService:
             
             chart_data['ubicaciones'][key] = {
                 'nombre': ubicacion['nombre'],
-                'productos_mas_vendidos': list(productos_vendidos),
-                'productos_mas_devueltos': list(productos_devueltos)
+                'productos_mas_vendidos': [
+                    {
+                        'nombre': item['idproventa__nombreproducto'],
+                        'categoria': item['idproventa__idcategoriapro__nombrecategoria'],
+                        'cantidad': item['total_vendido'] or 0,
+                        'ingresos': DashboardService.decimal_to_float(item['ingresos'] or Decimal('0.00'))
+                    }
+                    for item in productos_vendidos
+                ],
+                'productos_mas_devueltos': [
+                    {
+                        'nombre': item['id_producto__nombreproducto'],
+                        'categoria': item['id_producto__idcategoriapro__nombrecategoria'],
+                        'cantidad': item['total_devuelto'] or 0
+                    }
+                    for item in productos_devueltos
+                ]
             }
         
         return chart_data
@@ -260,44 +277,16 @@ def dashboard_view(request):
     """Vista principal del dashboard mejorada con ubicaciones"""
     usuario_actual = getattr(request, 'nexo_user', None)
     if not usuario_actual:
-        messages.error(request, 'Debes iniciar sesión para acceder al dashboard')
+        messages.error(request, 'Debes iniciar sesiÃ³n para acceder al dashboard')
         return redirect('auth:login')
     user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
     try:
-        logger.info(f"Usuario {usuario_actual.nombreusuario} accedió al dashboard")
+        logger.info(f"Usuario {usuario_actual.nombreusuario} accediÃ³ al dashboard")
         
         # Obtener datos del dashboard usando el servicio
         metrics = DashboardService.get_dashboard_metrics()
         activities = DashboardService.get_recent_activities()
         chart_data = DashboardService.get_chart_data()
-        
-        # Preparar datos para los gráficos por ubicación
-        chart_data_json = {}
-        for ubicacion_key, ubicacion_data in chart_data['ubicaciones'].items():
-            productos_vendidos_chart = [
-                {
-                    'nombre': item['idproventa__nombreproducto'] or 'Sin nombre',
-                    'cantidad': item['total_vendido'] or 0,
-                    'categoria': item['idproventa__idcategoriapro__nombrecategoria'] or 'Sin categoría',
-                    'ingresos': DashboardService.decimal_to_float(item['ingresos'] or 0)
-                }
-                for item in ubicacion_data['productos_mas_vendidos']
-            ]
-            
-            productos_devueltos_chart = [
-                {
-                    'nombre': item['id_producto__nombreproducto'] or 'Sin nombre',
-                    'cantidad': item['total_devuelto'] or 0,
-                    'categoria': item['id_producto__idcategoriapro__nombrecategoria'] or 'Sin categoría'
-                }
-                for item in ubicacion_data['productos_mas_devueltos']
-            ]
-            
-            chart_data_json[ubicacion_key] = {
-                'productos_mas_vendidos': productos_vendidos_chart,
-                'productos_mas_devueltos': productos_devueltos_chart
-            }
-        
         # Obtener usuario autenticado de forma segura
         usuario_actual = getattr(request, 'nexo_user', None)
         user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
@@ -308,16 +297,15 @@ def dashboard_view(request):
             'page_title': 'Dashboard - NEXO',
             'system_name': 'Sistema de Inventario y ventas NEXO - Sunshine Handmade',
             
-            # Métricas principales
+            # MÃ©tricas principales
             **metrics,
             
             # Actividades recientes
             **activities,
+            'chart_data_by_location': chart_data['ubicaciones'],
+            'chart_data_by_location_json': json.dumps(chart_data['ubicaciones']),
             
-            # Datos para gráficos por ubicación (JSON para JavaScript)
-            'chart_data_by_location': json.dumps(chart_data_json),
-            
-            # Información adicional
+            # InformaciÃ³n adicional
             'current_date': timezone.now().date(),
             'current_time': timezone.now().time(),
             'current_datetime': timezone.now(),
@@ -325,7 +313,7 @@ def dashboard_view(request):
             'employee_name': usuario_actual.empleado_nombre if hasattr(usuario_actual, 'empleado_nombre') and usuario_actual.empleado_nombre else (usuario_actual.nombreusuario if usuario_actual else 'Invitado'),
             'user_full_name': usuario_actual.empleado_nombre if hasattr(usuario_actual, 'empleado_nombre') and usuario_actual.empleado_nombre else (usuario_actual.nombreusuario if usuario_actual else 'Invitado'),
             
-            # Configuración para JavaScript
+            # ConfiguraciÃ³n para JavaScript
             'dashboard_config': json.dumps({
                 'refresh_interval': 30000,
                 'chart_animation_duration': 1000,
@@ -354,89 +342,60 @@ def dashboard_view(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def logout_view(request):
-    """Vista para cerrar sesión"""
+    """Vista para cerrar sesiÃ³n"""
     try:
-        # Limpiar la sesión
+        # Limpiar la sesiÃ³n
         if 'user_id' in request.session:
             user_id = request.session['user_id']
-            logger.info(f"Usuario {user_id} cerró sesión")
+            logger.info(f"Usuario {user_id} cerrÃ³ sesiÃ³n")
             request.session.flush()
         
         return JsonResponse({
             'success': True,
-            'message': 'Sesión cerrada exitosamente',
+            'message': 'SesiÃ³n cerrada exitosamente',
             'redirect_url': '/login/'
         })
     except Exception as e:
-        logger.error(f'Error al cerrar sesión: {str(e)}')
+        logger.error(f'Error al cerrar sesiÃ³n: {str(e)}')
         return JsonResponse({
             'success': False,
-            'error': f'Error al cerrar sesión: {str(e)}'
+            'error': f'Error al cerrar sesiÃ³n: {str(e)}'
         }, status=500)
 
 @require_http_methods(["GET"])
 def get_dashboard_stats_ajax(request):
-    """Endpoint AJAX mejorado para obtener estadísticas por ubicación"""
+    """Endpoint AJAX mejorado para obtener estadÃ­sticas por ubicaciÃ³n"""
     user = check_session(request)
     if not user:
-        return JsonResponse({'error': 'Sesión no válida'}, status=401)
+        return JsonResponse({'error': 'SesiÃ³n no vÃ¡lida'}, status=401)
     
     try:
-        # Obtener métricas actualizadas
+        # Obtener mÃ©tricas actualizadas
         metrics = DashboardService.get_dashboard_metrics()
         chart_data = DashboardService.get_chart_data()
-        
-        # Preparar datos para gráficos por ubicación
-        chart_data_formatted = {}
-        for ubicacion_key, ubicacion_data in chart_data['ubicaciones'].items():
-            productos_vendidos = [
-                {
-                    'nombre': item['idproventa__nombreproducto'] or 'Sin nombre',
-                    'cantidad': item['total_vendido'] or 0,
-                    'ingresos': DashboardService.decimal_to_float(item['ingresos'] or 0),
-                    'categoria': item['idproventa__idcategoriapro__nombrecategoria'] or 'Sin categoría'
-                }
-                for item in ubicacion_data['productos_mas_vendidos']
-            ]
-            
-            productos_devueltos = [
-                {
-                    'nombre': item['id_producto__nombreproducto'] or 'Sin nombre',
-                    'cantidad': item['total_devuelto'] or 0,
-                    'categoria': item['id_producto__idcategoriapro__nombrecategoria'] or 'Sin categoría'
-                }
-                for item in ubicacion_data['productos_mas_devueltos']
-            ]
-            
-            chart_data_formatted[ubicacion_key] = {
-                'nombre': ubicacion_data['nombre'],
-                'productos_mas_vendidos': productos_vendidos,
-                'productos_mas_devueltos': productos_devueltos
-            }
-        
         return JsonResponse({
             'success': True,
             'data': {
                 'metrics': metrics,
-                'chart_data_by_location': chart_data_formatted,
+                'chart_data_by_location': chart_data['ubicaciones'],
                 'timestamp': timezone.now().isoformat()
             }
         })
         
     except Exception as e:
-        logger.error(f'Error al obtener estadísticas AJAX: {str(e)}')
+        logger.error(f'Error al obtener estadÃ­sticas AJAX: {str(e)}')
         return JsonResponse({
             'success': False,
-            'error': f'Error al obtener estadísticas: {str(e)}',
+            'error': f'Error al obtener estadÃ­sticas: {str(e)}',
             'timestamp': timezone.now().isoformat()
         }, status=500)
 
 @require_http_methods(["GET"])
 def get_recent_data_ajax(request):
-    """Endpoint AJAX para obtener datos recientes con ubicación"""
+    """Endpoint AJAX para obtener datos recientes con ubicaciÃ³n"""
     user = check_session(request)
     if not user:
-        return JsonResponse({'error': 'Sesión no válida'}, status=401)
+        return JsonResponse({'error': 'SesiÃ³n no vÃ¡lida'}, status=401)
     
     try:
         activities = DashboardService.get_recent_activities()
@@ -447,7 +406,7 @@ def get_recent_data_ajax(request):
             entradas_data.append({
                 'id': entrada.idproduccion,
                 'fecha': entrada.fechaentrada.strftime('%d/%m/%Y'),
-                'descripcion': f"Producción #{entrada.idproduccion}",
+                'descripcion': f"ProducciÃ³n #{entrada.idproduccion}",
                 'detalle': entrada.observacion or 'Sin observaciones',
                 'usuario': entrada.id_usuario.nombreusuario if entrada.id_usuario else 'Sistema'
             })
@@ -487,7 +446,7 @@ def refresh_dashboard_data(request):
     """Endpoint para refrescar todos los datos del dashboard"""
     user = check_session(request)
     if not user:
-        return JsonResponse({'error': 'Sesión no válida'}, status=401)
+        return JsonResponse({'error': 'SesiÃ³n no vÃ¡lida'}, status=401)
     
     try:
         # Limpiar cache relacionado con el dashboard
@@ -500,12 +459,14 @@ def refresh_dashboard_data(request):
         
         # Obtener datos frescos
         metrics = DashboardService.get_dashboard_metrics()
+        chart_data = DashboardService.get_chart_data()
         
         return JsonResponse({
             'success': True,
             'message': 'Dashboard actualizado correctamente',
             'data': {
                 'metrics': metrics,
+                'chart_data_by_location': chart_data['ubicaciones'],
                 'timestamp': timezone.now().isoformat()
             }
         })
@@ -517,3 +478,4 @@ def refresh_dashboard_data(request):
             'error': f'Error al refrescar dashboard: {str(e)}',
             'timestamp': timezone.now().isoformat()
         }, status=500)
+

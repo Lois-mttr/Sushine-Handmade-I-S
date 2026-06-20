@@ -16,6 +16,7 @@
     <!-- Menú principal -->
     <div class="nexo-sidebar-menu">
         <!-- Dashboard -->
+        {% if menu_permissions.dashboard %}
         <a href="{% url 'dashboard:dashboard' %}" 
         class="nexo-menu-item {% if request.resolver_match.url_name == 'dashboard' %}nexo-menu-active{% endif %}"
         data-tooltip="Dashboard">
@@ -26,8 +27,10 @@
             </div>
             <span class="nexo-sidebar-text nexo-menu-text">Dashboard</span>
         </a>
+        {% endif %}
 
         <!-- Inventario -->
+        {% if menu_permissions.inventario %}
         <a href="{% url 'inventario:inventario_general' %}" 
         class="nexo-menu-item {% if request.resolver_match.url_name == 'inventario' %}nexo-menu-active{% endif %}"
         data-tooltip="Inventario">
@@ -40,6 +43,8 @@
         </a>
 
         <!-- Registrar Producción -->
+        {% endif %}
+        {% if menu_permissions.produccion %}
         <a href="{% url 'crud:produccion_list' %}" 
         class="nexo-menu-item {% if request.resolver_match.url_name == 'produccion' %}nexo-menu-active{% endif %}"
         data-tooltip="Registrar Producción">
@@ -52,6 +57,8 @@
         </a>
 
         <!-- Reabastecimiento -->
+        {% endif %}
+        {% if menu_permissions.reabastecimiento %}
         <a href="#" 
         class="nexo-menu-item {% if request.resolver_match.url_name == 'reabastecimiento' %}nexo-menu-active{% endif %}"
         data-tooltip="Reabastecimiento">
@@ -64,6 +71,8 @@
         </a>
 
         <!-- Registrar Venta -->
+        {% endif %}
+        {% if menu_permissions.ventas %}
         <a href="{% url 'ventas:lista_ventas' %}" 
         class="nexo-menu-item {% if request.resolver_match.url_name == 'ventas' %}nexo-menu-active{% endif %}"
         data-tooltip="Registrar Venta">
@@ -76,6 +85,8 @@
         </a>
 
         <!-- Registrar Devolución -->
+        {% endif %}
+        {% if menu_permissions.devolucion %}
         <a href="{% url 'devolucion:devolucion_list' %}" 
            class="nexo-menu-item {% if request.resolver_match.url_name == 'devoluciones' %}nexo-menu-active{% endif %}"
            data-tooltip="Registrar Devolución">
@@ -88,6 +99,8 @@
         </a>
 
         <!-- Registrar Cliente -->
+        {% endif %}
+        {% if menu_permissions.clientes %}
         <a href="{% url 'clientes:list' %}" 
            class="nexo-menu-item {% if request.resolver_match.url_name == 'clientes' %}nexo-menu-active{% endif %}"
            data-tooltip="Registrar Cliente">
@@ -100,6 +113,8 @@
         </a>
 
         <!-- Reportes -->
+        {% endif %}
+        {% if menu_permissions.reportes %}
             <a href="{% url 'informes:lista_informes' %}" 
         class="nexo-menu-item {% if request.resolver_match.url_name == 'Informes' %}nexo-menu-active{% endif %}"
         data-tooltip="Reportes">
@@ -110,11 +125,13 @@
             </div>
             <span class="nexo-sidebar-text nexo-menu-text">Reportes</span>
         </a>
+        {% endif %}
     </div>
 
     <!-- Footer del sidebar -->
     <div class="nexo-sidebar-footer">
         <!-- Configuración -->
+        {% if menu_permissions.configuracion %}
         <a href="{% url 'auth:configuracion' %}" class="nexo-menu-item {% if request.resolver_match.url_name == 'configuracion' %}nexo-menu-active{% endif %}" data-tooltip="Configuración">
             <div class="nexo-menu-icon nexo-icon-config">
             <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -123,6 +140,7 @@
             </div>
             <span class="nexo-sidebar-text nexo-menu-text">Configuración</span>
         </a>
+        {% endif %}
 
         <!-- Cerrar Sesión -->
         <button onclick="showLogoutConfirmation()" class="nexo-menu-item nexo-logout-btn" data-tooltip="Cerrar Sesión">

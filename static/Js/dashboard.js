@@ -1,19 +1,19 @@
+﻿
 
-
-// ===== CONFIGURACIÓN GLOBAL =====
+// ===== CONFIGURACIÃ“N GLOBAL =====
 const NEXO_CONFIG = {
-  refresh_interval: 30000, // Intervalo de actualización automática (30 segundos)
-  chart_animation_duration: 1000, // Duración de animaciones de gráficos
-  notification_duration: 5000, // Duración de notificaciones
+  refresh_interval: 30000, // Intervalo de actualizaciÃ³n automÃ¡tica (30 segundos)
+  chart_animation_duration: 0,
+  notification_duration: 5000, // DuraciÃ³n de notificaciones
   chart_colors: [
     "#4ECDC4", // Color primario NEXO
     "#f2ce16", // Amarillo secundario
     "#f28627", // Naranja
     "#39bfb2", // Verde azulado oscuro
     "#f29d35", // Naranja claro
-    "#10b981", // Verde éxito
+    "#10b981", // Verde Ã©xito
     "#3b82f6", // Azul
-    "#8b5cf6", // Púrpura
+    "#8b5cf6", // PÃºrpura
     "#ef4444", // Rojo error
     "#06b6d4", // Cian
   ],
@@ -22,38 +22,38 @@ const NEXO_CONFIG = {
 // ===== CLASE PRINCIPAL DEL DASHBOARD =====
 class NexoDashboard {
   constructor() {
-    this.charts = {} // Almacena las instancias de gráficos
-    this.updateTimers = {} // Almacena los timers de actualización
-    this.isUpdating = false // Flag para evitar actualizaciones simultáneas
+    this.charts = {} // Almacena las instancias de grÃ¡ficos
+    this.updateTimers = {} // Almacena los timers de actualizaciÃ³n
+    this.isUpdating = false // Flag para evitar actualizaciones simultÃ¡neas
 
     this.init()
   }
 
   async init() {
-    console.log("🚀 Inicializando NEXO Dashboard...")
+    console.log("ðŸš€ Inicializando NEXO Dashboard...")
 
     try {
-      // Configurar Chart.js si está disponible
+      // Configurar Chart.js si estÃ¡ disponible
       this.setupChartDefaults()
 
-      // Inicializar gráficos
+      // Inicializar grÃ¡ficos
       await this.initCharts()
 
       // Configurar event listeners
       this.setupEventListeners()
 
-      // Iniciar actualizaciones automáticas
+      // Iniciar actualizaciones automÃ¡ticas
       this.startRealTimeUpdates()
 
-      console.log("✅ NEXO Dashboard inicializado correctamente")
+      console.log("âœ… NEXO Dashboard inicializado correctamente")
     } catch (error) {
-      console.error("❌ Error inicializando dashboard:", error)
+      console.error("âŒ Error inicializando dashboard:", error)
       this.showNotification("Error al inicializar el dashboard", "error")
     }
   }
 
   setupChartDefaults() {
-    // Configuración global de Chart.js si está disponible
+    // ConfiguraciÃ³n global de Chart.js si estÃ¡ disponible
     if (typeof Chart !== "undefined") {
       Chart.defaults.font.family = "Inter, system-ui, sans-serif"
       Chart.defaults.color = "#6b7280"
@@ -63,21 +63,21 @@ class NexoDashboard {
 
   async initCharts() {
     try {
-      // Verificar que Chart.js esté disponible
+      // Verificar que Chart.js estÃ© disponible
       if (typeof Chart === "undefined") {
-        console.warn("⚠️ Chart.js no está disponible")
+        console.warn("âš ï¸ Chart.js no estÃ¡ disponible")
         return
       }
 
-      // Inicializar gráfico de productos más vendidos
+      // Inicializar grÃ¡fico de productos mÃ¡s vendidos
       await this.createProductosVendidosChart()
 
-      // Inicializar gráfico de productos más devueltos
+      // Inicializar grÃ¡fico de productos mÃ¡s devueltos
       await this.createProductosDevueltosChart()
 
-      console.log("📊 Gráficos inicializados correctamente")
+      console.log("ðŸ“Š GrÃ¡ficos inicializados correctamente")
     } catch (error) {
-      console.error("❌ Error inicializando gráficos:", error)
+      console.error("âŒ Error inicializando grÃ¡ficos:", error)
     }
   }
 
@@ -87,28 +87,9 @@ class NexoDashboard {
 
     const ctx = canvas.getContext("2d")
 
-    // Datos por defecto si no hay datos del servidor
-    let data = [
-      { nombre: "Monedero", cantidad: 45 },
-      { nombre: "Bolso", cantidad: 32 },
-      { nombre: "Cartera", cantidad: 28 },
-      { nombre: "Billetera", cantidad: 20 },
-      { nombre: "Mochila", cantidad: 15 },
-    ]
+    const data = this.extractChartData("productos_mas_vendidos")
 
-    // Usar datos del servidor si están disponibles
-    if (window.chartDataByLocation && typeof window.chartDataByLocation === "object") {
-      const allLocations = Object.values(window.chartDataByLocation)
-      if (
-        allLocations.length > 0 &&
-        allLocations[0].productos_mas_vendidos &&
-        allLocations[0].productos_mas_vendidos.length > 0
-      ) {
-        data = allLocations[0].productos_mas_vendidos
-      }
-    }
-
-    // Destruir gráfico existente si existe
+    // Destruir grÃ¡fico existente si existe
     if (this.charts.productosVendidos) {
       this.charts.productosVendidos.destroy()
     }
@@ -123,8 +104,8 @@ class NexoDashboard {
             backgroundColor: NEXO_CONFIG.chart_colors.slice(0, data.length),
             borderColor: "#ffffff",
             borderWidth: 2,
-            hoverBorderWidth: 3,
-            hoverOffset: 10,
+            hoverBorderWidth: 2,
+            hoverOffset: 0,
           },
         ],
       },
@@ -152,9 +133,8 @@ class NexoDashboard {
           },
         },
         animation: {
-          animateRotate: true,
+          animateRotate: false,
           duration: NEXO_CONFIG.chart_animation_duration,
-          easing: "easeOutQuart",
         },
       },
     })
@@ -169,28 +149,9 @@ class NexoDashboard {
 
     const ctx = canvas.getContext("2d")
 
-    // Datos por defecto si no hay datos del servidor
-    let data = [
-      { nombre: "Monedero", cantidad: 8 },
-      { nombre: "Bolso", cantidad: 5 },
-      { nombre: "Cartera", cantidad: 3 },
-      { nombre: "Billetera", cantidad: 2 },
-      { nombre: "Mochila", cantidad: 1 },
-    ]
+    const data = this.extractChartData("productos_mas_devueltos")
 
-    // Usar datos del servidor si están disponibles
-    if (window.chartDataByLocation && typeof window.chartDataByLocation === "object") {
-      const allLocations = Object.values(window.chartDataByLocation)
-      if (
-        allLocations.length > 0 &&
-        allLocations[0].productos_mas_devueltos &&
-        allLocations[0].productos_mas_devueltos.length > 0
-      ) {
-        data = allLocations[0].productos_mas_devueltos
-      }
-    }
-
-    // Destruir gráfico existente si existe
+    // Destruir grÃ¡fico existente si existe
     if (this.charts.productosDevueltos) {
       this.charts.productosDevueltos.destroy()
     }
@@ -205,8 +166,8 @@ class NexoDashboard {
             backgroundColor: NEXO_CONFIG.chart_colors.slice(0, data.length),
             borderColor: "#ffffff",
             borderWidth: 2,
-            hoverBorderWidth: 3,
-            hoverOffset: 10,
+            hoverBorderWidth: 2,
+            hoverOffset: 0,
           },
         ],
       },
@@ -234,9 +195,8 @@ class NexoDashboard {
           },
         },
         animation: {
-          animateRotate: true,
+          animateRotate: false,
           duration: NEXO_CONFIG.chart_animation_duration,
-          easing: "easeOutQuart",
         },
       },
     })
@@ -251,6 +211,11 @@ class NexoDashboard {
 
     container.innerHTML = ""
 
+    if (!data || data.length === 0) {
+      container.innerHTML = '<span class="text-xs text-gray-500">No hay datos reales disponibles</span>'
+      return
+    }
+
     data.forEach((item, index) => {
       const legendItem = document.createElement("div")
       legendItem.className = "flex items-center space-x-2 text-xs"
@@ -262,8 +227,29 @@ class NexoDashboard {
     })
   }
 
+  extractChartData(key) {
+    if (!window.chartDataByLocation || typeof window.chartDataByLocation !== "object") return []
+
+    const grouped = new Map()
+
+    Object.values(window.chartDataByLocation).forEach((location) => {
+      const rows = Array.isArray(location[key]) ? location[key] : []
+      rows.forEach((item) => {
+        const name = item.nombre || "Sin nombre"
+        const current = grouped.get(name) || { ...item, nombre: name, cantidad: 0 }
+        current.cantidad += Number(item.cantidad || 0)
+        grouped.set(name, current)
+      })
+    })
+
+    return Array.from(grouped.values())
+      .filter((item) => item.cantidad > 0)
+      .sort((a, b) => b.cantidad - a.cantidad)
+      .slice(0, 5)
+  }
+
   setupEventListeners() {
-    // Listener para botón de actualizar
+    // Listener para botÃ³n de actualizar
     const refreshButton = document.querySelector("[data-refresh-dashboard]")
     if (refreshButton) {
       refreshButton.addEventListener("click", (e) => {
@@ -273,7 +259,7 @@ class NexoDashboard {
       })
     }
 
-    // Listener para cambios de visibilidad de la página
+    // Listener para cambios de visibilidad de la pÃ¡gina
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         this.stopRealTimeUpdates()
@@ -283,14 +269,14 @@ class NexoDashboard {
       }
     })
 
-    // Listeners para conexión de red
+    // Listeners para conexiÃ³n de red
     window.addEventListener("online", () => {
-      this.showNotification("Conexión restaurada", "success")
+      this.showNotification("ConexiÃ³n restaurada", "success")
       this.startRealTimeUpdates()
     })
 
     window.addEventListener("offline", () => {
-      this.showNotification("Sin conexión a internet", "error")
+      this.showNotification("Sin conexiÃ³n a internet", "error")
       this.stopRealTimeUpdates()
     })
   }
@@ -299,12 +285,12 @@ class NexoDashboard {
     // Limpiar timers existentes
     this.stopRealTimeUpdates()
 
-    // Actualizar estadísticas cada 30 segundos
+    // Actualizar estadÃ­sticas cada 30 segundos
     this.updateTimers.stats = setInterval(() => {
       this.updateDashboardStats()
     }, NEXO_CONFIG.refresh_interval)
 
-    console.log("🔄 Actualizaciones automáticas iniciadas")
+    console.log("ðŸ”„ Actualizaciones automÃ¡ticas iniciadas")
   }
 
   stopRealTimeUpdates() {
@@ -312,20 +298,20 @@ class NexoDashboard {
       clearInterval(timer)
     })
     this.updateTimers = {}
-    console.log("⏹️ Actualizaciones automáticas detenidas")
+    console.log("â¹ï¸ Actualizaciones automÃ¡ticas detenidas")
   }
 
   async updateDashboardStats() {
     if (this.isUpdating) {
-      console.log("⏳ Actualización ya en progreso, saltando...")
+      console.log("â³ ActualizaciÃ³n ya en progreso, saltando...")
       return
     }
 
     this.isUpdating = true
-    console.log("🔄 Iniciando actualización de estadísticas...")
+    console.log("ðŸ”„ Iniciando actualizaciÃ³n de estadÃ­sticas...")
 
     try {
-      // Verificar que las URLs estén disponibles
+      // Verificar que las URLs estÃ©n disponibles
       if (!window.NEXO || !window.NEXO.urls || !window.NEXO.urls.dashboard_stats) {
         throw new Error("URLs de API no disponibles")
       }
@@ -333,70 +319,59 @@ class NexoDashboard {
       const response = await this.makeRequest(window.NEXO.urls.dashboard_stats)
 
       if (response.success) {
-        console.log("✅ Datos actualizados correctamente:", response.data)
+        console.log("âœ… Datos actualizados correctamente:", response.data)
 
-        // Actualizar métricas con animación
+        // Actualizar mÃ©tricas con animaciÃ³n
         this.updateStatsUI(response.data.metrics)
 
-        // Actualizar gráficos
+        // Actualizar grÃ¡ficos
         this.updateCharts(response.data.chart_data_by_location)
 
         // Actualizar timestamp
         this.updateLastUpdateTime()
 
-        this.showNotification("Estadísticas actualizadas", "success", 2000)
+        this.showNotification("EstadÃ­sticas actualizadas", "success", 2000)
       } else {
         throw new Error(response.error || "Error desconocido")
       }
     } catch (error) {
-      console.error("❌ Error actualizando estadísticas:", error)
-      this.showNotification("Error al actualizar estadísticas: " + error.message, "error")
+      console.error("âŒ Error actualizando estadÃ­sticas:", error)
+      this.showNotification("Error al actualizar estadÃ­sticas: " + error.message, "error")
     } finally {
       this.isUpdating = false
     }
   }
 
   updateStatsUI(metrics) {
-    // Actualizar métricas principales con animación
+    // Actualizar mÃ©tricas principales con animaciÃ³n
     const metricsMap = {
       "total-productos": metrics.total_productos,
       "total-clientes": metrics.total_clientes,
       "ventas-mes": metrics.ventas_mes,
       "productos-bajo-stock": metrics.productos_bajo_stock,
+      "productos-agotados": metrics.productos_agotados,
+      "devoluciones-mes": metrics.devoluciones_mes,
+      "producciones-mes": metrics.producciones_mes,
+      "ventas-mes-resumen": metrics.ventas_mes,
     }
 
     Object.keys(metricsMap).forEach((key) => {
       const element = document.getElementById(key)
       if (element && typeof metricsMap[key] === "number") {
-        this.animateCounterUpdate(element, metricsMap[key])
+        element.textContent = metricsMap[key]
       }
     })
   }
 
-  animateCounterUpdate(element, newValue) {
-    const currentValue = Number.parseInt(element.textContent) || 0
-    const increment = (newValue - currentValue) / 20
-    let current = currentValue
-
-    const timer = setInterval(() => {
-      current += increment
-      if ((increment > 0 && current >= newValue) || (increment < 0 && current <= newValue)) {
-        current = newValue
-        clearInterval(timer)
-      }
-      element.textContent = Math.round(current)
-    }, 50)
-  }
-
   updateCharts(chartData) {
     if (!chartData || typeof chartData !== "object") {
-      console.log("📊 No hay datos de gráficos para actualizar")
+      console.log("ðŸ“Š No hay datos de grÃ¡ficos para actualizar")
       return
     }
 
-    console.log("📊 Actualizando gráficos con datos:", chartData)
+    console.log("ðŸ“Š Actualizando grÃ¡ficos con datos:", chartData)
 
-    // Actualizar gráfico de productos más vendidos
+    // Actualizar grÃ¡fico de productos mÃ¡s vendidos
     const allLocations = Object.values(chartData)
     if (allLocations.length > 0) {
       if (this.charts.productosVendidos && allLocations[0].productos_mas_vendidos) {
@@ -424,7 +399,7 @@ class NexoDashboard {
 
     chart.data.labels = newData.map((item) => item.nombre || "Sin nombre")
     chart.data.datasets[0].data = newData.map((item) => item.cantidad || 0)
-    chart.update("active")
+    chart.update("none")
   }
 
   updateLastUpdateTime() {
@@ -437,7 +412,7 @@ class NexoDashboard {
   }
 
   async refreshDashboard() {
-    console.log("🔄 Iniciando actualización manual del dashboard...")
+    console.log("ðŸ”„ Iniciando actualizaciÃ³n manual del dashboard...")
 
     const refreshIcon = document.querySelector("[data-refresh-dashboard] i")
     if (refreshIcon) {
@@ -449,9 +424,9 @@ class NexoDashboard {
       await Promise.all([this.updateDashboardStats(), this.updateRecentData()])
 
       this.showNotification("Dashboard actualizado correctamente", "success")
-      console.log("✅ Dashboard actualizado exitosamente")
+      console.log("âœ… Dashboard actualizado exitosamente")
     } catch (error) {
-      console.error("❌ Error al actualizar dashboard:", error)
+      console.error("âŒ Error al actualizar dashboard:", error)
       this.showNotification("Error al actualizar dashboard: " + error.message, "error")
     } finally {
       setTimeout(() => {
@@ -472,12 +447,12 @@ class NexoDashboard {
 
       if (response.success) {
         this.updateRecentDataUI(response.data)
-        console.log("✅ Datos recientes actualizados")
+        console.log("âœ… Datos recientes actualizados")
       } else {
         throw new Error(response.error || "Error desconocido")
       }
     } catch (error) {
-      console.error("❌ Error actualizando datos recientes:", error)
+      console.error("âŒ Error actualizando datos recientes:", error)
     }
   }
 
@@ -485,7 +460,7 @@ class NexoDashboard {
     // Actualizar tabla de entradas recientes
     this.updateTable("entradas-recientes", data.entradas_recientes, [
       { key: "fecha", label: "Fecha" },
-      { key: "descripcion", label: "Descripción" },
+      { key: "descripcion", label: "DescripciÃ³n" },
       { key: "usuario", label: "Usuario" },
     ])
 
@@ -514,7 +489,7 @@ class NexoDashboard {
 
           let value = row[column.key] || "N/A"
 
-          // Formatear valor según el tipo
+          // Formatear valor segÃºn el tipo
           if (column.format === "currency" && typeof value === "number") {
             value = `C$ ${value.toFixed(2)}`
           }
@@ -554,7 +529,7 @@ class NexoDashboard {
     const finalOptions = { ...defaultOptions, ...options }
 
     try {
-      console.log(`🌐 Realizando petición a: ${url}`)
+      console.log(`ðŸŒ Realizando peticiÃ³n a: ${url}`)
       const response = await fetch(url, finalOptions)
 
       if (!response.ok) {
@@ -562,10 +537,10 @@ class NexoDashboard {
       }
 
       const data = await response.json()
-      console.log(`✅ Respuesta recibida:`, data)
+      console.log(`âœ… Respuesta recibida:`, data)
       return data
     } catch (error) {
-      console.error("❌ Error en petición:", error)
+      console.error("âŒ Error en peticiÃ³n:", error)
       throw error
     }
   }
@@ -579,7 +554,7 @@ class NexoDashboard {
     duration = duration || NEXO_CONFIG.notification_duration
 
     const notification = document.createElement("div")
-    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 translate-x-full`
+    notification.className = `fixed top-24 right-4 z-[1100] p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 translate-x-full`
 
     const bgColor = type === "success" ? "bg-green-500" : type === "error" ? "bg-red-500" : "bg-blue-500"
     notification.classList.add(bgColor, "text-white")
@@ -597,12 +572,12 @@ class NexoDashboard {
 
     document.body.appendChild(notification)
 
-    // Mostrar notificación
+    // Mostrar notificaciÃ³n
     setTimeout(() => {
       notification.classList.remove("translate-x-full")
     }, 100)
 
-    // Auto-remover después del tiempo especificado
+    // Auto-remover despuÃ©s del tiempo especificado
     setTimeout(() => {
       notification.classList.add("translate-x-full")
       setTimeout(() => {
@@ -617,45 +592,46 @@ class NexoDashboard {
     // Limpiar timers
     this.stopRealTimeUpdates()
 
-    // Destruir gráficos
+    // Destruir grÃ¡ficos
     Object.values(this.charts).forEach((chart) => {
       if (chart && typeof chart.destroy === "function") {
         chart.destroy()
       }
     })
 
-    console.log("🧹 NEXO Dashboard destruido correctamente")
+    console.log("ðŸ§¹ NEXO Dashboard destruido correctamente")
   }
 }
 
 // ===== FUNCIONES GLOBALES =====
 function refreshDashboard() {
-  console.log("🔄 Función global refreshDashboard llamada")
+  console.log("ðŸ”„ FunciÃ³n global refreshDashboard llamada")
   if (window.nexoDashboard) {
     window.nexoDashboard.refreshDashboard()
   } else {
-    console.error("❌ Dashboard no inicializado")
+    console.error("âŒ Dashboard no inicializado")
   }
 }
 
-// ===== INICIALIZACIÓN =====
+// ===== INICIALIZACIÃ“N =====
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🚀 DOM cargado, inicializando dashboard...")
+  console.log("ðŸš€ DOM cargado, inicializando dashboard...")
 
   // Verificar dependencias
   if (typeof Chart === "undefined") {
-    console.warn("⚠️ Chart.js no está disponible")
+    console.warn("âš ï¸ Chart.js no estÃ¡ disponible")
   }
 
   // Inicializar dashboard
   window.nexoDashboard = new NexoDashboard()
 
-  console.log("🎉 Sistema NEXO completamente inicializado")
+  console.log("ðŸŽ‰ Sistema NEXO completamente inicializado")
 })
 
-// Limpiar recursos al salir de la página
+// Limpiar recursos al salir de la pÃ¡gina
 window.addEventListener("beforeunload", () => {
   if (window.nexoDashboard) {
     window.nexoDashboard.destroy()
   }
 })
+

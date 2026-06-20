@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
+from django.db.models import Q
 from core_data.models import Usuario
 import hashlib
 import logging
@@ -181,7 +182,11 @@ class ForgotPasswordForm(forms.Form):
 
     def clean_email(self):
         email = self.cleaned_data.get('email').strip().lower()
-        if not Usuario.objects.filter(correo=email).exists():
+        user_exists = Usuario.objects.filter(
+            Q(correo__iexact=email) | Q(idempusuario__correo__iexact=email),
+            activo=True
+        ).exists()
+        if not user_exists:
             raise forms.ValidationError('No existe una cuenta con este correo electronico.')
         return email
 

@@ -1,10 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Elementos del DOM
   const usernameInput = document.getElementById("username");
   const passwordInput = document.getElementById("password");
   const loginButton = document.getElementById("loginButton");
-  const usernameError = document.getElementById("username-error");
-  const passwordError = document.getElementById("password-error");
   const attemptsInfo = document.getElementById("attemptsInfo");
   const attemptsText = document.getElementById("attemptsText");
   const lockoutModal = document.getElementById("lockoutModal");
@@ -13,34 +10,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const notificationContainer = document.getElementById("notificationContainer");
 
-  // Variables para el control de intentos
-  let loginAttempts = parseInt(localStorage.getItem("nexo_login_attempts")) || 0;
   const maxLoginAttempts = 3;
+  let attemptsRemaining = maxLoginAttempts;
   let isLocked = false;
   let timerInterval = null;
 
-  // Inicializar página
   initializePage();
 
   function initializePage() {
-    checkExistingLockout();
+    clearStoredLockout();
     updateAttemptsDisplay();
     setupEventListeners();
-    console.log("Sistema NEXO inicializado. Intentos actuales:", loginAttempts);
   }
 
   function setupEventListeners() {
-    if (loginButton) loginButton.addEventListener("click", handleLogin);
-    
-    if (usernameInput) {
-      usernameInput.addEventListener("keypress", (e) => e.key === "Enter" && passwordInput?.focus());
-      usernameInput.addEventListener("input", () => clearFieldError("username"));
+    if (loginForm) {
+      loginForm.addEventListener("submit", handleLogin);
+    } else if (loginButton) {
+      loginButton.addEventListener("click", handleLogin);
     }
 
-    if (passwordInput) {
-      passwordInput.addEventListener("keypress", (e) => e.key === "Enter" && handleLogin(e));
-      passwordInput.addEventListener("input", () => clearFieldError("password"));
-    }
+    usernameInput?.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") passwordInput?.focus();
+    });
+    usernameInput?.addEventListener("input", () => clearFieldError("username"));
+    passwordInput?.addEventListener("input", () => clearFieldError("password"));
   }
 
   async function handleLogin(e) {
@@ -59,11 +53,12 @@ document.addEventListener("DOMContentLoaded", () => {
     setLoadingState(true);
 
     try {
+      const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
       const passwordHash = await sha256(passwordInput.value.trim());
       const data = {
         username: usernameInput.value.trim(),
         password: passwordHash,
-        csrfmiddlewaretoken: document.querySelector("[name=csrfmiddlewaretoken]").value,
+        csrfmiddlewaretoken: csrfToken,
       };
 
       const response = await fetch(window.location.href, {
@@ -71,15 +66,15 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest",
-          "X-CSRFToken": data.csrfmiddlewaretoken,
+          "X-CSRFToken": csrfToken,
         },
         body: JSON.stringify(data),
       });
 
-      const responseData = await response.json();
-      
+      const responseData = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        throw new Error(responseData.message || `Error HTTP! estado: ${response.status}`);
+        throw new Error(responseData.message || `Error HTTP: ${response.status}`);
       }
 
       if (responseData.success) {
@@ -89,76 +84,71 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (error) {
       console.error("Error en login:", error);
-      const errorMessage = error.message.includes("Failed to fetch") 
-        ? "Error de conexión. Verifica tu internet." 
+      const errorMessage = error.message.includes("Failed to fetch")
+        ? "Error de conexion. Verifica que el servidor este encendido."
         : error.message || "Error en el servidor. Intenta nuevamente.";
-      
+
       showNotification(errorMessage, "error");
-      
-      // Incrementar intentos solo si es un error de credenciales
-      if (!error.message.includes("Failed to fetch")) {
-        loginAttempts++;
-        localStorage.setItem("nexo_login_attempts", loginAttempts);
-        updateAttemptsDisplay();
-        
-        if (loginAttempts >= maxLoginAttempts) {
-          lockAccount();
-        }
-      }
+      updateAttemptsDisplay();
     } finally {
       setLoadingState(false);
     }
   }
 
-  // Función SHA256 (sin cambios)
   async function sha256(message) {
     const msgBuffer = new TextEncoder().encode(message);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   }
 
   function handleSuccessfulLogin(data) {
-    loginAttempts = 0;
-    localStorage.removeItem("nexo_login_attempts");
-    localStorage.removeItem("nexo_lock_end_time");
+    attemptsRemaining = maxLoginAttempts;
+    clearStoredLockout();
 
-    showNotification("¡Inicio de sesión exitoso! Redirigiendo...", "success");
-    setTimeout(() => window.location.href = data.redirect_url || "/dashboard/", 1500);
+    showNotification("Inicio de sesion exitoso. Redirigiendo...", "success");
+    setTimeout(() => {
+      window.location.href = data.redirect_url || "/dashboard/";
+    }, 800);
   }
 
   function handleFailedLogin(data) {
-    loginAttempts++;
-    localStorage.setItem("nexo_login_attempts", loginAttempts.toString());
+    attemptsRemaining = Number.isInteger(data.attempts_remaining)
+      ? data.attempts_remaining
+      : Math.max(0, attemptsRemaining - 1);
 
     const errorMessage = data.message || "Credenciales incorrectas";
-    showNotification(`Intento ${loginAttempts}/${maxLoginAttempts}: ${errorMessage}`, "error");
 
-    if (loginAttempts >= maxLoginAttempts) {
-      lockAccount();
-    } else {
-      updateAttemptsDisplay();
+    if (data.blocked) {
+      lockAccount(data.lock_seconds || 20, errorMessage);
+      return;
     }
+
+    const attemptsUsed = maxLoginAttempts - attemptsRemaining;
+    showNotification(`Intento ${attemptsUsed}/${maxLoginAttempts}: ${errorMessage}`, "error");
+    updateAttemptsDisplay();
   }
 
-  function lockAccount() {
+  function lockAccount(seconds = 20, message = "Demasiados intentos fallidos. Intenta nuevamente en unos segundos.") {
     isLocked = true;
-    const lockEndTime = Date.now() + 20000; // 20 segundos
-    localStorage.setItem("nexo_lock_end_time", lockEndTime.toString());
-
-    showNotification("Máximo de intentos excedido. Cuenta bloqueada por 20 segundos.", "error");
-    startLockoutTimer(20);
+    attemptsRemaining = 0;
+    showNotification(message, "error");
+    updateAttemptsDisplay();
+    startLockoutTimer(seconds);
   }
 
   function startLockoutTimer(seconds) {
     let remainingSeconds = seconds;
-    
+
+    if (!lockoutModal || !countdownNumber || !progressBar || !loginButton) return;
+
     lockoutModal.classList.add("show");
     document.body.style.overflow = "hidden";
     loginButton.disabled = true;
     countdownNumber.textContent = remainingSeconds;
     progressBar.style.width = "100%";
 
+    clearInterval(timerInterval);
     timerInterval = setInterval(() => {
       remainingSeconds--;
       countdownNumber.textContent = remainingSeconds;
@@ -173,13 +163,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function unlockAccount() {
     isLocked = false;
-    loginAttempts = 0;
-    localStorage.removeItem("nexo_login_attempts");
-    localStorage.removeItem("nexo_lock_end_time");
+    attemptsRemaining = maxLoginAttempts;
+    clearStoredLockout();
 
-    lockoutModal.classList.remove("show");
+    lockoutModal?.classList.remove("show");
     document.body.style.overflow = "";
-    loginButton.disabled = false;
+    if (loginButton) loginButton.disabled = false;
     clearAllFieldErrors();
     resetForm();
     updateAttemptsDisplay();
@@ -187,36 +176,28 @@ document.addEventListener("DOMContentLoaded", () => {
     showNotification("Bloqueo terminado. Puedes intentar nuevamente.", "success");
   }
 
-  function checkExistingLockout() {
-    const lockEndTime = localStorage.getItem("nexo_lock_end_time");
-    if (!lockEndTime) return;
-
-    const remainingTime = parseInt(lockEndTime) - Date.now();
-    if (remainingTime > 0) {
-      isLocked = true;
-      startLockoutTimer(Math.ceil(remainingTime / 1000));
-    } else {
-      localStorage.removeItem("nexo_lock_end_time");
-    }
+  function clearStoredLockout() {
+    localStorage.removeItem("nexo_login_attempts");
+    localStorage.removeItem("nexo_lock_end_time");
   }
 
   function validateForm() {
     let isValid = true;
     clearAllFieldErrors();
 
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value.trim();
+    const username = usernameInput?.value.trim() || "";
+    const password = passwordInput?.value.trim() || "";
 
     if (!username) {
       showFieldError("username", "El campo de usuario es obligatorio");
       isValid = false;
     } else if (username.length > 15) {
-      showFieldError("username", "El usuario no puede tener más de 15 caracteres");
+      showFieldError("username", "El usuario no puede tener mas de 15 caracteres");
       isValid = false;
     }
 
     if (!password) {
-      showFieldError("password", "El campo de contraseña es obligatorio");
+      showFieldError("password", "El campo de contrasena es obligatorio");
       isValid = false;
     }
 
@@ -251,15 +232,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateAttemptsDisplay() {
-    const remainingAttempts = maxLoginAttempts - loginAttempts;
     if (!attemptsText) return;
 
-    attemptsText.textContent = `Intentos restantes: ${remainingAttempts}`;
+    attemptsText.textContent = `Intentos restantes: ${attemptsRemaining}`;
     attemptsInfo?.classList.remove("warning", "danger");
-    
-    if (remainingAttempts <= 1) {
+
+    if (attemptsRemaining <= 1) {
       attemptsInfo?.classList.add("danger");
-    } else if (remainingAttempts <= 2) {
+    } else if (attemptsRemaining <= 2) {
       attemptsInfo?.classList.add("warning");
     }
   }
@@ -268,20 +248,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!loginButton) return;
 
     if (loading) {
-      loginButton.innerHTML = `<div class="loading-spinner"></div><span>Iniciando sesión...</span>`;
+      loginButton.innerHTML = `<div class="loading-spinner"></div><span>Iniciando sesion...</span>`;
       loginButton.disabled = true;
     } else {
       loginButton.innerHTML = `
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
         </svg>
-        <span>Iniciar Sesión</span>`;
+        <span>Iniciar Sesion</span>`;
       loginButton.disabled = isLocked;
     }
   }
 
   function resetForm() {
-    passwordInput.value = "";
+    if (passwordInput) passwordInput.value = "";
   }
 
   function showNotification(message, type = "info", duration = 5000) {

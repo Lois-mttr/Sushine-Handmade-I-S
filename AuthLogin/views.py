@@ -1,4 +1,4 @@
-from django.db import IntegrityError
+﻿from django.db import IntegrityError
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.utils.html import strip_tags
@@ -65,22 +65,22 @@ def usuario_requerido(request):
 @require_http_methods(["GET", "POST"])
 def login_view(request):
     """
-    Vista principal para el inicio de sesión - COMPLETAMENTE CORREGIDA
+    Vista principal para el inicio de sesiÃ³n - COMPLETAMENTE CORREGIDA
     """
     logger.debug(f"Login view called - Method: {request.method}, Path: {request.path}")
     
-    # IMPORTANTE: Verificar si el usuario ya está autenticado
+    # IMPORTANTE: Verificar si el usuario ya estÃ¡ autenticado
     user_id = request.session.get('user_id')
     if user_id:
         try:
-            # Verificar que el usuario aún existe y está activo
+            # Verificar que el usuario aÃºn existe y estÃ¡ activo
             user = Usuario.objects.get(idusuario=user_id, activo=True)
             logger.info(f"Usuario ya autenticado redirigido: {user.nombreusuario}")
             return redirect('/dashboard/')
         except Usuario.DoesNotExist:
-            # Usuario no existe, limpiar sesión
+            # Usuario no existe, limpiar sesiÃ³n
             request.session.flush()
-            logger.warning(f"Sesión limpiada para usuario inexistente: {user_id}")
+            logger.warning(f"SesiÃ³n limpiada para usuario inexistente: {user_id}")
     
     if request.method == 'GET':
         # Mostrar formulario de login
@@ -88,7 +88,7 @@ def login_view(request):
         form = LoginForm()
         context = {
             'form': form,
-            'title': 'Iniciar Sesión - NEXO',
+            'title': 'Iniciar SesiÃ³n - NEXO',
             'page_name': 'login',
             'system_name': 'NEXO - Sistema de Inventario y Ventas'
         }
@@ -96,7 +96,7 @@ def login_view(request):
     
     elif request.method == 'POST':
         logger.debug("Procesando POST de login")
-        # Verificar si es una petición AJAX
+        # Verificar si es una peticiÃ³n AJAX
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return process_ajax_login(request)
         else:
@@ -111,13 +111,14 @@ def process_ajax_login(request):
         # Obtener IP del cliente para control de intentos
         client_ip = get_client_ip(request)
         
-        # Verificar si la IP está bloqueada
+        # Verificar si la IP estÃ¡ bloqueada
         if is_ip_blocked(client_ip):
             logger.warning(f"Intento de login desde IP bloqueada: {client_ip}")
             return JsonResponse({
                 'success': False,
-                'message': 'IP bloqueada temporalmente. Intenta más tarde.',
+                'message': 'IP bloqueada temporalmente. Intenta mÃ¡s tarde.',
                 'blocked': True,
+                'lock_seconds': 20,
                 'attempts_remaining': 0
             })
         
@@ -131,14 +132,14 @@ def process_ajax_login(request):
             username = request.POST.get('username', '').strip()
             password = request.POST.get('password', '').strip()
         
-        # Validación básica
+        # ValidaciÃ³n bÃ¡sica
         if not username or not password:
             return handle_failed_login(request, client_ip, 'Usuario y contraseña son obligatorios')
         
         if len(username) > 15:
-            return handle_failed_login(request, client_ip, 'Usuario no puede tener más de 15 caracteres')
+            return handle_failed_login(request, client_ip, 'Usuario no puede tener mas de 15 caracteres')
         
-        # Intentar autenticación directa (password ya viene hasheado)
+        # Intentar autenticaciÃ³n directa (password ya viene hasheado)
         user = authenticate_user_direct(username, password)
         
         if user:
@@ -159,7 +160,7 @@ def process_ajax_login(request):
 
 def authenticate_user_direct(username, password_hash):
     """
-    Autenticación directa con la base de datos
+    AutenticaciÃ³n directa con la base de datos
     Ahora recibe el hash directamente (ya hasheado en el frontend)
     """
     try:
@@ -168,7 +169,7 @@ def authenticate_user_direct(username, password_hash):
         
         # Comparar directamente con el hash almacenado
         if user.passusuario == password_hash:
-            logger.info(f"Autenticación exitosa para usuario: {username}")
+            logger.info(f"AutenticaciÃ³n exitosa para usuario: {username}")
             return user
         else:
             logger.warning(f"Contraseña incorrecta para usuario: {username}")
@@ -178,47 +179,47 @@ def authenticate_user_direct(username, password_hash):
         logger.warning(f"Usuario no encontrado: {username}")
         return None
     except Exception as e:
-        logger.error(f"Error en autenticación para usuario {username}: {e}")
+        logger.error(f"Error en autenticaciÃ³n para usuario {username}: {e}")
         return None
 
 def process_traditional_login(request):
     """
-    Procesar el intento de inicio de sesión (método tradicional sin AJAX)
+    Procesar el intento de inicio de sesiÃ³n (mÃ©todo tradicional sin AJAX)
     """
     # Obtener IP del cliente para control de intentos
     client_ip = get_client_ip(request)
     
-    # Verificar si la IP está bloqueada
+    # Verificar si la IP estÃ¡ bloqueada
     if is_ip_blocked(client_ip):
-        messages.error(request, 'IP bloqueada temporalmente. Intenta más tarde.')
+        messages.error(request, 'IP bloqueada temporalmente. Intenta mÃ¡s tarde.')
         return render(request, 'AuthLogin/login.html', {'form': LoginForm()})
     
     # Crear formulario con datos POST
     form = LoginForm(request.POST)
     
     if form.is_valid():
-        # Credenciales válidas
+        # Credenciales vÃ¡lidas
         user = form.get_user()
         
         if user:
             # Login exitoso
-            response_data = handle_successful_login(request, user, client_ip)
+            response_data = handle_successful_login(request, user, client_ip, as_json=False)
             if response_data.get('success'):
-                messages.success(request, 'Inicio de sesión exitoso')
+                messages.success(request, 'Inicio de sesiÃ³n exitoso')
                 return redirect(response_data.get('redirect_url', '/dashboard/'))
         else:
             # Credenciales incorrectas
             handle_failed_login(request, client_ip, 'Credenciales incorrectas')
             messages.error(request, 'Credenciales incorrectas')
     else:
-        # Errores de validación
+        # Errores de validaciÃ³n
         for field, errors in form.errors.items():
             for error in errors:
                 messages.error(request, f"{error}")
     
     return render(request, 'AuthLogin/login.html', {'form': form})
 
-def handle_successful_login(request, user, client_ip):
+def handle_successful_login(request, user, client_ip, as_json=True):
     """
     Manejar login exitoso
     """
@@ -226,29 +227,33 @@ def handle_successful_login(request, user, client_ip):
         # Limpiar intentos fallidos
         clear_failed_attempts(client_ip)
         
-        # Crear sesión de usuario
+        # Crear sesiÃ³n de usuario
         request.session['user_id'] = user.idusuario
         request.session['username'] = user.nombreusuario
         request.session['user_role'] = user.rol or 'Usuario'
         request.session['employee_id'] = user.idempusuario.idempleado if user.idempusuario else None
         request.session['login_time'] = timezone.now().isoformat()
         
-        # Configurar expiración de sesión (8 horas)
+        # Configurar expiraciÃ³n de sesiÃ³n (8 horas)
         request.session.set_expiry(28800)
         
         # Registrar login exitoso en logs
         log_login_attempt(user.nombreusuario, client_ip, True, 'Login exitoso')
         
-        return JsonResponse({
+        response_data = {
             'success': True,
-            'message': '¡Inicio de sesión exitoso!',
+            'message': 'Inicio de sesion exitoso.',
             'redirect_url': '/dashboard/',
             'user': {
                 'username': user.nombreusuario,
                 'role': user.rol or 'Usuario',
                 'employee_name': user.empleado_nombre
             }
-        })
+        }
+
+        if as_json:
+            return JsonResponse(response_data)
+        return response_data
         
     except Exception as e:
         logger.error(f"Error en handle_successful_login: {e}")
@@ -276,12 +281,13 @@ def handle_failed_login(request, client_ip, error_message):
                 username, 
                 client_ip, 
                 False, 
-                f'IP bloqueada después de {attempts} intentos fallidos'
+                f'IP bloqueada despuÃ©s de {attempts} intentos fallidos'
             )
             return JsonResponse({
                 'success': False,
                 'message': 'Demasiados intentos fallidos. IP bloqueada por 20 segundos.',
                 'blocked': True,
+                'lock_seconds': 20,
                 'attempts_remaining': 0
             })
         
@@ -319,7 +325,7 @@ def get_client_ip(request):
 
 def is_ip_blocked(ip):
     """
-    Verificar si una IP está bloqueada
+    Verificar si una IP estÃ¡ bloqueada
     """
     block_key = f"nexo_blocked_ip_{ip}"
     return cache.get(block_key, False)
@@ -380,27 +386,27 @@ def log_login_attempt(username, ip, success, details=''):
 @require_http_methods(["POST"])
 def logout_view(request):
     """
-    Vista para cerrar sesión
+    Vista para cerrar sesiÃ³n
     """
     try:
         username = request.session.get('username', 'unknown')
         client_ip = get_client_ip(request)
         
-        # Limpiar sesión
+        # Limpiar sesiÃ³n
         request.session.flush()
         
         # Registrar logout
         log_login_attempt(username, client_ip, True, 'Logout exitoso')
         
-        # Verificar si es petición AJAX
+        # Verificar si es peticiÃ³n AJAX
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'success': True,
-                'message': 'Sesión cerrada exitosamente',
+                'message': 'SesiÃ³n cerrada exitosamente',
                 'redirect_url': '/login/'
             })
         else:
-            messages.success(request, 'Sesión cerrada exitosamente')
+            messages.success(request, 'SesiÃ³n cerrada exitosamente')
             return redirect('auth:login')
             
     except Exception as e:
@@ -408,15 +414,15 @@ def logout_view(request):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'success': False,
-                'message': 'Error al cerrar sesión'
+                'message': 'Error al cerrar sesiÃ³n'
             })
         else:
-            messages.error(request, 'Error al cerrar sesión')
+            messages.error(request, 'Error al cerrar sesiÃ³n')
             return redirect('auth:login')
 
 def check_session(request):
     """
-    Verificar si la sesión del usuario es válida
+    Verificar si la sesiÃ³n del usuario es vÃ¡lida
     """
     user_id = request.session.get('user_id')
     
@@ -424,19 +430,19 @@ def check_session(request):
         return False
     
     try:
-        # Verificar que el usuario aún existe y está activo
+        # Verificar que el usuario aÃºn existe y estÃ¡ activo
         user = Usuario.objects.get(idusuario=user_id, activo=True)
         return user
     except Usuario.DoesNotExist:
-        # Usuario no existe o está inactivo, limpiar sesión
+        # Usuario no existe o estÃ¡ inactivo, limpiar sesiÃ³n
         request.session.flush()
-        logger.warning(f"Sesión limpiada para usuario inexistente o inactivo: {user_id}")
+        logger.warning(f"SesiÃ³n limpiada para usuario inexistente o inactivo: {user_id}")
         return False
 
 @require_http_methods(["GET"])
 def check_session_ajax(request):
     """
-    Endpoint AJAX para verificar estado de sesión
+    Endpoint AJAX para verificar estado de sesiÃ³n
     """
     user = check_session(request)
     
@@ -456,7 +462,7 @@ def check_session_ajax(request):
     else:
         return JsonResponse({
             'authenticated': False,
-            'message': 'Sesión no válida o expirada'
+            'message': 'SesiÃ³n no vÃ¡lida o expirada'
         })
     
 
@@ -522,7 +528,7 @@ def configuracion_view(request):
         if form.is_valid():
             if form.cleaned_data.get('new_password'):
                 form.save()
-                messages.success(request, 'Contrasena actualizada correctamente. Usala en tu proximo inicio de sesion.')
+                messages.success(request, 'Contraseña actualizada correctamente. Usala en tu proximo inicio de sesion.')
             else:
                 messages.info(request, 'No se realizaron cambios en la configuracion.')
             return redirect('auth:configuracion')
@@ -549,7 +555,7 @@ def register_view(request):
                 user = form.save()
                 messages.success(
                     request,
-                    '¡Registro exitoso! Ahora puedes iniciar sesión.'
+                    'Â¡Registro exitoso! Ahora puedes iniciar sesiÃ³n.'
                 )
                 return redirect('auth:login')
             except IntegrityError as e:
@@ -562,7 +568,7 @@ def register_view(request):
                 logger.error(f"Error al registrar usuario: {str(e)}", exc_info=True)
                 messages.error(
                     request,
-                    'Ocurrió un error inesperado. Por favor intenta nuevamente.'
+                    'OcurriÃ³ un error inesperado. Por favor intenta nuevamente.'
                 )
         else:
             for field, errors in form.errors.items():
@@ -582,10 +588,10 @@ def register_view(request):
 @require_http_methods(["GET", "POST"])
 def forgot_password_view(request):
     """
-    Vista para solicitar recuperación de contraseña
+    Vista para solicitar recuperaciÃ³n de contraseña
     """
     if request.method == 'GET':
-        # Verificar si el usuario ya está autenticado
+        # Verificar si el usuario ya estÃ¡ autenticado
         if request.session.get('user_id'):
             return redirect('/dashboard/')
             
@@ -607,10 +613,10 @@ def forgot_password_view(request):
                     send_password_reset_email(request, email)
                     return JsonResponse({
                         'success': True,
-                        'message': 'Se ha enviado un correo con instrucciones para restablecer tu contraseña.'
+                        'message': 'Revisa tu correo para continuar.'
                     })
                 except Exception as e:
-                    logger.error(f"Error al enviar correo de recuperación: {e}")
+                    logger.error(f"Error al enviar correo de recuperaciÃ³n: {e}")
                     return JsonResponse({
                         'success': False,
                         'message': 'Error al enviar el correo. Intenta nuevamente.'
@@ -629,10 +635,10 @@ def forgot_password_view(request):
                 email = form.cleaned_data['email']
                 try:
                     send_password_reset_email(request, email)
-                    messages.success(request, 'Se ha enviado un correo con instrucciones para restablecer tu contraseña.')
+                    messages.success(request, 'Revisa tu correo para continuar.')
                     return redirect('auth:login')
                 except Exception as e:
-                    logger.error(f"Error al enviar correo de recuperación: {e}")
+                    logger.error(f"Error al enviar correo de recuperaciÃ³n: {e}")
                     messages.error(request, 'Error al enviar el correo. Intenta nuevamente.')
             else:
                 for field, errors in form.errors.items():
@@ -652,17 +658,17 @@ def reset_password_view(request, uidb64, token):
     """
     Vista completa para restablecer contraseña con manejo de errores
     """
-    # Verificación inicial del token
+    # VerificaciÃ³n inicial del token
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = Usuario.objects.get(idusuario=uid)
 
         if not validate_password_reset_token(user, token):
-            raise ValueError("Token inválido o expirado")
+            raise ValueError("Token invÃ¡lido o expirado")
 
     except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist) as e:
-        logger.error(f"Error en validación de token: {str(e)}")
-        messages.error(request, 'El enlace de recuperación no es válido o ha expirado.')
+        logger.error(f"Error en validaciÃ³n de token: {str(e)}")
+        messages.error(request, 'El enlace de recuperaciÃ³n no es vÃ¡lido o ha expirado.')
         return redirect('auth:forgot_password')
 
     # Procesamiento del formulario
@@ -672,11 +678,11 @@ def reset_password_view(request, uidb64, token):
             try:
                 new_password = form.cleaned_data['new_password']
 
-                # Validación adicional de contraseña
+                # ValidaciÃ³n adicional de contraseÃ±a
                 if len(new_password) < 8:
                     raise ValueError("La contraseña debe tener al menos 8 caracteres")
 
-                # Actualizar contraseña usando el método del modelo
+                # Actualizar contraseÃ±a usando el mÃ©todo del modelo
                 user.set_password(new_password)
 
                 # Limpiar token y resetear intentos fallidos
@@ -694,7 +700,7 @@ def reset_password_view(request, uidb64, token):
                         'redirect_url': reverse('auth:login')
                     })
 
-                messages.success(request, '¡Contraseña actualizada! Ya puedes iniciar sesión.')
+                messages.success(request, 'Â¡Contraseña actualizada! Ya puedes iniciar sesiÃ³n.')
                 return redirect('auth:login')
 
             except Exception as e:
@@ -709,7 +715,7 @@ def reset_password_view(request, uidb64, token):
 
                 messages.error(request, error_msg)
         else:
-            # Manejar errores de validación del formulario
+            # Manejar errores de validaciÃ³n del formulario
             errors = {f: e[0] for f, e in form.errors.items()}
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
@@ -720,7 +726,7 @@ def reset_password_view(request, uidb64, token):
             for field, error in errors.items():
                 messages.error(request, f"{field.capitalize()}: {error}")
 
-    # Mostrar formulario (GET request o formulario inválido)
+    # Mostrar formulario (GET request o formulario invÃ¡lido)
     form = ResetPasswordForm()
     return render(request, 'AuthLogin/reset_password.html', {
         'form': form,
@@ -768,12 +774,30 @@ def validate_password_reset_token(user, token):
     return True
 
 
+def get_user_for_password_reset(email):
+    normalized_email = (email or '').strip().lower()
+    user = Usuario.objects.filter(
+        correo__iexact=normalized_email,
+        activo=True
+    ).order_by('idusuario').first()
+
+    if user:
+        return user
+
+    return Usuario.objects.filter(
+        idempusuario__correo__iexact=normalized_email,
+        activo=True
+    ).order_by('idusuario').first()
+
+
 def send_password_reset_email(request, email):
     """
     Envía correo con enlace para restablecer contraseña
     """
     try:
-        user = Usuario.objects.get(correo=email)
+        user = get_user_for_password_reset(email)
+        if not user:
+            raise Usuario.DoesNotExist
 
         # Generar token seguro
         token = generate_password_reset_token(user)
@@ -795,14 +819,13 @@ def send_password_reset_email(request, email):
             'expiry_hours': 24
         })
 
-        # Enviar el correo
         send_mail(
             mail_subject,
-            strip_tags(message),  # Versión texto plano
+            strip_tags(message),
             settings.DEFAULT_FROM_EMAIL,
-            [user.correo],
+            [email],
             fail_silently=False,
-            html_message=message  # Versión HTML
+            html_message=message
         )
 
         logger.info(f"Correo de recuperación enviado a {email}")
@@ -812,6 +835,8 @@ def send_password_reset_email(request, email):
         logger.warning(f"Intento de recuperación para email no registrado: {email}")
         raise ValueError("No existe usuario con este correo electrónico")
     except Exception as e:
+        if 'user' in locals() and user:
+            cache.delete(f"pw_reset_{user.idusuario}")
         logger.error(f"Error al enviar correo de recuperación: {str(e)}")
         raise
 
@@ -860,8 +885,8 @@ def update_user_password(request):
         logger.warning(f"Intento de actualizar contraseña para usuario inexistente: {user_id}")
         return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
     except ValueError as ve:
-        logger.warning(f"Error de validación: {str(ve)}")
+        logger.warning(f"Error de validaciÃ³n: {str(ve)}")
         return JsonResponse({'error': str(ve)}, status=400)
     except Exception as e:
         logger.error(f"Error inesperado: {str(e)}", exc_info=True)
-        return JsonResponse({'error': 'Ocurrió un error al procesar la solicitud'}, status=500)
+        return JsonResponse({'error': 'OcurriÃ³ un error al procesar la solicitud'}, status=500)
