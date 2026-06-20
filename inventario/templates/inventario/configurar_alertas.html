@@ -6,116 +6,189 @@
 
 {% block extra_css %}
 <style>
-    .alerta-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
-        border-left: 4px solid #f59e0b;
+    .alert-panel {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
     }
-    
-    .alerta-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+
+    .alert-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-left: 4px solid #f59e0b;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .alert-card:hover {
+        border-color: #f59e0b;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+        transform: translateY(-1px);
+    }
+
+    .metric-tile {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 1rem;
+    }
+
+    .toggle {
+        position: relative;
+        display: inline-flex;
+        width: 46px;
+        height: 26px;
+    }
+
+    .toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-track {
+        position: absolute;
+        inset: 0;
+        cursor: pointer;
+        background: #d1d5db;
+        border-radius: 999px;
+        transition: 0.2s;
+    }
+
+    .toggle-track:before {
+        content: "";
+        position: absolute;
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background: white;
+        border-radius: 50%;
+        transition: 0.2s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.22);
+    }
+
+    .toggle input:checked + .toggle-track {
+        background: #39bfb2;
+    }
+
+    .toggle input:checked + .toggle-track:before {
+        transform: translateX(20px);
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
     <div class="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-8 mb-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between">
+            <nav class="text-yellow-100 text-sm mb-2">
+                <a href="{% url 'inventario:inventario_general' %}" class="hover:text-white">
+                    <i class="fas fa-boxes mr-1"></i>Inventario
+                </a>
+                <span class="mx-2">/</span>
+                <span>Alertas</span>
+            </nav>
+            <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
                 <div>
-                    <nav class="text-yellow-100 text-sm mb-2">
-                        <a href="{% url 'inventario:inventario_general' %}" class="hover:text-white">
-                            <i class="fas fa-boxes mr-1"></i>Inventario
-                        </a>
-                        <span class="mx-2">/</span>
-                        <span>Configurar Alertas</span>
-                    </nav>
                     <h1 class="text-3xl font-bold flex items-center">
                         <i class="fas fa-bell mr-3"></i>
-                        Configurar Alertas de Stock
+                        Alertas de Stock
                     </h1>
-                    <p class="text-yellow-100 mt-2">
-                        Gestiona las alertas automáticas para productos con bajo stock
-                    </p>
+                    <p class="text-yellow-100 mt-2">Notificaciones internas y webhooks para productos que necesitan reposicion.</p>
                 </div>
-                
-                <div class="text-right">
-                    <div class="text-sm text-yellow-100">
-                        Usuario: {{ usuario_actual.nombreusuario }}
-                    </div>
-                    <div class="text-sm text-yellow-100">
-                        Rol: {{ usuario_actual.rol|default:"Encargado" }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Contenido -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        {% if productos_bajo_stock %}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {% for producto in productos_bajo_stock %}
-                    <div class="alerta-card p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-semibold text-gray-900">{{ producto.nombreproducto }}</h3>
-                            <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
-                                Bajo Stock
-                            </span>
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Stock Actual:</span>
-                                <span class="font-medium text-red-600">{{ producto.existenciaproducto }}</span>
-                            </div>
-                            
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Stock Mínimo:</span>
-                                <span class="font-medium">{{ producto.existenciaminima|default:5 }}</span>
-                            </div>
-                            
-                            <form method="post" class="mt-4">
-                                {% csrf_token %}
-                                <input type="hidden" name="producto_id" value="{{ producto.id_producto }}">
-                                <div class="flex items-center space-x-2">
-                                    <input type="number" 
-                                           name="stock_minimo" 
-                                           value="{{ producto.existenciaminima|default:5 }}"
-                                           min="1"
-                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
-                                    <button type="submit" 
-                                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors">
-                                        <i class="fas fa-save"></i>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="text-center py-12">
-                <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-check-circle text-3xl text-green-500"></i>
-                </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">
-                    ¡Excelente! No hay productos con bajo stock
-                </h3>
-                <p class="text-gray-600 mb-4">
-                    Todos los productos tienen stock adecuado según sus niveles mínimos configurados
-                </p>
-                <a href="{% url 'inventario:inventario_general' %}" 
-                class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+                <a href="{% url 'inventario:inventario_general' %}" class="inline-flex items-center justify-center px-4 py-2 bg-white bg-opacity-20 text-white rounded-lg hover:bg-opacity-30 transition-all">
                     <i class="fas fa-arrow-left mr-2"></i>Volver al Inventario
                 </a>
             </div>
-        {% endif %}
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="metric-tile">
+                <div class="text-sm text-gray-500">Alertas activas</div>
+                <div class="text-3xl font-bold text-gray-900 mt-1">{{ total_alertas }}</div>
+            </div>
+            <div class="metric-tile">
+                <div class="text-sm text-gray-500">Estado</div>
+                <div class="text-base font-semibold text-gray-900 mt-2">
+                    {% if total_alertas %}
+                        Requiere atencion
+                    {% else %}
+                        Stock controlado
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="alert-panel p-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-triangle-exclamation mr-2 text-yellow-500"></i>Productos con bajo stock
+                    </h2>
+                    <p class="text-sm text-gray-600 mt-1">Estas alertas tambien se pueden consultar desde la API interna.</p>
+                </div>
+                <button type="button" id="refresh-alerts-btn" class="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
+                    <i class="fas fa-rotate mr-2"></i>Actualizar
+                </button>
+            </div>
+
+            {% if productos_bajo_stock %}
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    {% for producto in productos_bajo_stock %}
+                        <div class="alert-card p-5">
+                            <div class="flex items-start justify-between gap-3 mb-4">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">{{ producto.nombreproducto }}</h3>
+                                    <p class="text-xs text-gray-500 mt-1">{{ producto.id_producto }} · {{ producto.idubicacionpro.nombreubicacion }}</p>
+                                </div>
+                                {% if producto.existenciaproducto == 0 %}
+                                    <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">Agotado</span>
+                                {% else %}
+                                    <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Bajo stock</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+                                <div class="bg-gray-50 rounded-lg p-3">
+                                    <div class="text-gray-500">Actual</div>
+                                    <div class="text-xl font-bold text-red-600">{{ producto.existenciaproducto }}</div>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-3">
+                                    <div class="text-gray-500">Minimo</div>
+                                    <div class="text-xl font-bold text-gray-900">{{ producto.existenciaminima|default:5 }}</div>
+                                </div>
+                            </div>
+
+                            <form method="post" class="flex items-center gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="actualizar_stock">
+                                <input type="hidden" name="producto_id" value="{{ producto.id_producto }}">
+                                <input type="number"
+                                       name="stock_minimo"
+                                       value="{{ producto.existenciaminima|default:5 }}"
+                                       min="1"
+                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+                                <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors" title="Guardar stock minimo">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check-circle text-3xl text-green-500"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No hay productos con bajo stock</h3>
+                    <p class="text-gray-600">Todos los productos estan sobre sus niveles minimos configurados.</p>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -123,32 +196,35 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Validación de formularios
-        const forms = document.querySelectorAll('form');
-        forms.forEach(form => {
+        document.querySelectorAll('form').forEach(function(form) {
             form.addEventListener('submit', function(e) {
                 const input = form.querySelector('input[name="stock_minimo"]');
-                const value = parseInt(input.value);
-                
-                if (value < 1) {
+                if (!input) return;
+                const value = parseInt(input.value, 10);
+                if (Number.isNaN(value) || value < 1) {
                     e.preventDefault();
-                    alert('El stock mínimo debe ser mayor a 0');
+                    showNotification('El stock minimo debe ser mayor a 0', 'error');
                     input.focus();
                 }
             });
         });
-        
-        // Animación de entrada
-        const cards = document.querySelectorAll('.alerta-card');
-        cards.forEach((card, index) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            setTimeout(() => {
-                card.style.transition = 'all 0.5s ease';
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, index * 100);
-        });
+
+        const refreshBtn = document.getElementById('refresh-alerts-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', async function() {
+                try {
+                    const response = await fetch('{% url "inventario:alertas_stock_ajax" %}');
+                    const data = await response.json();
+                    if (!data.success) throw new Error(data.message || 'Error');
+                    const message = data.total === 0
+                        ? 'No hay alertas activas de inventario'
+                        : `${data.total} producto(s) requieren atencion de stock`;
+                    showNotification(message, data.total === 0 ? 'success' : 'error');
+                } catch (error) {
+                    showNotification('No se pudieron actualizar las alertas', 'error');
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

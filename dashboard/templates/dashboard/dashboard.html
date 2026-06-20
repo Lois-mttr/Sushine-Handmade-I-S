@@ -10,7 +10,7 @@
 
 {% block content %}
 <!-- Dashboard Content -->
-<div class="space-y-6 animate-fade-in">
+<div class="space-y-6">
     <!-- Título del Dashboard -->
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
@@ -24,7 +24,7 @@
             <div class="text-sm text-gray-500">
                 Última actualización: <span id="last-update">{{ current_datetime|date:"d/m/Y H:i" }}</span>
             </div>
-            <button onclick="refreshDashboard()" data-refresh-dashboard class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200 flex items-center space-x-2 transform hover:scale-105">
+            <button data-refresh-dashboard class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors duration-200 flex items-center space-x-2">
                 <i class="fas fa-sync-alt w-4 h-4"></i>
                 <span>Actualizar</span>
             </button>
@@ -34,7 +34,7 @@
     <!-- Tarjetas de estadísticas principales -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <!-- Total Productos -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex items-center">
                 <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
                     <i class="fas fa-boxes text-white text-xl"></i>
@@ -48,7 +48,7 @@
         </div>
 
         <!-- Total Clientes -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex items-center">
                 <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg">
                     <i class="fas fa-users text-white text-xl"></i>
@@ -62,7 +62,7 @@
         </div>
 
         <!-- Ventas del Mes -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex items-center">
                 <div class="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center shadow-lg">
                     <i class="fas fa-chart-line text-white text-xl"></i>
@@ -76,7 +76,7 @@
         </div>
 
         <!-- Productos Bajo Stock -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex items-center">
                 <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg">
                     <i class="fas fa-exclamation-triangle text-white text-xl"></i>
@@ -93,7 +93,7 @@
     <!-- Sección principal con tablas y gráficos -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Entradas Recientes -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="bg-gradient-to-r from-primary to-primary-dark text-white px-6 py-4">
                 <h3 class="text-lg font-semibold flex items-center">
                     <i class="fas fa-arrow-down mr-2"></i>
@@ -137,7 +137,7 @@
         </div>
 
         <!-- Ventas Recientes -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="bg-gradient-to-r from-orange to-orange-light text-white px-6 py-4">
                 <h3 class="text-lg font-semibold flex items-center">
                     <i class="fas fa-shopping-cart mr-2"></i>
@@ -175,158 +175,51 @@
                 </div>
             </div>
         </div>
-
-        <!-- Datos Importantes -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
-            <div class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-4">
-                <h3 class="text-lg font-semibold">Datos Importantes</h3>
-            </div>
-            <div class="p-6 space-y-6">
-                <!-- Productos -->
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-gray-900">{{ total_productos|default:0 }}</div>
-                    <div class="text-sm text-gray-600">Productos</div>
-                </div>
-                
-                <!-- Promedio de Devoluciones -->
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-gray-900">{{ devoluciones_mes|default:0 }}</div>
-                    <div class="text-sm text-gray-600">Promedio de Devoluciones</div>
-                </div>
-                
-                <!-- Promedio de Entradas -->
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-gray-900">{{ producciones_mes|default:0 }}</div>
-                    <div class="text-sm text-gray-600">Promedio de Entradas</div>
-                </div>
-                
-                <!-- Promedio de Salidas -->
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-gray-900">{{ ventas_mes|default:0 }}</div>
-                    <div class="text-sm text-gray-600">Promedio de Salidas</div>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- Sección de Estadísticas con Gráficos -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                <i class="fas fa-chart-pie mr-2 text-primary"></i>
-                Estadísticas de Productos
-            </h3>
-            <p class="text-sm text-gray-600 mt-1">Análisis de ventas y devoluciones por producto</p>
+    <!-- Graficos con datos reales -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-gradient-to-r from-primary to-primary-dark text-white px-6 py-4">
+                <h3 class="text-lg font-semibold flex items-center">
+                    <i class="fas fa-chart-pie mr-2"></i>
+                    Productos mas vendidos
+                </h3>
+                <p class="text-sm opacity-90">Ventas reales del ultimo mes</p>
+            </div>
+            <div class="p-6">
+                <div class="relative h-72">
+                    <canvas id="productos-vendidos-chart"></canvas>
+                </div>
+                <div id="productos-vendidos-legend" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+            </div>
         </div>
-        <div class="p-6">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Productos más vendidos -->
-                <div class="text-center">
-                    <h4 class="text-sm font-medium text-gray-600 mb-4 flex items-center justify-center">
-                        <i class="fas fa-trophy mr-2 text-yellow-500"></i>
-                        Productos más vendidos
-                    </h4>
-                    <div class="relative h-64">
-                        <canvas id="productos-vendidos-chart"></canvas>
-                        <div id="productos-vendidos-loading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 hidden">
-                            <div class="flex items-center space-x-2">
-                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                                <span class="text-sm text-gray-600">Cargando...</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="productos-vendidos-legend" class="mt-4 flex flex-wrap justify-center gap-2"></div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4">
+                <h3 class="text-lg font-semibold flex items-center">
+                    <i class="fas fa-undo-alt mr-2"></i>
+                    Productos mas devueltos
+                </h3>
+                <p class="text-sm opacity-90">Devoluciones reales del ultimo mes</p>
+            </div>
+            <div class="p-6">
+                <div class="relative h-72">
+                    <canvas id="productos-devueltos-chart"></canvas>
                 </div>
-                
-                <!-- Productos con mayor Devolución -->
-                <div class="text-center">
-                    <h4 class="text-sm font-medium text-gray-600 mb-4 flex items-center justify-center">
-                        <i class="fas fa-undo mr-2 text-red-500"></i>
-                        Productos con mayor Devolución
-                    </h4>
-                    <div class="relative h-64">
-                        <canvas id="productos-devueltos-chart"></canvas>
-                        <div id="productos-devueltos-loading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 hidden">
-                            <div class="flex items-center space-x-2">
-                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                                <span class="text-sm text-gray-600">Cargando...</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="productos-devueltos-legend" class="mt-4 flex flex-wrap justify-center gap-2"></div>
-                </div>
+                <div id="productos-devueltos-legend" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Scripts para gráficos -->
-<script>
-// Datos para gráficos (desde Django) - Corregido para evitar errores de sintaxis
-window.chartDataByLocation = {% if chart_data_by_location %}{{ chart_data_by_location|safe }}{% else %}{}{% endif %};
-
-console.log('📊 Datos de gráficos cargados:', window.chartDataByLocation);
-
-// Configuración adicional del dashboard
-window.dashboardConfig = {% if dashboard_config %}{{ dashboard_config|safe }}{% else %}{}{% endif %};
-
-console.log('⚙️ Configuración del dashboard:', window.dashboardConfig);
-</script>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+window.chartDataByLocation = {{ chart_data_by_location_json|default:"{}"|safe }};
+
 // Funciones específicas del dashboard
-document.addEventListener('DOMContentLoaded', function() {
-    // Animaciones de entrada para las tarjetas
-    const cards = document.querySelectorAll('.grid > div');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            card.style.transition = 'all 0.5s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-    
-    // Efecto hover mejorado para las tarjetas de estadísticas
-    const statCards = document.querySelectorAll('.grid .bg-white');
-    statCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px) scale(1.02)';
-            this.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1)';
-            this.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)';
-        });
-    });
-    
-    // Contador animado para las estadísticas
-    function animateCounters() {
-        const counters = document.querySelectorAll('#total-productos, #total-clientes, #ventas-mes, #productos-bajo-stock');
-        
-        counters.forEach(counter => {
-            const target = parseInt(counter.textContent);
-            const increment = target / 50;
-            let current = 0;
-            
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= target) {
-                    current = target;
-                    clearInterval(timer);
-                }
-                counter.textContent = Math.floor(current);
-            }, 30);
-        });
-    }
-    
-    // Ejecutar animación de contadores después de un breve delay
-    setTimeout(animateCounters, 500);
-});
+// Dashboard estatico: sin animaciones de entrada ni contadores animados.
 
 // Función global para refrescar dashboard (llamada desde el botón)
 function refreshDashboard() {
@@ -339,3 +232,6 @@ function refreshDashboard() {
 }
 </script>
 {% endblock %}
+
+
+

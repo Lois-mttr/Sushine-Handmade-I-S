@@ -1,0 +1,56 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Editar Perfil - NEXO{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900">Editar Perfil</h1>
+                    <p class="text-sm text-gray-500">Actualiza tus datos de cuenta y datos personales.</p>
+                </div>
+                <a href="{% url 'auth:perfil' %}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">Volver</a>
+            </div>
+
+            <form method="post" class="p-6 space-y-6">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Cuenta</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>{{ form.nombreusuario.label_tag }}{{ form.nombreusuario }}{{ form.nombreusuario.errors }}</div>
+                        <div>{{ form.correo.label_tag }}{{ form.correo }}{{ form.correo.errors }}</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Datos personales</h2>
+                    {% if persona %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>{{ form.primernombre.label_tag }}{{ form.primernombre }}{{ form.primernombre.errors }}</div>
+                            <div>{{ form.segundonombre.label_tag }}{{ form.segundonombre }}{{ form.segundonombre.errors }}</div>
+                            <div>{{ form.primerapellido.label_tag }}{{ form.primerapellido }}{{ form.primerapellido.errors }}</div>
+                            <div>{{ form.segundoapellido.label_tag }}{{ form.segundoapellido }}{{ form.segundoapellido.errors }}</div>
+                            <div class="md:col-span-2">{{ form.direccion.label_tag }}{{ form.direccion }}{{ form.direccion.errors }}</div>
+                        </div>
+                    {% else %}
+                        <p class="text-gray-600">No hay datos personales vinculados a esta cuenta.</p>
+                    {% endif %}
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                    <a href="{% url 'auth:perfil' %}" class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">Cancelar</a>
+                    <button type="submit" class="px-5 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+                        <i class="fas fa-save mr-2"></i>Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

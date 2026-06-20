@@ -297,6 +297,23 @@
                 card.style.transform = 'translateY(0)';
             }, index * 100);
         });
+
+        async function revisarAlertasStock() {
+            try {
+                const response = await fetch('{% url "inventario:alertas_stock_ajax" %}');
+                const data = await response.json();
+                if (!data.success || data.total === 0) return;
+
+                const primerProducto = data.productos && data.productos.length ? data.productos[0] : null;
+                const detalle = primerProducto ? `: ${primerProducto.nombre}` : '';
+                showNotification(`${data.total} producto(s) con bajo stock${detalle}`, 'error', 8000);
+            } catch (error) {
+                console.warn('No se pudieron consultar las alertas de inventario', error);
+            }
+        }
+
+        revisarAlertasStock();
+        setInterval(revisarAlertasStock, 300000);
     });
 </script>
 {% endblock %}

@@ -131,7 +131,6 @@ body {
   padding: var(--spacing-6);
   box-shadow: var(--shadow-md);
   border: 1px solid var(--nexo-secondary);
-  transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
 }
@@ -144,13 +143,11 @@ body {
   right: 0;
   height: 3px;
   background: linear-gradient(90deg, var(--nexo-primary), var(--nexo-accent));
-  transform: scaleX(0);
-  transition: transform var(--transition-normal);
+  transform: scaleX(1);
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-md);
 }
 
 .stat-card:hover::before {
@@ -245,12 +242,10 @@ body {
   box-shadow: var(--shadow-md);
   border: 1px solid var(--nexo-secondary);
   overflow: hidden;
-  transition: all var(--transition-normal);
 }
 
 .chart-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
 }
 
 .chart-header {

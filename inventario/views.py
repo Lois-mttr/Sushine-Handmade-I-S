@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from django.utils.dateparse import parse_datetime
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView, DetailView
 from django.views.decorators.http import require_http_methods
@@ -14,6 +15,9 @@ from django.utils import timezone
 import json
 import csv
 import os
+from urllib import request as urllib_request
+from urllib.error import URLError, HTTPError
+from urllib.parse import urlparse
 from datetime import datetime
 
 # Importar decoradores de autenticación personalizados
@@ -42,6 +46,67 @@ import logging
 
 # Configurar logger para el módulo de inventario
 logger = logging.getLogger('nexo.inventario')
+
+ALERT_CONFIG_PATH = settings.BASE_DIR / 'config' / 'inventory_alerts.json'
+
+def cargar_configuracion_alertas():
+    defaults = {
+        'webhook_enabled': False,
+        'webhook_url': '',
+        'last_sent_at': '',
+    }
+    try:
+        if ALERT_CONFIG_PATH.exists():
+            with open(ALERT_CONFIG_PATH, 'r', encoding='utf-8') as config_file:
+                data = json.load(config_file)
+            defaults.update({key: data.get(key, defaults[key]) for key in defaults})
+    except (OSError, json.JSONDecodeError) as exc:
+        logger.warning(f"No se pudo cargar la configuracion de alertas: {exc}")
+    return defaults
+
+def guardar_configuracion_alertas(config):
+    ALERT_CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(ALERT_CONFIG_PATH, 'w', encoding='utf-8') as config_file:
+        json.dump(config, config_file, ensure_ascii=False, indent=2)
+
+def webhook_url_valida(url):
+    parsed_url = urlparse(url or '')
+    return parsed_url.scheme in ('http', 'https') and bool(parsed_url.netloc)
+
+def serializar_producto_alerta(producto):
+    return {
+        'id': producto.id_producto,
+        'nombre': producto.nombreproducto,
+        'existencia': producto.existenciaproducto,
+        'minimo': producto.existenciaminima or 5,
+        'ubicacion': producto.idubicacionpro.nombreubicacion if producto.idubicacionpro else '',
+        'categoria': producto.idcategoriapro.nombrecategoria if producto.idcategoriapro else '',
+        'estado': 'agotado' if producto.existenciaproducto == 0 else 'bajo_stock',
+        'detalle_url': reverse(
+            'inventario:detalle_producto_ubicacion',
+            args=[producto.idubicacionpro_id, producto.id_producto]
+        ) if producto.idubicacionpro_id else '',
+    }
+
+def enviar_webhook_alertas(webhook_url, productos, usuario_actual=None, prueba=False):
+    productos_data = [serializar_producto_alerta(producto) for producto in productos]
+    payload = {
+        'event': 'inventario.stock_bajo.prueba' if prueba else 'inventario.stock_bajo',
+        'timestamp': timezone.now().isoformat(),
+        'usuario': getattr(usuario_actual, 'nombreusuario', 'Sistema'),
+        'total_alertas': len(productos_data),
+        'productos': productos_data,
+        'message': 'Prueba de webhook de inventario' if prueba else f'{len(productos_data)} producto(s) con bajo stock',
+    }
+    data = json.dumps(payload, ensure_ascii=False).encode('utf-8')
+    req = urllib_request.Request(
+        webhook_url,
+        data=data,
+        headers={'Content-Type': 'application/json', 'User-Agent': 'NEXO-Inventario/1.0'},
+        method='POST'
+    )
+    with urllib_request.urlopen(req, timeout=8) as response:
+        return response.status
 
 @nexo_role_required(['admin', 'gerente', 'encargado_inventario', 'encargado_sucursal'])
 def inventario_general(request):
@@ -440,6 +505,37 @@ def inventario_stats_ajax(request):
         }, status=500)
 
 @ajax_login_required
+@require_http_methods(["GET"])
+def alertas_stock_ajax(request):
+    """
+    Devuelve alertas activas de inventario para notificaciones dentro del sistema.
+    """
+    try:
+        usuario_actual = getattr(request, 'nexo_user', None)
+        rol_usuario = getattr(usuario_actual, 'rol', 'encargado_sucursal')
+        productos = obtener_productos_bajo_stock().select_related('idubicacionpro', 'idcategoriapro')
+
+        if rol_usuario == 'encargado_sucursal':
+            productos = productos.filter(idubicacionpro__nombreubicacion__iexact='sucursal')
+        elif rol_usuario == 'gerente':
+            productos = productos.filter(idubicacionpro__nombreubicacion__in=['Sucursal', 'Taller'])
+
+        productos_data = [serializar_producto_alerta(producto) for producto in productos[:25]]
+        return JsonResponse({
+            'success': True,
+            'total': productos.count(),
+            'productos': productos_data,
+            'timestamp': timezone.now().isoformat(),
+        })
+    except Exception as e:
+        logger.error(f"Error en alertas_stock_ajax: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e),
+            'message': 'Error al obtener alertas de stock'
+        }, status=500)
+
+@ajax_login_required
 def busqueda_rapida_ajax(request):
     """
     Vista AJAX para búsqueda rápida de productos
@@ -552,6 +648,99 @@ def configurar_alertas_stock(request):
         usuario_actual = getattr(request, 'nexo_user', None)
         nombreusuario = getattr(usuario_actual, 'nombreusuario', 'Invitado')
         logger.error(f"Error en configurar_alertas_stock para usuario {nombreusuario}: {str(e)}")
+        messages.error(request, f'Error al configurar alertas: {str(e)}')
+        return redirect('inventario:inventario_general')
+
+@nexo_role_required(['admin'])
+def configurar_alertas_stock_webhook(request):
+    """
+    Configura alertas internas y envio de webhooks para productos con bajo stock.
+    """
+    try:
+        usuario_actual = getattr(request, 'nexo_user', None)
+        rol_usuario = getattr(usuario_actual, 'rol', 'encargado_sucursal')
+        nombreusuario = getattr(usuario_actual, 'nombreusuario', 'Invitado')
+        logger.info(f"Configuracion de alertas accedida por usuario {nombreusuario}")
+
+        productos_bajo_stock = obtener_productos_bajo_stock()
+        if rol_usuario == 'encargado_sucursal':
+            productos_bajo_stock = productos_bajo_stock.filter(idubicacionpro__nombreubicacion__iexact='sucursal')
+        elif rol_usuario == 'gerente':
+            productos_bajo_stock = productos_bajo_stock.filter(idubicacionpro__nombreubicacion__in=['Sucursal', 'Taller'])
+        productos_bajo_stock = productos_bajo_stock.select_related('idubicacionpro', 'idcategoriapro')
+        config_alertas = cargar_configuracion_alertas()
+
+        if request.method == 'POST':
+            accion = request.POST.get('accion', 'actualizar_stock')
+
+            if accion == 'guardar_webhook':
+                webhook_url = request.POST.get('webhook_url', '').strip()
+                webhook_enabled = request.POST.get('webhook_enabled') == 'on'
+
+                if webhook_enabled and not webhook_url_valida(webhook_url):
+                    messages.error(request, 'Ingrese una URL de webhook valida que empiece con http:// o https://.')
+                    return redirect('inventario:configurar_alertas')
+
+                config_alertas['webhook_enabled'] = webhook_enabled
+                config_alertas['webhook_url'] = webhook_url
+                guardar_configuracion_alertas(config_alertas)
+                messages.success(request, 'Configuracion de webhook guardada correctamente.')
+                return redirect('inventario:configurar_alertas')
+
+            if accion in ['enviar_webhook', 'probar_webhook']:
+                webhook_url = config_alertas.get('webhook_url', '').strip()
+                if not webhook_url_valida(webhook_url):
+                    messages.error(request, 'Configure una URL de webhook valida antes de enviar notificaciones.')
+                    return redirect('inventario:configurar_alertas')
+
+                try:
+                    status_code = enviar_webhook_alertas(
+                        webhook_url,
+                        list(productos_bajo_stock),
+                        usuario_actual=usuario_actual,
+                        prueba=(accion == 'probar_webhook')
+                    )
+                    config_alertas['last_sent_at'] = timezone.now().isoformat()
+                    guardar_configuracion_alertas(config_alertas)
+                    messages.success(request, f'Webhook enviado correctamente. Respuesta HTTP: {status_code}.')
+                except (HTTPError, URLError, TimeoutError, OSError) as exc:
+                    logger.error(f"Error al enviar webhook de inventario: {exc}")
+                    messages.error(request, f'No se pudo enviar el webhook: {exc}')
+                return redirect('inventario:configurar_alertas')
+
+            producto_id = request.POST.get('producto_id')
+            stock_minimo = request.POST.get('stock_minimo')
+            if producto_id and stock_minimo:
+                try:
+                    producto = get_object_or_404(Producto, id_producto=producto_id)
+                    producto.existenciaminima = int(stock_minimo)
+                    producto.save(update_fields=['existenciaminima'])
+                    logger.info(f"Stock minimo actualizado para producto {producto_id} por usuario {nombreusuario}")
+                    messages.success(request, f'Stock minimo actualizado para {producto.nombreproducto}.')
+                except (ValueError, TypeError):
+                    messages.error(request, 'Valor de stock minimo invalido.')
+                    logger.warning(f"Valor de stock minimo invalido: {stock_minimo}")
+            return redirect('inventario:configurar_alertas')
+
+        user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
+        nexo_user_role = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
+
+        context = {
+            'page_title': 'Configurar Alertas de Stock',
+            'productos_bajo_stock': productos_bajo_stock,
+            'config_alertas': config_alertas,
+            'total_alertas': productos_bajo_stock.count(),
+            'last_sent_at': parse_datetime(config_alertas.get('last_sent_at')) if config_alertas.get('last_sent_at') else None,
+            'usuario_actual': usuario_actual,
+            'user_iniciales': user_iniciales,
+            'nexo_user_role': nexo_user_role,
+        }
+        return render(request, 'inventario/configurar_alertas.html', context)
+
+    except Exception as e:
+        usuario_actual = getattr(request, 'nexo_user', None)
+        nombreusuario = getattr(usuario_actual, 'nombreusuario', 'Invitado')
+        logger.error(f"Error en configurar_alertas_stock_webhook para usuario {nombreusuario}: {str(e)}")
         messages.error(request, f'Error al configurar alertas: {str(e)}')
         return redirect('inventario:inventario_general')
 

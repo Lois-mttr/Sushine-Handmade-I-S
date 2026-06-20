@@ -18,8 +18,9 @@ urlpatterns = [
     
     # API endpoints para AJAX (requieren autenticación AJAX)
     path('api/stats/', views.inventario_stats_ajax, name='inventario_stats_ajax'),
+    path('api/alertas/', views.alertas_stock_ajax, name='alertas_stock_ajax'),
     path('api/busqueda/', views.busqueda_rapida_ajax, name='busqueda_rapida_ajax'),
     
     # Configuración de alertas (solo administradores y gerentes)
-    path('alertas/', views.configurar_alertas_stock, name='configurar_alertas'),
+    path('alertas/', views.configurar_alertas_stock_webhook, name='configurar_alertas'),
 ]
