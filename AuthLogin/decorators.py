@@ -3,6 +3,7 @@ from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.contrib import messages
 from core_data.models import Usuario
+from core_data.permissions import module_from_request, role_has_module_permission
 import logging
 
 logger = logging.getLogger('nexo.auth')
@@ -60,7 +61,9 @@ def nexo_role_required(allowed_roles):
             
             # Verificar rol
             user_role = user.rol or 'encargado_sucursal'
-            if user_role not in allowed_roles:
+            request_module = module_from_request(request)
+            has_configured_permission = role_has_module_permission(user_role, request_module)
+            if user_role not in allowed_roles and not has_configured_permission:
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return JsonResponse({
                         'success': False,

@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block page_subtitle %}
-    Administra los registros de producción del taller. Aquí puedes ver, editar o dar de baja producciones.
+    Administra los registros de producción del taller. Aquí puedes editar o dar de baja producciones.
 {% endblock %}
 
 {% block extra_css %}
@@ -80,15 +80,6 @@
     .action-btn:hover {
         transform: scale(1.1);
         text-decoration: none;
-    }
-    
-    .action-btn-view {
-        color: {{ colores.info }};
-    }
-    
-    .action-btn-view:hover {
-        background: rgba(39, 82, 242, 0.1);
-        color: #1e40af;
     }
     
     .action-btn-edit {
@@ -325,13 +316,6 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center space-x-2">
-                                        <!-- Ver siempre disponible -->
-                                        <a href="{% url 'crud:produccion_detail' produccion_item.idProduccion %}" 
-                                           class="action-btn action-btn-view" 
-                                           title="Ver Detalle">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        
                                         <!-- Editar y Eliminar solo si está activo -->
                                         {% if produccion_item.EstadoRegistro %}
                                             <a href="{% url 'crud:produccion_edit' produccion_item.idProduccion %}" 

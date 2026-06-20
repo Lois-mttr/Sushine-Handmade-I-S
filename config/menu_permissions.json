@@ -1,0 +1,53 @@
+{
+  "admin": [
+    "dashboard",
+    "inventario",
+    "produccion",
+    "ventas",
+    "devolucion",
+    "clientes",
+    "reportes",
+    "configuracion"
+  ],
+  "gerente": [
+    "dashboard",
+    "inventario",
+    "reportes",
+    "configuracion"
+  ],
+  "encargado_inventario": [
+    "dashboard",
+    "inventario",
+    "reportes",
+    "configuracion"
+  ],
+  "encargado_sucursal": [
+    "dashboard",
+    "inventario",
+    "ventas",
+    "devolucion",
+    "reportes",
+    "configuracion"
+  ],
+  "vendedor": [
+    "dashboard",
+    "ventas",
+    "clientes",
+    "configuracion"
+  ],
+  "cajero": [
+    "dashboard",
+    "ventas",
+    "configuracion"
+  ],
+  "ventas": [
+    "dashboard",
+    "ventas",
+    "clientes",
+    "configuracion"
+  ],
+  "usuario": [
+    "dashboard",
+    "configuracion"
+  ]
+}

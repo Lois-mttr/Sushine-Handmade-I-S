@@ -219,9 +219,9 @@ def procesar_venta_nueva(request):
         nueva_venta = Venta.objects.filter(idusuarioventa=request.nexo_user).order_by('-id_venta').first()
         clear_messages(request)
         if nueva_venta:
-            messages.success(request, f'¡Venta #{nueva_venta.id_venta} registrada exitosamente! Puede ver el detalle en la lista de ventas.')
+            messages.success(request, f'Venta #{nueva_venta.id_venta} registrada exitosamente.')
         else:
-            messages.success(request, '¡Venta registrada exitosamente! Puede ver el detalle en la lista de ventas.')
+            messages.success(request, 'Venta registrada exitosamente.')
         return redirect('ventas:lista_ventas')
     except Exception as e:
         logger.error(f"Error al procesar venta nueva: {str(e)}")
@@ -233,67 +233,10 @@ def procesar_venta_nueva(request):
 @require_http_methods(["GET"])
 def detalle_venta(request, venta_id):
     """
-    Vista para mostrar el detalle de una venta
+    Redirige al listado porque la vista de detalle ya no forma parte del flujo.
     """
-    try:
-        estado, msg = Venta.verificar_estado_venta(venta_id)
-        if estado is None:
-            messages.error(request, f'No se puede mostrar el detalle: {msg}')
-            return redirect('ventas:lista_ventas')
-        venta = get_object_or_404(
-            Venta.objects.select_related(
-                'codcliente__idpersonacliente',
-                'idusuarioventa'
-            ),
-            id_venta=venta_id
-        )
-        # Obtener la fecha/hora cruda de MySQL usando SQL crudo
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT fechaVenta FROM venta WHERE id_venta = %s
-            """, [venta_id])
-            row = cursor.fetchone()
-            fechaventa_cruda = row[0] if row else None
-        # Usar SQL crudo para evitar el error de columna 'id'
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT dv.idVenta, dv.idProVenta, p.nombreProducto, SUM(dv.cantidadVenta) AS cantidadVenta, p.precioProducto, SUM(dv.subtotal) AS subtotal
-                FROM DetalleVenta dv
-                JOIN Producto p ON dv.idProVenta = p.id_producto
-                WHERE dv.idVenta = %s AND p.idUbicacionPro = 2
-                GROUP BY dv.idVenta, dv.idProVenta, p.nombreProducto, p.precioProducto
-            """, [venta_id])
-            columns = [col[0] for col in cursor.description]
-            detalles = [dict(zip(columns, row)) for row in cursor.fetchall()]
-
-        usuario_actual = request.nexo_user
-        user_iniciales = usuario_actual.nombreusuario[:2].upper() if usuario_actual and usuario_actual.nombreusuario else "IN"
-        user_rol = usuario_actual.rol if usuario_actual and usuario_actual.rol else 'Usuario'
-        puede_editar = user_rol in ['admin', 'encargado_sucursal'] and estado == 'REALIZADA'
-        puede_anular = user_rol in ['admin', 'encargado_sucursal'] and estado == 'REALIZADA'
-        # Calcular subtotal sin IVA correctamente
-        total_venta = float(venta.total or 0)
-        subtotal_sin_iva = total_venta / 1.15 if total_venta else 0
-        iva_total = total_venta - subtotal_sin_iva
-        context = {
-            'page_title': f'Venta #{venta.id_venta} - NEXO',
-            'venta': venta,
-            'fechaventa_cruda': fechaventa_cruda,  # <-- Agregar fecha/hora cruda
-            'detalles': detalles,
-            'usuario_actual': usuario_actual,
-            'user_iniciales': user_iniciales,
-            'user_rol': user_rol,
-            'puede_editar': puede_editar,
-            'puede_anular': puede_anular,
-            'subtotal_sin_iva': subtotal_sin_iva,
-            'iva_total': iva_total,
-        }
-        return render(request, 'ventas/detalle_venta.html', context)
-    except Exception as e:
-        logger.error(f"Error en detalle_venta: {str(e)}")
-        clear_messages(request)
-        messages.error(request, 'No se pudo cargar el detalle de la venta.')
-        return redirect('ventas:lista_ventas')
+    messages.info(request, 'Los detalles de venta se gestionan desde el listado.')
+    return redirect('ventas:lista_ventas')
 
 @nexo_login_required
 def procesar_edicion_venta(request, venta_id):
@@ -311,7 +254,7 @@ def procesar_edicion_venta(request, venta_id):
             logger.info(f"Venta {venta_id} editada por usuario {request.nexo_user.nombreusuario}")
             clear_messages(request)
             messages.success(request, f'¡Venta #{venta_id} actualizada correctamente!')
-            return redirect('ventas:detalle_venta', venta_id=venta_id)
+            return redirect('ventas:lista_ventas')
         except Exception as e:
             clear_messages(request)
             messages.error(request, f'No se pudo actualizar la venta: {str(e)}')

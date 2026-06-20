@@ -35,7 +35,7 @@ class LoginForm(forms.Form):
             'autocomplete': 'current-password',
             'aria-describedby': 'password-error'
         }),
-        error_messages={'required': 'El campo contrasena es obligatorio'}
+        error_messages={'required': 'El campo contraseña es obligatorio'}
     )
 
     def clean_username(self):
@@ -55,7 +55,7 @@ class LoginForm(forms.Form):
     def clean_password(self):
         password = self.cleaned_data.get('password')
         if not password:
-            raise ValidationError('La contrasena es obligatoria')
+            raise ValidationError('La contraseña es obligatoria')
         return password
 
     def clean(self):
@@ -133,7 +133,7 @@ class RegisterForm(forms.Form):
     confirm_password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'form-input password-input',
-            'placeholder': 'Confirmar contrasena',
+            'placeholder': 'Confirmar contraseña',
             'required': True
         })
     )
@@ -155,7 +155,7 @@ class RegisterForm(forms.Form):
         password = cleaned_data.get('password')
         confirm_password = cleaned_data.get('confirm_password')
         if password and confirm_password and password != confirm_password:
-            raise forms.ValidationError('Las contrasenas no coinciden.')
+            raise forms.ValidationError('Las contraseñas no coinciden.')
         return cleaned_data
 
     def save(self):
@@ -193,30 +193,30 @@ class ForgotPasswordForm(forms.Form):
 
 class ResetPasswordForm(forms.Form):
     new_password = forms.CharField(
-        label='Nueva contrasena',
+        label='Nueva contraseña',
         widget=forms.PasswordInput(attrs={
             'class': 'form-input',
-            'placeholder': 'Ingresa tu nueva contrasena',
+            'placeholder': 'Ingresa tu nueva contraseña',
             'minlength': '8',
             'required': True,
             'autocomplete': 'new-password'
         }),
         min_length=8,
         error_messages={
-            'required': 'La nueva contrasena es obligatoria',
-            'min_length': 'La contrasena debe tener al menos 8 caracteres'
+            'required': 'La nueva contraseña es obligatoria',
+            'min_length': 'La contraseña debe tener al menos 8 caracteres'
         }
     )
     confirm_password = forms.CharField(
-        label='Confirmar contrasena',
+        label='Confirmar contraseña',
         widget=forms.PasswordInput(attrs={
             'class': 'form-input',
-            'placeholder': 'Confirma tu nueva contrasena',
+            'placeholder': 'Confirma tu nueva contraseña',
             'minlength': '8',
             'required': True,
             'autocomplete': 'new-password'
         }),
-        error_messages={'required': 'Debes confirmar la nueva contrasena'}
+        error_messages={'required': 'Debes confirmar la nueva contraseña'}
     )
 
     def clean(self):
@@ -224,7 +224,7 @@ class ResetPasswordForm(forms.Form):
         new_password = cleaned_data.get('new_password')
         confirm_password = cleaned_data.get('confirm_password')
         if new_password and confirm_password and new_password != confirm_password:
-            raise forms.ValidationError('Las contrasenas no coinciden.')
+            raise forms.ValidationError('Las contraseñas no coinciden.')
         return cleaned_data
 
 
@@ -282,9 +282,9 @@ class PerfilUsuarioForm(forms.Form):
 class ConfiguracionCuentaForm(forms.Form):
     base_class = 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent'
 
-    current_password = forms.CharField(label='Contrasena actual', required=False, widget=forms.PasswordInput(attrs={'class': base_class, 'autocomplete': 'current-password'}))
-    new_password = forms.CharField(label='Nueva contrasena', required=False, min_length=8, widget=forms.PasswordInput(attrs={'class': base_class, 'autocomplete': 'new-password'}))
-    confirm_password = forms.CharField(label='Confirmar nueva contrasena', required=False, widget=forms.PasswordInput(attrs={'class': base_class, 'autocomplete': 'new-password'}))
+    current_password = forms.CharField(label='Contraseña actual', required=False, widget=forms.PasswordInput(attrs={'class': base_class, 'autocomplete': 'current-password'}))
+    new_password = forms.CharField(label='Nueva contraseña', required=False, min_length=8, widget=forms.PasswordInput(attrs={'class': base_class, 'autocomplete': 'new-password'}))
+    confirm_password = forms.CharField(label='Confirmar nueva contraseña', required=False, widget=forms.PasswordInput(attrs={'class': base_class, 'autocomplete': 'new-password'}))
 
     def __init__(self, *args, user=None, **kwargs):
         self.user = user
@@ -297,11 +297,11 @@ class ConfiguracionCuentaForm(forms.Form):
         confirm_password = cleaned_data.get('confirm_password')
         if any([current_password, new_password, confirm_password]):
             if not all([current_password, new_password, confirm_password]):
-                raise forms.ValidationError('Complete los tres campos para cambiar la contrasena.')
+                raise forms.ValidationError('Complete los tres campos para cambiar la contraseña.')
             if hashlib.sha256(current_password.encode('utf-8')).hexdigest() != self.user.passusuario:
-                raise forms.ValidationError('La contrasena actual no es correcta.')
+                raise forms.ValidationError('La contraseña actual no es correcta.')
             if new_password != confirm_password:
-                raise forms.ValidationError('Las contrasenas no coinciden.')
+                raise forms.ValidationError('Las contraseñas no coinciden.')
         return cleaned_data
 
     def save(self):
@@ -309,3 +309,16 @@ class ConfiguracionCuentaForm(forms.Form):
         if new_password:
             self.user.set_password(new_password)
         return self.user
+
+
+class PermisosEncargadoSucursalForm(forms.Form):
+    permisos = forms.MultipleChoiceField(
+        label='Permisos de encargado de sucursal',
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+    def __init__(self, *args, choices=None, initial_permissions=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['permisos'].choices = choices or []
+        self.fields['permisos'].initial = initial_permissions or []

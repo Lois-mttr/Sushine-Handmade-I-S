@@ -76,41 +76,8 @@ def crear_cliente(request):
 @nexo_login_required
 @nexo_role_required(['admin', 'ventas'])
 def detalle_cliente(request, pk):
-    try:
-        # Get the client or return 404
-        cliente = get_object_or_404(Cliente, pk=pk)
-        persona = cliente.persona
-
-        # Prepare the context data
-        datos_cliente = {
-            'cliente': {
-                'id': cliente.id,
-                'correo': cliente.correo,
-                'estadoCliente': cliente.estado,
-                'fecha_registro': cliente.fecha_registro if hasattr(cliente, 'fecha_registro') else 'No disponible',
-            },
-            'persona': {
-                'cedula': persona.cedula,
-                'primerNombre': persona.primer_nombre,
-                'segundoNombre': persona.segundo_nombre,
-                'primerApellido': persona.primer_apellido,
-                'segundoApellido': persona.segundo_apellido,
-                'direccion': persona.direccion,
-                'estadoPersona': persona.estado,
-                'nombre_completo': persona.nombre_completo,
-            }
-        }
-
-        context = {
-            'datos': datos_cliente,
-            'page_title': f'Detalles del Cliente #{cliente.id}'
-        }
-
-        return render(request, 'clientes/detail.html', context)
-
-    except Exception as e:
-        logger.error(f"Error al obtener detalles del cliente {pk}: {str(e)}")
-        raise Http404("Cliente no encontrado")
+    messages.info(request, 'Los detalles del cliente se gestionan desde el listado.')
+    return redirect('clientes:list')
 
 @nexo_login_required
 @nexo_role_required(['admin', 'ventas'])

@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
     attemptsRemaining = maxLoginAttempts;
     clearStoredLockout();
 
-    showNotification("Inicio de sesion exitoso. Redirigiendo...", "success");
+    showNotification("Inicio de sesión exitoso. Redirigiendo...", "success");
     setTimeout(() => {
       window.location.href = data.redirect_url || "/dashboard/";
     }, 800);
@@ -192,12 +192,12 @@ document.addEventListener("DOMContentLoaded", () => {
       showFieldError("username", "El campo de usuario es obligatorio");
       isValid = false;
     } else if (username.length > 15) {
-      showFieldError("username", "El usuario no puede tener mas de 15 caracteres");
+      showFieldError("username", "El usuario no puede tener más de 15 caracteres");
       isValid = false;
     }
 
     if (!password) {
-      showFieldError("password", "El campo de contrasena es obligatorio");
+      showFieldError("password", "El campo de contraseña es obligatorio");
       isValid = false;
     }
 
@@ -248,14 +248,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!loginButton) return;
 
     if (loading) {
-      loginButton.innerHTML = `<div class="loading-spinner"></div><span>Iniciando sesion...</span>`;
+      loginButton.innerHTML = `<div class="loading-spinner"></div><span>Iniciando sesión...</span>`;
       loginButton.disabled = true;
     } else {
       loginButton.innerHTML = `
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
         </svg>
-        <span>Iniciar Sesion</span>`;
+        <span>Iniciar sesión</span>`;
       loginButton.disabled = isLocked;
     }
   }

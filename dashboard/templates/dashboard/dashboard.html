@@ -34,12 +34,12 @@
     <!-- Tarjetas de estadísticas principales -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <!-- Total Productos -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+            <div class="flex flex-col items-center justify-center gap-3">
                 <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
                     <i class="fas fa-boxes text-white text-xl"></i>
                 </div>
-                <div class="ml-4 flex-1">
+                <div>
                     <p class="text-sm font-medium text-gray-600">Total Productos</p>
                     <p class="text-2xl font-bold text-gray-900" id="total-productos">{{ total_productos|default:0 }}</p>
                     <p class="text-xs text-gray-500">Activos en inventario</p>
@@ -48,12 +48,12 @@
         </div>
 
         <!-- Total Clientes -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+            <div class="flex flex-col items-center justify-center gap-3">
                 <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg">
                     <i class="fas fa-users text-white text-xl"></i>
                 </div>
-                <div class="ml-4 flex-1">
+                <div>
                     <p class="text-sm font-medium text-gray-600">Total Clientes</p>
                     <p class="text-2xl font-bold text-gray-900" id="total-clientes">{{ total_clientes|default:0 }}</p>
                     <p class="text-xs text-gray-500">Clientes registrados</p>
@@ -62,12 +62,12 @@
         </div>
 
         <!-- Ventas del Mes -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+            <div class="flex flex-col items-center justify-center gap-3">
                 <div class="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center shadow-lg">
                     <i class="fas fa-chart-line text-white text-xl"></i>
                 </div>
-                <div class="ml-4 flex-1">
+                <div>
                     <p class="text-sm font-medium text-gray-600">Ventas del Mes</p>
                     <p class="text-2xl font-bold text-gray-900" id="ventas-mes">{{ ventas_mes|default:0 }}</p>
                     <p class="text-xs text-gray-500">Ventas realizadas</p>
@@ -76,12 +76,12 @@
         </div>
 
         <!-- Productos Bajo Stock -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+            <div class="flex flex-col items-center justify-center gap-3">
                 <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg">
                     <i class="fas fa-exclamation-triangle text-white text-xl"></i>
                 </div>
-                <div class="ml-4 flex-1">
+                <div>
                     <p class="text-sm font-medium text-gray-600">Productos Bajo Stock</p>
                     <p class="text-2xl font-bold text-gray-900" id="productos-bajo-stock">{{ productos_bajo_stock|default:0 }}</p>
                     <p class="text-xs text-gray-500">Requieren atención</p>
