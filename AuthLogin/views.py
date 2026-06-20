@@ -368,7 +368,7 @@ def log_login_attempt(username, ip, success, details=''):
     Registrar intento de login en logs con detalles adicionales
     """
     try:
-        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = timezone.localtime(timezone.now()).strftime('%d/%m/%Y %I:%M:%S %p')
         status = 'EXITOSO' if success else 'FALLIDO'
         
         log_message = f"[{timestamp}] LOGIN {status} - Usuario: {username}, IP: {ip}"

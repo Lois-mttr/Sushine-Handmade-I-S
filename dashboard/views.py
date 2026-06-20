@@ -414,10 +414,11 @@ def get_recent_data_ajax(request):
         # Formatear ventas recientes
         ventas_data = []
         for venta in activities['ventas_recientes']:
+            fecha_venta_local = timezone.localtime(venta.fechaventa) if venta.fechaventa else None
             ventas_data.append({
                 'id': venta.id_venta,
-                'fecha': venta.fechaventa.strftime('%d/%m/%Y') if venta.fechaventa else 'N/A',
-                'hora': venta.fechaventa.strftime('%H:%M') if venta.fechaventa else 'N/A',
+                'fecha': fecha_venta_local.strftime('%d/%m/%Y') if fecha_venta_local else 'N/A',
+                'hora': fecha_venta_local.strftime('%I:%M %p') if fecha_venta_local else 'N/A',
                 'cliente': str(venta.codcliente) if venta.codcliente else 'Cliente general',
                 'total': DashboardService.decimal_to_float(venta.total) if venta.total else 0.0,
                 'usuario': venta.idusuarioventa.nombreusuario if venta.idusuarioventa else 'Sistema'

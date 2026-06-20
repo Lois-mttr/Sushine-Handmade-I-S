@@ -4,7 +4,7 @@
             <div class="nexo-footer-brand">
                 <div class="nexo-footer-logo">
                     <div class="nexo-footer-icon">N</div>
-                    <span>© 2025 NEXO - Sistema de Inventario y Ventas</span>
+                    <span>© {% now "Y" %} NEXO - Sistema de Inventario y Ventas</span>
                 </div>
                 <p class="nexo-footer-subtitle">Sunshine Handmade - Todos los derechos reservados.</p>
             </div>
@@ -22,20 +22,6 @@
                     <i class="fas fa-envelope"></i>
                     Contacto
                 </a>
-            </div>
-        </div>
-        
-        <div class="nexo-footer-status">
-            <div class="nexo-footer-tech">
-                <span>Versión 1.0.0</span>
-                <span>•</span>
-                <span>Django 4.2</span>
-                <span>•</span>
-                <span id="server-time">{{ current_datetime|date:"d/m/Y" }}</span>
-            </div>
-            <div class="nexo-footer-online">
-                <div class="nexo-status-dot"></div>
-                <span>Sistema operativo</span>
             </div>
         </div>
     </div>
@@ -125,40 +111,6 @@
     font-size: 12px;
 }
 
-.nexo-footer-status {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 16px;
-    border-top: 1px solid #f3f4f6;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-.nexo-footer-tech {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: #9ca3af;
-}
-
-.nexo-footer-online {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: #9ca3af;
-}
-
-.nexo-status-dot {
-    width: 8px;
-    height: 8px;
-    background: #10b981;
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-}
-
 @keyframes pulse {
     0%, 100% {
         opacity: 1;
@@ -178,23 +130,5 @@
     .nexo-footer-links {
         gap: 16px;
     }
-    
-    .nexo-footer-status {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
 }
 </style>
-
-<script>
-// Actualizar hora del servidor cada minuto
-setInterval(() => {
-    const serverTimeElement = document.getElementById('server-time');
-    if (serverTimeElement) {
-        const now = new Date();
-        const timeString = now.toLocaleDateString('es-ES');
-        serverTimeElement.textContent = timeString;
-    }
-}, 60000);
-</script>

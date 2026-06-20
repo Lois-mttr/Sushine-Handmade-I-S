@@ -13,6 +13,15 @@ from openpyxl.chart import PieChart, BarChart, Reference
 from django.utils import timezone
 from decimal import Decimal
 
+
+def format_datetime_managua(value, include_seconds=False):
+    if not value:
+        return 'No especificada'
+    if timezone.is_aware(value):
+        value = timezone.localtime(value)
+    formato = '%d/%m/%Y %I:%M:%S %p' if include_seconds else '%d/%m/%Y %I:%M %p'
+    return value.strftime(formato)
+
 class ExportadorInformes:
     """
     Clase utilitaria mejorada para exportar informes a PDF y Excel con gráficos
@@ -70,7 +79,7 @@ class ExportadorInformes:
         # Información del reporte
         info_texto = f"""
         <b>Usuario que genera:</b> {usuario}<br/>
-        <b>Fecha y hora de generación:</b> {fecha_generacion.strftime('%d/%m/%Y %H:%M:%S')}<br/>
+        <b>Fecha y hora de generación:</b> {format_datetime_managua(fecha_generacion, include_seconds=True)}<br/>
         """
         
         if info_adicional:
@@ -227,7 +236,7 @@ class ExportadorInformes:
             
             data.append([
                 str(venta.id_venta),
-                venta.fechaventa.strftime('%d/%m/%Y %H:%M') if venta.fechaventa else 'No especificada',
+                format_datetime_managua(venta.fechaventa),
                 cliente_nombre,
                 vendedor_nombre,
                 f"C$ {venta.total or 0:.2f}",
@@ -621,7 +630,7 @@ class ExportadorInformes:
         
         # Fecha de generación
         ws.merge_cells('A2:H2')
-        ws['A2'] = f"Generado el: {timezone.now().strftime('%d/%m/%Y %H:%M:%S')}"
+        ws['A2'] = f"Generado el: {format_datetime_managua(timezone.now(), include_seconds=True)}"
         ws['A2'].alignment = Alignment(horizontal='center')
         
         # Resumen
@@ -709,7 +718,7 @@ class ExportadorInformes:
         
         # Fecha de generación
         ws.merge_cells('A2:F2')
-        ws['A2'] = f"Generado el: {timezone.now().strftime('%d/%m/%Y %H:%M:%S')}"
+        ws['A2'] = f"Generado el: {format_datetime_managua(timezone.now(), include_seconds=True)}"
         ws['A2'].alignment = Alignment(horizontal='center')
         
         # Resumen
@@ -747,7 +756,7 @@ class ExportadorInformes:
             
             data_row = [
                 venta.id_venta,
-                venta.fechaventa.strftime('%d/%m/%Y %H:%M') if venta.fechaventa else 'No especificada',
+                format_datetime_managua(venta.fechaventa),
                 cliente_nombre,
                 vendedor_nombre,
                 venta.total or 0,
@@ -794,7 +803,7 @@ class ExportadorInformes:
         
         # Fecha de generación
         ws.merge_cells('A2:F2')
-        ws['A2'] = f"Generado el: {timezone.now().strftime('%d/%m/%Y %H:%M:%S')}"
+        ws['A2'] = f"Generado el: {format_datetime_managua(timezone.now(), include_seconds=True)}"
         ws['A2'].alignment = Alignment(horizontal='center')
         
         # Resumen
@@ -880,7 +889,7 @@ class ExportadorInformes:
         
         # Fecha de generación
         ws.merge_cells('A2:E2')
-        ws['A2'] = f"Generado el: {timezone.now().strftime('%d/%m/%Y %H:%M:%S')}"
+        ws['A2'] = f"Generado el: {format_datetime_managua(timezone.now(), include_seconds=True)}"
         ws['A2'].alignment = Alignment(horizontal='center')
         
         # Resumen
@@ -962,7 +971,7 @@ class ExportadorInformes:
         
         # Fecha de generación
         ws.merge_cells('A2:E2')
-        ws['A2'] = f"Generado el: {timezone.now().strftime('%d/%m/%Y %H:%M:%S')}"
+        ws['A2'] = f"Generado el: {format_datetime_managua(timezone.now(), include_seconds=True)}"
         ws['A2'].alignment = Alignment(horizontal='center')
         
         # Resumen
@@ -1044,7 +1053,7 @@ class ExportadorInformes:
         
         # Fecha de generación
         ws.merge_cells('A2:E2')
-        ws['A2'] = f"Generado el: {timezone.now().strftime('%d/%m/%Y %H:%M:%S')}"
+        ws['A2'] = f"Generado el: {format_datetime_managua(timezone.now(), include_seconds=True)}"
         ws['A2'].alignment = Alignment(horizontal='center')
         
         # Resumen
@@ -1124,7 +1133,7 @@ class ExportadorInformes:
         
         # Fecha de generación
         ws.merge_cells('A2:D2')
-        ws['A2'] = f"Generado el: {timezone.now().strftime('%d/%m/%Y %H:%M:%S')}"
+        ws['A2'] = f"Generado el: {format_datetime_managua(timezone.now(), include_seconds=True)}"
         ws['A2'].alignment = Alignment(horizontal='center')
         
         # Resumen

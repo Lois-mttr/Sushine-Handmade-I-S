@@ -8,6 +8,7 @@ urlpatterns = [
     path('devolucion/', views.devolucion_list, name='devolucion_list'),
     path('devolucion/crear/', views.devolucion_create, name='devolucion_create'),
     path('devolucion/<int:pk>/', views.devolucion_detail, name='devolucion_detail'),
-    path('devolucion/<int:pk>/editar/', views.devolucion_edit, name='produccion_edit'), # 'produccion_edit' en lugar de 'produccion_update'
+    path('devolucion/<int:pk>/editar/', views.devolucion_edit, name='devolucion_edit'),
+    path('devolucion/<int:pk>/anular/', views.devolucion_anular, name='devolucion_anular'),
     
 ]

@@ -20,7 +20,20 @@ class DevolucionManager:
     """
 
     @staticmethod
-    def registrar_devolucion(id_venta, fecha_devolucion, motivo, detalles):
+    def tiene_columna_usuario_registrador():
+        try:
+            with connection.cursor() as cursor:
+                columnas = {
+                    columna.name
+                    for columna in connection.introspection.get_table_description(cursor, 'Devolucion')
+                }
+            return 'idUsuarioDev' in columnas
+        except Exception as e:
+            logger.warning(f'No se pudo verificar columna idUsuarioDev: {str(e)}')
+            return False
+
+    @staticmethod
+    def registrar_devolucion(id_venta, fecha_devolucion, motivo, detalles, id_usuario=None):
         try:
             if isinstance(fecha_devolucion, date) and not isinstance(fecha_devolucion, datetime):
                 fecha_datetime = timezone.make_aware(datetime.combine(fecha_devolucion, datetime.min.time()))
@@ -43,6 +56,11 @@ class DevolucionManager:
                 id_devolucion = result[0] if result else None
 
                 if id_devolucion and id_devolucion > 0:
+                    if id_usuario and DevolucionManager.tiene_columna_usuario_registrador():
+                        cursor.execute(
+                            "UPDATE Devolucion SET idUsuarioDev = %s WHERE idDevolucion = %s",
+                            [id_usuario, id_devolucion]
+                        )
                     logger.info(f'Devolución registrada exitosamente. ID: {id_devolucion}')
                     return True, f"Devolución #{id_devolucion} registrada exitosamente", id_devolucion
                 else:
@@ -74,27 +92,36 @@ class DevolucionManager:
     def obtener_devoluciones_con_filtros(filtros=None, page=1, per_page=10):
         try:
             with connection.cursor() as cursor:
+                tiene_usuario_registrador = DevolucionManager.tiene_columna_usuario_registrador()
+                persona_select = "COALESCE(ureg.nombreUsuario, u.nombreUsuario)" if tiene_usuario_registrador else "u.nombreUsuario"
+                persona_id_select = "COALESCE(ureg.idUsuario, u.idUsuario)" if tiene_usuario_registrador else "u.idUsuario"
+                usuario_join = "LEFT JOIN Usuario ureg ON d.idUsuarioDev = ureg.idusuario" if tiene_usuario_registrador else ""
+
                 base_query = """
                     SELECT 
                         d.idDevolucion,
                         d.fechaDevolucion,
                         d.motivo,
-                        dd.id_producto,
-                        dd.cantidadDevuelta
+                        d.idVentaDev,
+                        {persona_select} AS persona,
+                        GROUP_CONCAT(DISTINCT dd.id_producto ORDER BY dd.id_producto SEPARATOR ', ') AS productos,
+                        COALESCE(SUM(dd.cantidadDevuelta), 0) AS cantidadDevuelta
                     FROM Devolucion d
                     LEFT JOIN DetalleDevolucion dd ON d.idDevolucion = dd.id_devolucion
                     JOIN Venta v ON d.idVentaDev = v.id_venta
                     JOIN Usuario u ON v.idUsuarioVenta = u.idusuario
+                    {usuario_join}
                     WHERE 1=1
-                """
+                """.format(persona_select=persona_select, usuario_join=usuario_join)
 
                 count_query = """
-                    SELECT COUNT(*)
+                    SELECT COUNT(DISTINCT d.idDevolucion)
                     FROM Devolucion d
                     JOIN Venta v ON d.idVentaDev = v.id_venta
                     JOIN Usuario u ON v.idUsuarioVenta = u.idusuario
+                    {usuario_join}
                     WHERE 1=1
-                """
+                """.format(usuario_join=usuario_join)
 
                 params = []
                 count_params = []
@@ -112,14 +139,14 @@ class DevolucionManager:
                         params.append(filtros['fecha_hasta'])
                         count_params.append(filtros['fecha_hasta'])
 
-                    if filtros.get('usuario'):
-                        base_query += " AND u.nombreusuario LIKE %s"
-                        count_query += " AND u.nombreusuario LIKE %s"
-                        search_term = f"%{filtros['usuario']}%"
-                        params.append(search_term)
-                        count_params.append(search_term)
+                    if filtros.get('persona_id'):
+                        base_query += f" AND {persona_id_select} = %s"
+                        count_query += f" AND {persona_id_select} = %s"
+                        params.append(filtros['persona_id'])
+                        count_params.append(filtros['persona_id'])
 
-                base_query += """
+                base_query += f"""
+                    GROUP BY d.idDevolucion, d.fechaDevolucion, d.motivo, d.idVentaDev, {persona_select}
                     ORDER BY d.fechaDevolucion DESC, d.idDevolucion DESC
                 """
 
@@ -163,25 +190,70 @@ class DevolucionManager:
             }
 
     @staticmethod
-    def obtener_detalle_devolucion():
-     try:
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT 
-                    d.idDevolucion,
-                    d.fechaDevolucion,
-                    d.motivo,
-                    dd.id_producto,
-                    dd.cantidadDevuelta
-                FROM Devolucion d
-                JOIN DetalleDevolucion dd ON d.idDevolucion = dd.id_devolucion
-                ORDER BY d.fechaDevolucion DESC
-            """)
+    def obtener_detalle_devolucion(id_devolucion):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT 
+                        dd.id_producto,
+                        dd.cantidadDevuelta
+                    FROM DetalleDevolucion dd
+                    WHERE dd.id_devolucion = %s
+                    ORDER BY dd.id_producto
+                """, [id_devolucion])
 
-            columns = [col[0] for col in cursor.description]
-            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+                columns = [col[0] for col in cursor.description]
+                return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-     except Exception as e:
-        logger.error(f'Error al obtener devoluciones: {str(e)}')
-        return []
+        except Exception as e:
+            logger.error(f'Error al obtener detalle de devolucion {id_devolucion}: {str(e)}')
+            return []
+
+    @staticmethod
+    def anular_devolucion(id_devolucion):
+        try:
+            with transaction.atomic():
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        SELECT id_producto, cantidadDevuelta
+                        FROM DetalleDevolucion
+                        WHERE id_devolucion = %s
+                    """, [id_devolucion])
+                    detalles = cursor.fetchall()
+
+                    cursor.execute(
+                        "SELECT idVentaDev FROM Devolucion WHERE idDevolucion = %s",
+                        [id_devolucion]
+                    )
+                    row = cursor.fetchone()
+                    if not row:
+                        return False, "La devolucion no existe."
+
+                    id_venta = row[0]
+
+                    for id_producto, cantidad in detalles:
+                        cursor.execute("""
+                            UPDATE Producto
+                            SET existenciaProducto = GREATEST(existenciaProducto - %s, 0)
+                            WHERE id_producto = %s
+                              AND idUbicacionPro = 2
+                        """, [cantidad, id_producto])
+
+                    cursor.execute(
+                        "DELETE FROM DetalleDevolucion WHERE id_devolucion = %s",
+                        [id_devolucion]
+                    )
+                    cursor.execute(
+                        "DELETE FROM Devolucion WHERE idDevolucion = %s",
+                        [id_devolucion]
+                    )
+                    cursor.execute(
+                        "UPDATE Venta SET estado = 'REALIZADA' WHERE id_venta = %s",
+                        [id_venta]
+                    )
+
+            return True, "Devolucion anulada correctamente."
+        except Exception as e:
+            logger.error(f'Error al anular devolucion {id_devolucion}: {str(e)}')
+            return False, f"Error al anular devolucion: {str(e)}"
 

@@ -1,11 +1,11 @@
-{% extends "layouts/base.html" %}
+﻿{% extends "layouts/base.html" %}
 {% load static %}
 {% load humanize %}
 
-{% block title %}Detalle Devolucion #{{ produccion.idproduccion }} - NEXO{% endblock %}
+{% block title %}Detalle Devolucion #{{ devolucion.iddevolucion }} - NEXO{% endblock %}
 
 {% block page_title %}
-    <i class="fas fa-eye mr-2" style="color: {{ colores.primary }};"></i>Detalle Devolucion #{{ produccion.idproduccion }}
+    <i class="fas fa-eye mr-2" style="color: {{ colores.primary }};"></i>Detalle Devolucion #{{ devolucion.iddevolucion }}
 {% endblock %}
 
 {% block page_subtitle %}
@@ -199,7 +199,7 @@
                 <i class="fas fa-arrow-left mr-2"></i>Volver a Lista
             </a>
             <div class="btn-group flex flex-wrap gap-2">
-                <a href="{% url 'devolucion:devolucion_edit' devolucion.idDevolucion %}"
+                <a href="{% url 'devolucion:devolucion_edit' devolucion.iddevolucion %}"
                    class="btn-nexo-warning inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium">
                     <i class="fas fa-edit mr-2"></i>Editar
                 </a>
@@ -209,33 +209,33 @@
         <div class="detail-card p-6 mb-6 fade-in">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-xl font-semibold flex items-center" style="color: {{ colores.primary }};">
-                    <i class="fas fa-info-circle mr-2"></i>Información General
+                    <i class="fas fa-info-circle mr-2"></i>InformaciÃ³n General
                 </h2>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div class="info-item">
                     <div class="info-label">
-                        <i class="fas fa-hashtag mr-1"></i>ID Devolución
+                        <i class="fas fa-hashtag mr-1"></i>ID DevoluciÃ³n
                     </div>
-                    <div class="info-value font-bold">#{{ devolucion.idDevolucion }}</div>
+                    <div class="info-value font-bold">#{{ devolucion.iddevolucion }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">
-                        <i class="fas fa-calendar mr-1"></i>Fecha de Devolución
+                        <i class="fas fa-calendar mr-1"></i>Fecha de DevoluciÃ³n
                     </div>
-                    <div class="info-value">{{ devolucion.fechaDevolucion|date:"d/m/Y" }}</div>
+                    <div class="info-value">{{ devolucion.fechadevolucion|date:"d/m/Y" }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">
                         <i class="fas fa-user mr-1"></i>Registrada Por
                     </div>
-                    <div class="info-value">{{ devolucion.nombreusuario }}</div>
+                    <div class="info-value">{{ devolucion.idventadev.idusuarioventa.nombreusuario }}</div>
                 </div>
             </div>
             {% if devolucion.motivo %}
             <div class="mt-6">
                 <div class="info-label">
-                    <i class="fas fa-sticky-note mr-1"></i>Motivo de la Devolución
+                    <i class="fas fa-sticky-note mr-1"></i>Motivo de la DevoluciÃ³n
                 </div>
                 <div class="info-value bg-gray-50 p-3 rounded-lg mt-2">
                     {{ devolucion.motivo|linebreaksbr }}
@@ -306,7 +306,7 @@
             <div class="text-center py-12">
                 <i class="fas fa-box-open fa-4x text-gray-400 mb-4"></i>
                 <h4 class="text-lg font-medium text-gray-700 mb-2">No hay productos devueltos registrados</h4>
-                <p class="text-gray-500">Esta devolución no tiene detalles asociados.</p>
+                <p class="text-gray-500">Esta devoluciÃ³n no tiene detalles asociados.</p>
             </div>
             {% endif %}
         </div>
@@ -351,9 +351,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    {% endif %}
-
-    // Auto-cerrar mensajes después de 8 segundos
+    // Auto-cerrar mensajes despuÃ©s de 8 segundos
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(alert => {
         setTimeout(() => {
@@ -368,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 8000);
     });
 
-    // Animación de entrada para las filas de productos
+    // AnimaciÃ³n de entrada para las filas de productos
     const productRows = document.querySelectorAll('.product-row');
     productRows.forEach((row, index) => {
         row.style.opacity = '0';

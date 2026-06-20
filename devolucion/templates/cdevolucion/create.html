@@ -237,10 +237,10 @@
 {% block content %}
 <div class="min-h-screen" style="background-color: {{ colores.bg_very_light }}; padding: 1.5rem;">
     <div class="max-w-6xl mx-auto">
-        <form method="post" id="DevolucionForm" novalidate class="space-y-6">
+        <form method="post" id="devolucionForm" novalidate class="space-y-6">
             {% csrf_token %}
             <div class="form-container p-6">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                     <h2 class="text-xl font-semibold flex items-center" style="color: {{ colores.primary }};">
                         <i class="fas fa-file-alt mr-2"></i>Datos Generales de Devolución
                     </h2>
@@ -285,12 +285,12 @@
                 </div>
             </div>
             <div class="form-container p-6">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
                     <h2 class="text-xl font-semibold flex items-center" style="color: {{ colores.primary }};">
                         <i class="fas fa-undo-alt mr-2"></i>Productos Devueltos
                         <span class="product-counter ml-3" id="productCounter">1 producto</span>
                     </h2>
-                    <button type="button" id="add-detalle-form" class="btn-add-detail">
+                    <button type="button" id="add-detalle-form" class="btn-add-detail w-full sm:w-auto">
                         <i class="fas fa-plus mr-2"></i>Agregar Producto
                     </button>
                 </div>
@@ -327,6 +327,7 @@
                                     <i class="fas fa-sort-numeric-up mr-1"></i>{{ form_item.cantidadDevuelta.label }}
                                 </label>
                                 {{ form_item.cantidadDevuelta }}
+                                <p class="cantidad-disponible text-xs text-gray-500 mt-1"></p>
                                 {% if form_item.cantidadDevuelta.errors %}
                                     <p class="form-error-message">
                                         <i class="fas fa-exclamation-triangle"></i>{{ form_item.cantidadDevuelta.errors|join:", " }}
@@ -361,13 +362,14 @@
                                     <i class="fas fa-sort-numeric-up mr-1"></i>{{ detalle_formset.empty_form.cantidadDevuelta.label }}
                                 </label>
                                 {{ detalle_formset.empty_form.cantidadDevuelta }}
+                                <p class="cantidad-disponible text-xs text-gray-500 mt-1"></p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="flex justify-end space-x-4 pt-6">
-                <a href="{% url 'devolucion:devolucion_list' %}" class="btn-cancel-form">
+            <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-6">
+                <a href="{% url 'devolucion:devolucion_list' %}" class="btn-cancel-form justify-center">
                     <i class="fas fa-times mr-2"></i>Cancelar
                 </a>
                 <button type="submit" class="btn-submit-form" id="submitBtn">
@@ -384,6 +386,8 @@
 
 {% block extra_js %}
 <script>
+const saleProductsBySale = {{ sale_products_json|default:"{}"|safe }};
+
 document.addEventListener('DOMContentLoaded', function() {
     const formsContainer = document.getElementById('detalle-forms-container');
     const addButton = document.getElementById('add-detalle-form');
@@ -393,6 +397,74 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = document.getElementById('submitBtn');
     const submitText = document.getElementById('submitText');
     const submitSpinner = document.getElementById('submitSpinner');
+    const ventaSelect = document.querySelector('[name="idVentaDev"]');
+
+    function filterProductSelect(select) {
+        if (!select || !ventaSelect) return;
+
+        const saleId = ventaSelect.value;
+        const allowedProducts = saleProductsBySale[saleId] || [];
+        const allowedIds = new Set(
+            allowedProducts
+                .filter(product => Number(product.disponible) > 0)
+                .map(product => String(product.id))
+        );
+
+        Array.from(select.options).forEach(option => {
+            if (!option.value) {
+                option.hidden = false;
+                return;
+            }
+
+            option.hidden = saleId ? !allowedIds.has(String(option.value)) : false;
+        });
+
+        if (saleId && select.value && !allowedIds.has(String(select.value))) {
+            select.value = '';
+        }
+
+        updateQuantityLimit(select.closest('.detalle-form'));
+    }
+
+    function getSelectedProductData(formRow) {
+        if (!formRow || !ventaSelect) return null;
+        const productSelect = formRow.querySelector('.producto-select');
+        if (!productSelect || !productSelect.value) return null;
+        const saleProducts = saleProductsBySale[ventaSelect.value] || [];
+        return saleProducts.find(product => String(product.id) === String(productSelect.value)) || null;
+    }
+
+    function updateQuantityLimit(formRow) {
+        if (!formRow) return;
+        const quantityInput = formRow.querySelector('.cantidad-input');
+        const helper = formRow.querySelector('.cantidad-disponible');
+        const productData = getSelectedProductData(formRow);
+
+        if (!quantityInput || !helper) return;
+
+        if (!productData) {
+            quantityInput.removeAttribute('max');
+            helper.textContent = '';
+            return;
+        }
+
+        quantityInput.max = productData.disponible;
+        helper.textContent = `Disponible para devolver: ${productData.disponible} de ${productData.vendido} vendido(s).`;
+
+        if (Number(quantityInput.value || 0) > Number(productData.disponible)) {
+            showFieldError(quantityInput, `No puede devolver más de ${productData.disponible}.`);
+        } else {
+            clearFieldErrors(quantityInput);
+        }
+    }
+
+    function filterAllProductSelects() {
+        document.querySelectorAll('.producto-select').forEach(filterProductSelect);
+    }
+
+    if (ventaSelect) {
+        ventaSelect.addEventListener('change', filterAllProductSelects);
+    }
     
     // CORREGIDO: Función para actualizar contadores sin duplicar
     function updateFormCounters() {
@@ -443,6 +515,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 removeForm(newFormElement);
             });
         }
+
+        filterProductSelect(newFormElement.querySelector('.producto-select'));
+        bindReturnLimitEvents(newFormElement);
         
         updateFormCounters();
         
@@ -522,6 +597,23 @@ document.addEventListener('DOMContentLoaded', function() {
         clearFieldErrors(field);
         return true;
     }
+
+    function bindReturnLimitEvents(formRow) {
+        if (!formRow) return;
+        const productSelect = formRow.querySelector('.producto-select');
+        const quantityInput = formRow.querySelector('.cantidad-input');
+        if (productSelect) {
+            productSelect.addEventListener('change', function() {
+                updateQuantityLimit(formRow);
+            });
+        }
+        if (quantityInput) {
+            quantityInput.addEventListener('input', function() {
+                updateQuantityLimit(formRow);
+            });
+        }
+        updateQuantityLimit(formRow);
+    }
     
     function showFieldError(field, message) {
         clearFieldErrors(field);
@@ -571,6 +663,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicializar
     updateFormCounters();
     setupRealTimeValidation();
+    filterAllProductSelects();
+    document.querySelectorAll('.detalle-form').forEach(bindReturnLimitEvents);
     
     // CORREGIDO: Auto-guardar mejorado
     function autoSave() {
