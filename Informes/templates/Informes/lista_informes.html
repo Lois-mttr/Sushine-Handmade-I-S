@@ -1,7 +1,7 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
 
-{% block title %}Dashboard - NEXO{% endblock %}
+{% block title %}Catálogo de Reportes - NEXO{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -26,7 +26,6 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Icon fallbacks */
 .icon-fallback {
     display: inline-block;
     width: 1em;
@@ -36,312 +35,103 @@
     background-position: center;
 }
 
-/* ===== DASHBOARD STYLES ===== */
+/* ===== REPORTS MODULE STYLES ===== */
 .nexo-dashboard {
     padding: 24px;
     background: #f8fafc;
     min-height: 100vh;
 }
 
-.nexo-dashboard > * + * {
-    margin-top: 32px;
+/* Encabezado del Módulo */
+.nexo-module-header {
+    margin-bottom: 32px; 
+    padding: 24px; 
+    background: white; 
+    border-radius: 8px; /* Bordes menos redondeados para un look más serio */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); 
+    border: 1px solid #e2e8f0;
 }
 
-/* Acciones Rápidas */
-.nexo-quick-actions {
-    background: linear-gradient(135deg, #4ecdc4, #39bfb2);
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 8px 32px rgba(78, 205, 196, 0.3);
-    position: relative;
-    overflow: hidden;
-}
-
-.nexo-quick-actions::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-    pointer-events: none;
-}
-
-.nexo-quick-actions-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-    position: relative;
-    z-index: 1;
-}
-
-.nexo-quick-actions-text h2 {
-    color: white;
-    font-size: 24px;
-    font-weight: 600;
+.nexo-module-header h2 {
+    color: #1e293b; 
+    font-size: 22px; 
+    font-weight: 600; 
     margin: 0 0 8px 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
-    gap: 12px;
 }
 
-.nexo-quick-actions-text h2 i {
-    font-size: 28px;
-    color: rgba(255, 255, 255, 0.9);
+.nexo-module-header h2 i {
+    color: #39bfb2; 
+    margin-right: 12px;
 }
 
-.nexo-quick-actions-text p {
-    color: rgba(255, 255, 255, 0.9);
+.nexo-module-header p {
+    color: #64748b; 
+    font-size: 14px; 
     margin: 0;
-    font-size: 16px;
-}
-
-.nexo-quick-actions-buttons {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.nexo-quick-btn {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 12px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.nexo-quick-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    color: white;
-    text-decoration: none;
-}
-
-.nexo-quick-btn i {
-    font-size: 16px;
-}
-
-/* Grid de Métricas */
-.nexo-metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
-}
-
-.nexo-metric-card {
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-    border: 1px solid #f1f5f9;
-    position: relative;
-    overflow: hidden;
-}
-
-.nexo-metric-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, transparent, rgba(78, 205, 196, 0.3), transparent);
-    transition: all 0.3s ease;
-}
-
-.nexo-metric-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-}
-
-.nexo-metric-card:hover::before {
-    background: linear-gradient(90deg, transparent, #4ecdc4, transparent);
-}
-
-.nexo-metric-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 16px;
-}
-
-.nexo-metric-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.nexo-metric-blue .nexo-metric-icon { 
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
-}
-.nexo-metric-green .nexo-metric-icon { 
-    background: linear-gradient(135deg, #10b981, #059669); 
-}
-.nexo-metric-orange .nexo-metric-icon { 
-    background: linear-gradient(135deg, #f59e0b, #d97706); 
-}
-.nexo-metric-purple .nexo-metric-icon { 
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed); 
-}
-
-.nexo-metric-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    white-space: nowrap;
-}
-
-.nexo-badge-green { 
-    background: #dcfce7; 
-    color: #166534; 
-}
-.nexo-badge-warning { 
-    background: #fef3c7; 
-    color: #92400e; 
-}
-.nexo-badge-blue { 
-    background: #dbeafe; 
-    color: #1e40af; 
-}
-
-.nexo-metric-content h3 {
-    font-size: 14px;
-    color: #64748b;
-    margin: 0 0 8px 0;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.nexo-metric-value {
-    font-size: 32px;
-    font-weight: 700;
-    color: #1e293b;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
 }
 
 /* Grid de Reportes */
 .nexo-reports-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 24px;
+    gap: 20px;
 }
 
 .nexo-report-card {
     background: white;
-    border-radius: 20px;
+    border-radius: 8px; /* Bordes empresariales */
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-    border: 1px solid #f1f5f9;
-    position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
-}
-
-.nexo-report-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, transparent, rgba(78, 205, 196, 0.3), transparent);
-    transition: all 0.3s ease;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease; /* Transición muy sutil */
 }
 
 .nexo-report-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-}
-
-.nexo-report-card:hover::before {
-    background: linear-gradient(90deg, transparent, #4ecdc4, transparent);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #cbd5e1;
 }
 
 .nexo-report-header {
-    padding: 24px 24px 16px 24px;
+    padding: 20px 24px 16px 24px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
 }
 
 .nexo-report-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 20px;
     color: white;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
     flex-shrink: 0;
 }
 
-.nexo-report-card:hover .nexo-report-icon {
-    transform: scale(1.05);
-}
-
-.nexo-icon-inventario_general { 
-    background: linear-gradient(135deg, #4ecdc4, #39bfb2); 
-}
-.nexo-icon-ventas { 
-    background: linear-gradient(135deg, #f97316, #ea580c); 
-}
-.nexo-icon-produccion { 
-    background: linear-gradient(135deg, #10b981, #059669); 
-}
-.nexo-icon-clientes { 
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed); 
-}
-.nexo-icon-devoluciones { 
-    background: linear-gradient(135deg, #ef4444, #dc2626); 
-}
-.nexo-icon-usuarios_empleados { 
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
-}
-.nexo-icon-productos_categoria { 
-    background: linear-gradient(135deg, #6366f1, #4f46e5); 
-}
+.nexo-icon-inventario_general { background: #39bfb2; }
+.nexo-icon-ventas { background: #ea580c; }
+.nexo-icon-produccion { background: #059669; }
+.nexo-icon-clientes { background: #7c3aed; }
+.nexo-icon-devoluciones { background: #dc2626; }
+.nexo-icon-usuarios_empleados { background: #2563eb; }
+.nexo-icon-productos_categoria { background: #4f46e5; }
 
 .nexo-report-status {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-}
-
-.nexo-status-available {
-    background: #dcfce7;
+    background: #f0fdf4;
     color: #166534;
+    border: 1px solid #bbf7d0;
 }
 
 .nexo-report-content {
@@ -352,15 +142,15 @@
 }
 
 .nexo-report-content h3 {
-    font-size: 20px;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 6px 0;
 }
 
 .nexo-report-content p {
-    color: #64748b;
-    font-size: 14px;
+    color: #475569;
+    font-size: 13px;
     margin: 0 0 16px 0;
     line-height: 1.5;
     flex: 1;
@@ -371,510 +161,170 @@
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     margin-bottom: 16px;
-    padding: 16px;
+    padding: 12px;
     background: #f8fafc;
-    border-radius: 12px;
+    border-radius: 6px;
     border: 1px solid #e2e8f0;
 }
 
 .nexo-report-metric {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
 }
 
 .nexo-metric-label {
-    font-size: 12px;
+    font-size: 11px;
     color: #64748b;
     margin-bottom: 4px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .nexo-metric-number {
-    font-size: 18px;
-    font-weight: 700;
-    color: #1e293b;
+    font-size: 15px;
+    font-weight: 600;
+    color: #0f172a;
     font-variant-numeric: tabular-nums;
 }
 
 .nexo-report-actions {
-    padding: 16px 24px 24px 24px;
+    padding: 16px 24px 20px 24px;
     display: flex;
     gap: 8px;
     align-items: center;
     margin-top: auto;
+    border-top: 1px solid #f1f5f9;
 }
 
 .nexo-btn-primary {
     flex: 1;
     color: white;
-    padding: 12px 20px;
-    border-radius: 12px;
+    padding: 8px 16px;
+    border-radius: 6px;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 500;
+    font-size: 14px;
     text-align: center;
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border: none;
     cursor: pointer;
+    transition: opacity 0.2s ease;
 }
 
-.nexo-btn-inventario_general { 
-    background: linear-gradient(135deg, #4ecdc4, #39bfb2); 
-}
-.nexo-btn-ventas { 
-    background: linear-gradient(135deg, #f97316, #ea580c); 
-}
-.nexo-btn-produccion { 
-    background: linear-gradient(135deg, #10b981, #059669); 
-}
-.nexo-btn-clientes { 
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed); 
-}
-.nexo-btn-devoluciones { 
-    background: linear-gradient(135deg, #ef4444, #dc2626); 
-}
-.nexo-btn-usuarios_empleados { 
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
-}
-.nexo-btn-productos_categoria { 
-    background: linear-gradient(135deg, #6366f1, #4f46e5); 
-}
+.nexo-btn-inventario_general { background: #39bfb2; }
+.nexo-btn-ventas { background: #ea580c; }
+.nexo-btn-produccion { background: #059669; }
+.nexo-btn-clientes { background: #7c3aed; }
+.nexo-btn-devoluciones { background: #dc2626; }
+.nexo-btn-usuarios_empleados { background: #2563eb; }
+.nexo-btn-productos_categoria { background: #4f46e5; }
 
 .nexo-btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    color: white;
+    opacity: 0.9;
     text-decoration: none;
+    color: white;
 }
 
 .nexo-export-buttons {
     display: flex;
-    gap: 4px;
+    gap: 6px;
 }
 
 .nexo-btn-export {
-    width: 48px;
-    height: 48px;
-    background: #f1f5f9;
-    color: #64748b;
-    border-radius: 12px;
+    width: 36px;
+    height: 36px;
+    background: #f8fafc;
+    color: #475569;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    transition: all 0.3s ease;
     border: 1px solid #e2e8f0;
     cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .nexo-btn-export:hover {
-    background: #e2e8f0;
-    color: #1e293b;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     text-decoration: none;
 }
 
-.nexo-btn-pdf:hover {
-    background: #fef2f2;
-    color: #dc2626;
-    border-color: #fecaca;
-}
-
-.nexo-btn-excel:hover {
-    background: #f0fdf4;
-    color: #16a34a;
-    border-color: #bbf7d0;
-}
-
-/* Sección de Información */
-.nexo-info-section {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 20px;
-    overflow: hidden;
-}
-
-.nexo-info-header {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    padding: 20px 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.nexo-info-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 18px;
-}
-
-.nexo-info-header h3 {
-    color: white;
-    font-size: 18px;
-    font-weight: 600;
-    margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.nexo-info-content {
-    padding: 24px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 32px;
-}
-
-.nexo-info-column h4 {
-    color: #1e40af;
-    font-size: 14px;
-    font-weight: 600;
-    margin: 0 0 16px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.nexo-info-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.nexo-info-list li {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 0;
-    color: #1e40af;
-    font-size: 14px;
-    transition: all 0.2s ease;
-}
-
-.nexo-info-list li:hover {
-    color: #1d4ed8;
-    transform: translateX(4px);
-}
-
-.nexo-info-list i {
-    width: 16px;
-    flex-shrink: 0;
-}
-
-/* Color utilities */
-.nexo-text-blue { color: #3b82f6 !important; }
-.nexo-text-red { color: #ef4444 !important; }
-.nexo-text-green { color: #10b981 !important; }
-.nexo-text-teal { color: #14b8a6 !important; }
-.nexo-text-purple { color: #8b5cf6 !important; }
-.nexo-text-orange { color: #f59e0b !important; }
+.nexo-btn-pdf:hover { background: #fef2f2; color: #dc2626; border-color: #fca5a5; }
+.nexo-btn-excel:hover { background: #f0fdf4; color: #16a34a; border-color: #86efac; }
 
 /* Estado vacío */
 .nexo-empty-state {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 48px 24px;
+    padding: 40px 24px;
     background: white;
-    border-radius: 20px;
-    border: 2px dashed #e2e8f0;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
 }
 
 .nexo-empty-icon {
-    width: 96px;
-    height: 96px;
-    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 24px auto;
-    font-size: 48px;
+    font-size: 32px;
     color: #94a3b8;
+    margin-bottom: 16px;
 }
 
-.nexo-empty-state h3 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1e293b;
-    margin: 0 0 8px 0;
-}
-
-.nexo-empty-state p {
-    color: #64748b;
-    margin: 0;
-}
+.nexo-empty-state h3 { font-size: 16px; font-weight: 600; color: #1e293b; margin: 0 0 8px 0; }
+.nexo-empty-state p { color: #64748b; margin: 0; font-size: 14px; }
 
 /* Loading Modal */
 .nexo-modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    backdrop-filter: blur(4px);
 }
 
 .nexo-modal-content {
     background: white;
-    padding: 32px;
-    border-radius: 20px;
+    padding: 24px;
+    border-radius: 8px;
     text-align: center;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    max-width: 400px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    max-width: 320px;
     width: 90%;
+    border: 1px solid #e2e8f0;
 }
 
-.nexo-loading-spinner {
-    font-size: 48px;
-    color: #4ecdc4;
-    margin-bottom: 16px;
-}
-
-.nexo-loading-spinner i {
-    animation: fa-spin 1s infinite linear;
-}
-
-.nexo-modal-content h3 {
-    margin: 0 0 8px 0;
-    color: #1e293b;
-    font-size: 20px;
-    font-weight: 600;
-}
-
-.nexo-modal-content p {
-    margin: 0;
-    color: #64748b;
-    font-size: 14px;
-}
+.nexo-loading-spinner { font-size: 32px; color: #39bfb2; margin-bottom: 16px; }
+.nexo-loading-spinner i { animation: fa-spin 1s infinite linear; }
+.nexo-modal-content h3 { margin: 0 0 8px 0; color: #0f172a; font-size: 16px; font-weight: 600; }
+.nexo-modal-content p { margin: 0; color: #475569; font-size: 13px; }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .nexo-dashboard {
-        padding: 16px;
-    }
-    
-    .nexo-metrics-grid {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 16px;
-    }
-    
-    .nexo-reports-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-    
-    .nexo-quick-actions-content {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .nexo-quick-actions-buttons {
-        justify-content: center;
-    }
-    
-    .nexo-info-content {
-        grid-template-columns: 1fr;
-        gap: 24px;
-    }
-    
-    .nexo-report-metrics {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-}
-
-@media (max-width: 640px) {
-    .nexo-metrics-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .nexo-metric-card {
-        padding: 20px;
-    }
-    
-    .nexo-report-card {
-        margin: 0 -8px;
-        border-radius: 16px;
-    }
-    
-    .nexo-metric-value {
-        font-size: 28px;
-    }
-    
-    .nexo-report-icon {
-        width: 56px;
-        height: 56px;
-        font-size: 24px;
-    }
-}
-
-/* Animation classes */
-.nexo-fade-in {
-    animation: nexoFadeIn 0.6s ease-out forwards;
-}
-
-.nexo-slide-up {
-    animation: nexoSlideUp 0.6s ease-out forwards;
-}
-
-@keyframes nexoFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes nexoSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    .nexo-dashboard { padding: 16px; }
+    .nexo-reports-grid { grid-template-columns: 1fr; gap: 16px; }
 }
 
 /* Icon loading states */
-.icon-loading {
-    position: relative;
-}
-
+.icon-loading { position: relative; }
 .icon-loading::after {
-    content: "⚠";
-    position: absolute;
-    top: 0;
-    left: 0;
-    color: #f59e0b;
-    font-size: inherit;
+    content: "⚠"; position: absolute; top: 0; left: 0;
+    color: #f59e0b; font-size: inherit;
 }
-
-/* Ensure proper icon rendering */
-i[class*="fa-"]:before {
-    font-family: "Font Awesome 6 Free" !important;
-    font-weight: 900 !important;
-}
+i[class*="fa-"]:before { font-family: "Font Awesome 6 Free" !important; font-weight: 900 !important; }
 </style>
 {% endblock %}
-
 {% block content %}
 <div class="nexo-dashboard">
-    <!-- Acciones Rápidas -->
-    <div class="nexo-quick-actions">
-        <div class="nexo-quick-actions-content">
-            <div class="nexo-quick-actions-text">
-                <h2><i class="fas fa-bolt" aria-hidden="true"></i> Acciones Rápidas</h2>
-                <p>Genera reportes frecuentes con un solo clic</p>
-            </div>
-            <div class="nexo-quick-actions-buttons">
-                <a href="{% url 'informes:inventario_general' %}" class="nexo-quick-btn">
-                    <i class="fas fa-file-pdf" aria-hidden="true"></i> Inventario PDF
-                </a>
-                <a href="{% url 'informes:ventas' %}" class="nexo-quick-btn">
-                    <i class="fas fa-shopping-cart" aria-hidden="true"></i> Ventas Hoy
-                </a>
-                {% if request.user.is_staff %}
-                <a href="{% url 'informes:clientes' %}" class="nexo-quick-btn">
-                    <i class="fas fa-users" aria-hidden="true"></i> Clientes
-                </a>
-                {% endif %}
-            </div>
-        </div>
+    
+    <div class="nexo-module-header">
+        <h2><i class="fas fa-folder-open" aria-hidden="true"></i> Catálogo de Reportes</h2>
+        <p>Selecciona el informe que deseas visualizar o exporta directamente los datos a PDF y Excel.</p>
     </div>
 
-    <!-- Métricas del Dashboard -->
-    <div class="nexo-metrics-grid">
-        <!-- Reportes Generados Hoy -->
-        <div class="nexo-metric-card nexo-metric-blue">
-            <div class="nexo-metric-header">
-                <div class="nexo-metric-icon">
-                    <i class="fas fa-file-alt" aria-hidden="true"></i>
-                </div>
-                <div class="nexo-metric-badge nexo-badge-green">
-                    <i class="fas fa-arrow-up" aria-hidden="true"></i> +0% vs ayer
-                </div>
-            </div>
-            <div class="nexo-metric-content">
-                <h3>Reportes Generados Hoy</h3>
-                <div class="nexo-metric-value">{{ reportes_hoy|default:0 }}</div>
-            </div>
-        </div>
-
-        <!-- Productos en Inventario -->
-        <div class="nexo-metric-card nexo-metric-green">
-            <div class="nexo-metric-header">
-                <div class="nexo-metric-icon">
-                    <i class="fas fa-boxes" aria-hidden="true"></i>
-                </div>
-                <div class="nexo-metric-badge {% if productos_stock_bajo > 0 %}nexo-badge-warning{% else %}nexo-badge-green{% endif %}">
-                    <i class="fas fa-{% if productos_stock_bajo > 0 %}exclamation-triangle{% else %}check-circle{% endif %}" aria-hidden="true"></i> 
-                    {{ productos_stock_bajo|default:0 }} con stock bajo
-                </div>
-            </div>
-            <div class="nexo-metric-content">
-                <h3>Productos en Inventario</h3>
-                <div class="nexo-metric-value">{{ total_productos|default:0 }}</div>
-            </div>
-        </div>
-
-        <!-- Ventas del Mes -->
-        <div class="nexo-metric-card nexo-metric-orange">
-            <div class="nexo-metric-header">
-                <div class="nexo-metric-icon">
-                    <i class="fas fa-chart-line" aria-hidden="true"></i>
-                </div>
-                <div class="nexo-metric-badge nexo-badge-green">
-                    <i class="fas fa-arrow-up" aria-hidden="true"></i> {{ ventas_realizadas|default:0 }} ventas realizadas
-                </div>
-            </div>
-            <div class="nexo-metric-content">
-                <h3>Ventas del Mes</h3>
-                <div class="nexo-metric-value">C$ {{ ventas_mes_total|floatformat:2|default:"0.00" }}</div>
-            </div>
-        </div>
-
-        <!-- Clientes Activos -->
-        <div class="nexo-metric-card nexo-metric-purple">
-            <div class="nexo-metric-header">
-                <div class="nexo-metric-icon">
-                    <i class="fas fa-users" aria-hidden="true"></i>
-                </div>
-                <div class="nexo-metric-badge nexo-badge-blue">
-                    <i class="fas fa-user-plus" aria-hidden="true"></i> +{{ clientes_nuevos|default:0 }} nuevos este mes
-                </div>
-            </div>
-            <div class="nexo-metric-content">
-                <h3>Clientes Activos</h3>
-                <div class="nexo-metric-value">{{ clientes_activos|default:0 }}</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Grid de Reportes -->
     <div class="nexo-reports-grid">
         {% for informe in informes %}
         <div class="nexo-report-card" data-report-id="{{ informe.id }}">
@@ -882,14 +332,12 @@ i[class*="fa-"]:before {
                 <div class="nexo-report-icon nexo-icon-{{ informe.id }}">
                     <i class="fas fa-{{ informe.icono }}" aria-hidden="true"></i>
                 </div>
-                <div class="nexo-report-status nexo-status-available">Disponible</div>
-            </div>
+         </div>
             
             <div class="nexo-report-content">
                 <h3>{{ informe.nombre }}</h3>
                 <p>{{ informe.descripcion }}</p>
                 
-                <!-- Métricas específicas del reporte -->
                 {% if informe.id == 'inventario_general' %}
                 <div class="nexo-report-metrics">
                     <div class="nexo-report-metric">
@@ -908,7 +356,7 @@ i[class*="fa-"]:before {
                         <span class="nexo-metric-number">{{ ventas_hoy|default:0 }}</span>
                     </div>
                     <div class="nexo-report-metric">
-                        <span class="nexo-metric-label">Facturado</span>
+                        <span class="nexo-metric-label">Facturado Hoy</span>
                         <span class="nexo-metric-number">C$ {{ facturado_hoy|floatformat:2|default:"0.00" }}</span>
                     </div>
                 </div>
@@ -941,14 +389,14 @@ i[class*="fa-"]:before {
                         <span class="nexo-metric-number">{{ devoluciones_mes|default:0 }}</span>
                     </div>
                     <div class="nexo-report-metric">
-                        <span class="nexo-metric-label">Monto</span>
+                        <span class="nexo-metric-label">Monto Total</span>
                         <span class="nexo-metric-number">C$ {{ monto_devoluciones|floatformat:2|default:"0.00" }}</span>
                     </div>
                 </div>
                 {% elif informe.id == 'usuarios_empleados' %}
                 <div class="nexo-report-metrics">
                     <div class="nexo-report-metric">
-                        <span class="nexo-metric-label">Usuarios</span>
+                        <span class="nexo-metric-label">Total Usuarios</span>
                         <span class="nexo-metric-number">{{ total_usuarios|default:0 }}</span>
                     </div>
                     <div class="nexo-report-metric">
@@ -970,7 +418,6 @@ i[class*="fa-"]:before {
                 {% endif %}
             </div>
             
-            <!-- Acciones del reporte -->
             <div class="nexo-report-actions">
                 <a href="{% url informe.url %}" class="nexo-btn-primary nexo-btn-{{ informe.id }}">
                     <i class="fas fa-eye" aria-hidden="true"></i> Ver Reporte
@@ -996,84 +443,45 @@ i[class*="fa-"]:before {
         {% empty %}
         <div class="nexo-empty-state">
             <div class="nexo-empty-icon">
-                <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                <i class="fas fa-folder-open" aria-hidden="true"></i>
             </div>
             <h3>No hay reportes disponibles</h3>
             <p>No tienes permisos para acceder a ningún reporte en este momento.</p>
         </div>
         {% endfor %}
     </div>
-
-    <!-- Información sobre los Reportes -->
-    {% comment %}
-    <div class="nexo-info-section">
-        <div class="nexo-info-header">
-            <div class="nexo-info-icon">
-                <i class="fas fa-info-circle" aria-hidden="true"></i>
-            </div>
-            <h3>Información sobre los Reportes</h3>
-        </div>
-        
-        <div class="nexo-info-content">
-            <div class="nexo-info-column">
-                <h4><i class="fas fa-file-alt" aria-hidden="true"></i> Formatos Disponibles:</h4>
-                <ul class="nexo-info-list">
-                    <li><i class="fas fa-eye nexo-text-blue" aria-hidden="true"></i> Vista en pantalla con filtros avanzados</li>
-                    <li><i class="fas fa-file-pdf nexo-text-red" aria-hidden="true"></i> Exportación a PDF con gráficos</li>
-                    <li><i class="fas fa-file-excel nexo-text-green" aria-hidden="true"></i> Exportación a Excel con fórmulas</li>
-                </ul>
-            </div>
-            
-            <div class="nexo-info-column">
-                <h4><i class="fas fa-star" aria-hidden="true"></i> Características Avanzadas:</h4>
-                <ul class="nexo-info-list">
-                    <li><i class="fas fa-filter nexo-text-teal" aria-hidden="true"></i> Filtros inteligentes y búsqueda</li>
-                    <li><i class="fas fa-chart-line nexo-text-blue" aria-hidden="true"></i> Estadísticas y métricas en tiempo real</li>
-                    <li><i class="fas fa-shield-alt nexo-text-purple" aria-hidden="true"></i> Control de acceso por roles</li>
-                    <li><i class="fas fa-history nexo-text-orange" aria-hidden="true"></i> Historial y auditoría completa</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    {% endcomment %}
 </div>
 
-<!-- Loading Modal -->
 <div id="nexo-loading-modal" class="nexo-modal" style="display: none;">
     <div class="nexo-modal-content">
         <div class="nexo-loading-spinner">
             <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
         </div>
-        <h3>Generando Reporte</h3>
+        <h3>Generando Documento</h3>
         <p>Por favor espera mientras se procesa tu solicitud...</p>
     </div>
 </div>
 {% endblock %}
 
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Icon loading verification and fallback
+    // Verificación básica de iconos (sin animaciones de UI)
     function verifyIcons() {
         const icons = document.querySelectorAll('i[class*="fa-"]');
         let loadedCount = 0;
         let totalIcons = icons.length;
         
-        icons.forEach((icon, index) => {
-            // Check if icon is properly loaded
+        icons.forEach((icon) => {
             const computed = window.getComputedStyle(icon, ':before');
             if (computed.content && computed.content !== 'none' && computed.content !== '""') {
                 loadedCount++;
             } else {
-                // Add fallback class for failed icons
                 icon.classList.add('icon-loading');
-                console.warn('Icon failed to load:', icon.className);
             }
         });
         
-        console.log(`Icons loaded: ${loadedCount}/${totalIcons}`);
-        
-        // If less than 80% of icons loaded, try to reload FontAwesome
         if (loadedCount < totalIcons * 0.8) {
             loadFontAwesomeFallback();
         }
@@ -1084,8 +492,6 @@ document.addEventListener('DOMContentLoaded', function() {
         fallbackLink.rel = 'stylesheet';
         fallbackLink.href = 'https://use.fontawesome.com/releases/v6.4.0/css/all.css';
         fallbackLink.onload = function() {
-            console.log('FontAwesome fallback loaded');
-            // Remove loading classes
             document.querySelectorAll('.icon-loading').forEach(icon => {
                 icon.classList.remove('icon-loading');
             });
@@ -1093,191 +499,27 @@ document.addEventListener('DOMContentLoaded', function() {
         document.head.appendChild(fallbackLink);
     }
     
-    // Verify icons after a short delay to allow CSS to load
-    setTimeout(verifyIcons, 500);
+    setTimeout(verifyIcons, 200);
     
-    // Card rendering verification
-    function verifyCards() {
-        const cards = document.querySelectorAll('.nexo-report-card, .nexo-metric-card');
-        cards.forEach((card, index) => {
-            // Check if card has proper dimensions
-            const rect = card.getBoundingClientRect();
-            if (rect.width === 0 || rect.height === 0) {
-                console.warn('Card not rendering properly:', card);
-                card.style.display = 'block';
-                card.style.minHeight = '200px';
-            }
-        });
-    }
-    
-    setTimeout(verifyCards, 100);
-    
-    // Animaciones de entrada mejoradas
-    const cards = document.querySelectorAll('.nexo-metric-card, .nexo-report-card');
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry, index) => {
-            if (entry.isIntersecting) {
-                setTimeout(() => {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                    entry.target.classList.add('nexo-fade-in');
-                }, index * 100);
-                observer.unobserve(entry.target);
-            }
-        });
-    }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    });
-    
-    cards.forEach((card) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(card);
-    });
-    
-    // Manejo de exportaciones con loading mejorado
+    // Manejo del estado de carga para exportaciones (sin distracciones)
     const exportButtons = document.querySelectorAll('.nexo-btn-export');
     const loadingModal = document.getElementById('nexo-loading-modal');
     
     exportButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            const reportId = this.getAttribute('data-report');
-            const format = this.getAttribute('data-format');
-            
-            // Mostrar modal de carga
+        button.addEventListener('click', function() {
             if (loadingModal) {
                 loadingModal.style.display = 'flex';
-                
-                // Verificar que el spinner esté animándose
                 const spinner = loadingModal.querySelector('.fa-spinner');
                 if (spinner && !spinner.classList.contains('fa-spin')) {
                     spinner.classList.add('fa-spin');
                 }
                 
-                // Ocultar modal después de 3 segundos
+                // Ocultar modal después de un tiempo prudencial
                 setTimeout(() => {
                     loadingModal.style.display = 'none';
-                }, 3000);
-            }
-            
-            console.log(`Exportando reporte ${reportId} en formato ${format}`);
-        });
-    });
-    
-    // Actualizar métricas cada 5 minutos
-    setInterval(function() {
-        updateDashboardMetrics();
-    }, 300000);
-    
-    // Función para actualizar métricas via AJAX
-    function updateDashboardMetrics() {
-        fetch(window.location.href, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            }
-            throw new Error('Network response was not ok');
-        })
-        .then(data => {
-            if (data.success) {
-                updateMetricValues(data);
-                console.log('Métricas actualizadas');
-            }
-        })
-        .catch(error => {
-            console.log('Error actualizando métricas:', error);
-        });
-    }
-    
-    function updateMetricValues(data) {
-        const metrics = {
-            'reportes_hoy': data.reportes_hoy,
-            'total_productos': data.total_productos,
-            'ventas_mes_total': `C$ ${data.ventas_mes_total}`,
-            'clientes_activos': data.clientes_activos
-        };
-        
-        Object.keys(metrics).forEach(key => {
-            const elements = document.querySelectorAll('.nexo-metric-value');
-            elements.forEach(element => {
-                if (element.textContent.includes(key) || element.closest('.nexo-metric-card').querySelector('h3').textContent.toLowerCase().includes(key.replace('_', ' '))) {
-                    element.textContent = metrics[key];
-                    element.classList.add('nexo-fade-in');
-                    setTimeout(() => {
-                        element.classList.remove('nexo-fade-in');
-                    }, 600);
-                }
-            });
-        });
-    }
-    
-    // Tooltips mejorados
-    function createTooltip(element, text) {
-        const tooltip = document.createElement('div');
-        tooltip.className = 'nexo-tooltip';
-        tooltip.textContent = text;
-        tooltip.style.cssText = `
-            position: absolute;
-            background: #1e293b;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            z-index: 10000;
-            pointer-events: none;
-            white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        `;
-        
-        document.body.appendChild(tooltip);
-        
-        const rect = element.getBoundingClientRect();
-        tooltip.style.top = (rect.top - tooltip.offsetHeight - 8) + 'px';
-        tooltip.style.left = (rect.left + rect.width / 2 - tooltip.offsetWidth / 2) + 'px';
-        
-        return tooltip;
-    }
-    
-    const tooltipElements = document.querySelectorAll('[title]');
-    tooltipElements.forEach(element => {
-        const originalTitle = element.getAttribute('title');
-        element.removeAttribute('title'); // Prevent default tooltip
-        
-        element.addEventListener('mouseenter', function() {
-            this._tooltip = createTooltip(this, originalTitle);
-        });
-        
-        element.addEventListener('mouseleave', function() {
-            if (this._tooltip) {
-                document.body.removeChild(this._tooltip);
-                this._tooltip = null;
+                }, 3500);
             }
         });
-    });
-    
-    // Error handling para elementos críticos
-    window.addEventListener('error', function(e) {
-        console.error('Error en la página:', e.error);
-    });
-    
-    // Verificación de conectividad
-    window.addEventListener('online', function() {
-        console.log('Conexión restaurada');
-        // Recargar métricas si es necesario
-        updateDashboardMetrics();
-    });
-    
-    window.addEventListener('offline', function() {
-        console.log('Conexión perdida');
     });
 });
 
@@ -1287,16 +529,6 @@ function closeLoadingModal() {
     if (modal) {
         modal.style.display = 'none';
     }
-}
-
-// Función para forzar recarga de FontAwesome si es necesario
-function reloadFontAwesome() {
-    const links = document.querySelectorAll('link[href*="font-awesome"]');
-    links.forEach(link => {
-        const newLink = link.cloneNode();
-        newLink.href = link.href + '?v=' + Date.now();
-        link.parentNode.replaceChild(newLink, link);
-    });
 }
 </script>
 {% endblock %}
