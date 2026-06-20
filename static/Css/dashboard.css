@@ -98,6 +98,30 @@ body {
   overflow-x: hidden;
 }
 
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+}
+
+table {
+  width: 100%;
+}
+
+.overflow-x-auto,
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+input,
+select,
+textarea,
+button {
+  max-width: 100%;
+}
+
 /* ===== CONTENIDO PRINCIPAL ===== */
 .nexo-main-content {
   margin-left: var(--sidebar-width);
@@ -399,6 +423,11 @@ body {
 
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 1024px) {
+  .nexo-main-content,
+  .sidebar-collapsed + .nexo-main-content {
+    margin-left: 0;
+  }
+
   .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
@@ -440,6 +469,19 @@ body {
 
   .nexo-content {
     padding: var(--spacing-3) var(--spacing-4);
+  }
+
+  .nexo-content > .space-y-6,
+  .nexo-content > div {
+    max-width: 100%;
+  }
+
+  .grid {
+    min-width: 0;
+  }
+
+  .rounded-xl {
+    border-radius: var(--border-radius-lg);
   }
 }
 

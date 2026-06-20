@@ -1,6 +1,7 @@
-from django import forms
+﻿from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.db.models import Q
 from core_data.models import Producto, Usuario, Venta
 from decimal import Decimal
 import logging
@@ -25,7 +26,7 @@ class DevolucionForm(forms.Form):
 
     fechaDevolucion = forms.DateField(
         label="Fecha de Devolución",
-        widget=forms.DateInput(attrs={'type': 'date'}),
+        widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
         input_formats=['%Y-%m-%d']
     )
 
@@ -42,8 +43,15 @@ class DevolucionForm(forms.Form):
         })
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, include_venta_id=None, **kwargs):
         super().__init__(*args, **kwargs)
+        ventas = Venta.objects.filter(estado='REALIZADA')
+        if include_venta_id:
+            ventas = Venta.objects.filter(Q(estado='REALIZADA') | Q(id_venta=include_venta_id))
+        self.fields['idVentaDev'].queryset = ventas.order_by('-fechaventa')
+        fecha_inicial = self.initial.get('fechaDevolucion')
+        if isinstance(fecha_inicial, datetime):
+            self.initial['fechaDevolucion'] = fecha_inicial.date()
         if not self.initial.get('fechaDevolucion'):
             self.initial['fechaDevolucion'] = timezone.now().date()
         self.fields['fechaDevolucion'].widget.attrs['onkeydown'] = 'return false;'
@@ -58,9 +66,8 @@ class DetalleDevolucionForm(forms.Form):
     """
     Formulario para cada producto devuelto
     """
-    id_producto = forms.ModelChoiceField(
+    id_producto = forms.ChoiceField(
         label='Producto Devuelto',
-        queryset=Producto.objects.filter(estado=True),
         widget=forms.Select(attrs={
             'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 producto-select',
             'style': 'border-color: #eaeef3;',
@@ -77,24 +84,47 @@ class DetalleDevolucionForm(forms.Form):
             'style': 'border-color: #eaeef3;',
             'min': '1',
             'max': '999',
-            'placeholder': '1'
+            'placeholder': 'Cantidad Devuelta'
         })
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        productos = Producto.objects.filter(estado=True).order_by(
+            'id_producto',
+            'nombreproducto'
+        ).values(
+            'id_producto',
+            'nombreproducto'
+        ).distinct()
+
+        choices = [('', '---------')]
+        seen = set()
+        for producto in productos:
+            product_id = producto['id_producto']
+            if product_id in seen:
+                continue
+            seen.add(product_id)
+            choices.append((product_id, f"{producto['nombreproducto']} ({product_id})"))
+
+        self.fields['id_producto'].choices = choices
+
+    def clean_id_producto(self):
+        product_id = self.cleaned_data.get('id_producto')
+        if not product_id:
+            raise ValidationError('Debe seleccionar un producto devuelto.')
+        if not Producto.objects.filter(id_producto=product_id, estado=True).exists():
+            raise ValidationError('El producto seleccionado no está activo.')
+        return product_id
+
     def clean_cantidadDevuelta(self):
         cantidad = self.cleaned_data.get('cantidadDevuelta')
+        if cantidad is None:
+            return cantidad
         if cantidad <= 0:
             raise ValidationError('La cantidad devuelta debe ser mayor a cero.')
         return cantidad
 
-    def clean(self):
-        cleaned_data = super().clean()
-        producto = cleaned_data.get('id_producto')
-
-        if producto and not producto.estado:
-            raise ValidationError('El producto seleccionado no está activo.')
-
-        return cleaned_data
 
 DetalleDevolucionFormSet = formset_factory(
     DetalleDevolucionForm,
@@ -120,9 +150,9 @@ class DevolucionSearchForm(forms.Form):
 
     usuario = forms.ModelChoiceField(
         required=False,
-        queryset=Usuario.objects.filter(activo=True).order_by('nombreusuario'),
-        empty_label="Todos los usuarios",
-        label='Usuario'
+        queryset=Usuario.objects.all().order_by('nombreusuario'),
+        empty_label="Todas las personas",
+        label='Persona'
     )
 
     def clean(self):

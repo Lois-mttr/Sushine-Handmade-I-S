@@ -50,7 +50,8 @@ class ReportLog(models.Model):
         ordering = ['-fecha_generacion']
     
     def __str__(self):
-        return f"{self.get_tipo_reporte_display()} - {self.usuario.nombreusuario} - {self.fecha_generacion.strftime('%d/%m/%Y %H:%M')}"
+        fecha_local = timezone.localtime(self.fecha_generacion)
+        return f"{self.get_tipo_reporte_display()} - {self.usuario.nombreusuario} - {fecha_local.strftime('%d/%m/%Y %I:%M %p')}"
 
 class SystemActivity(models.Model):
     """
@@ -103,4 +104,5 @@ class SystemActivity(models.Model):
     
     def __str__(self):
         usuario_str = self.usuario.nombreusuario if self.usuario else 'Sistema'
-        return f"{usuario_str} - {self.get_accion_display()} - {self.get_modulo_display()} - {self.fecha_actividad.strftime('%d/%m/%Y %H:%M')}"
+        fecha_local = timezone.localtime(self.fecha_actividad)
+        return f"{usuario_str} - {self.get_accion_display()} - {self.get_modulo_display()} - {fecha_local.strftime('%d/%m/%Y %I:%M %p')}"

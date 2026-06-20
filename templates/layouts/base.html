@@ -181,7 +181,10 @@
 function showNotification(message, type = 'info', duration = 5000) {
     const notification = document.createElement('div');
     // Aumenta el z-index a 1000 para asegurar que esté sobre el header (100)
-    notification.className = `fixed top-20 right-4 z-[1000] p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 translate-x-full`;
+    notification.className = `fixed p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 translate-x-full`;
+    notification.style.top = '6rem';
+    notification.style.right = '1rem';
+    notification.style.zIndex = '9999';
     
     const bgColor = type === 'success' ? 'bg-green-500' : 
                     type === 'error' ? 'bg-red-500' : 'bg-blue-500';

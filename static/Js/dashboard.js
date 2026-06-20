@@ -210,11 +210,16 @@ class NexoDashboard {
     if (!container) return
 
     container.innerHTML = ""
+    const chartCard = container.closest(".bg-white")
+    const canvasWrapper = chartCard ? chartCard.querySelector(".relative.h-72") : null
 
     if (!data || data.length === 0) {
+      if (canvasWrapper) canvasWrapper.classList.add("hidden")
       container.innerHTML = '<span class="text-xs text-gray-500">No hay datos reales disponibles</span>'
       return
     }
+
+    if (canvasWrapper) canvasWrapper.classList.remove("hidden")
 
     data.forEach((item, index) => {
       const legendItem = document.createElement("div")
@@ -349,10 +354,6 @@ class NexoDashboard {
       "total-clientes": metrics.total_clientes,
       "ventas-mes": metrics.ventas_mes,
       "productos-bajo-stock": metrics.productos_bajo_stock,
-      "productos-agotados": metrics.productos_agotados,
-      "devoluciones-mes": metrics.devoluciones_mes,
-      "producciones-mes": metrics.producciones_mes,
-      "ventas-mes-resumen": metrics.ventas_mes,
     }
 
     Object.keys(metricsMap).forEach((key) => {
@@ -371,26 +372,18 @@ class NexoDashboard {
 
     console.log("ðŸ“Š Actualizando grÃ¡ficos con datos:", chartData)
 
-    // Actualizar grÃ¡fico de productos mÃ¡s vendidos
-    const allLocations = Object.values(chartData)
-    if (allLocations.length > 0) {
-      if (this.charts.productosVendidos && allLocations[0].productos_mas_vendidos) {
-        this.updateChart(this.charts.productosVendidos, allLocations[0].productos_mas_vendidos)
-        this.createCustomLegend(
-          "productos-vendidos-legend",
-          allLocations[0].productos_mas_vendidos,
-          NEXO_CONFIG.chart_colors,
-        )
-      }
+    window.chartDataByLocation = chartData
 
-      if (this.charts.productosDevueltos && allLocations[0].productos_mas_devueltos) {
-        this.updateChart(this.charts.productosDevueltos, allLocations[0].productos_mas_devueltos)
-        this.createCustomLegend(
-          "productos-devueltos-legend",
-          allLocations[0].productos_mas_devueltos,
-          NEXO_CONFIG.chart_colors,
-        )
-      }
+    const productosVendidos = this.extractChartData("productos_mas_vendidos")
+    if (this.charts.productosVendidos) {
+      this.updateChart(this.charts.productosVendidos, productosVendidos)
+      this.createCustomLegend("productos-vendidos-legend", productosVendidos, NEXO_CONFIG.chart_colors)
+    }
+
+    const productosDevueltos = this.extractChartData("productos_mas_devueltos")
+    if (this.charts.productosDevueltos) {
+      this.updateChart(this.charts.productosDevueltos, productosDevueltos)
+      this.createCustomLegend("productos-devueltos-legend", productosDevueltos, NEXO_CONFIG.chart_colors)
     }
   }
 
@@ -554,7 +547,10 @@ class NexoDashboard {
     duration = duration || NEXO_CONFIG.notification_duration
 
     const notification = document.createElement("div")
-    notification.className = `fixed top-24 right-4 z-[1100] p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 translate-x-full`
+    notification.className = `fixed p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 translate-x-full`
+    notification.style.top = "6rem"
+    notification.style.right = "1rem"
+    notification.style.zIndex = "9999"
 
     const bgColor = type === "success" ? "bg-green-500" : type === "error" ? "bg-red-500" : "bg-blue-500"
     notification.classList.add(bgColor, "text-white")

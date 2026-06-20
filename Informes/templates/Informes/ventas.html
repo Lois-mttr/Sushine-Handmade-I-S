@@ -20,7 +20,7 @@
             <div class="bg-gray-50 rounded-xl p-4">
                 <div class="text-sm text-gray-600">
                     <div><strong>Usuario:</strong> {{ usuario_generador }}</div>
-                    <div><strong>Generado:</strong> {{ fecha_generacion|date:"d/m/Y H:i:s" }}</div>
+                    <div><strong>Generado:</strong> {{ fecha_generacion|date:"d/m/Y h:i:s A" }}</div>
                     {% if fecha_inicio and fecha_fin %}
                     <div><strong>Período:</strong> {{ fecha_inicio|date:"d/m/Y" }} - {{ fecha_fin|date:"d/m/Y" }}</div>
                     {% endif %}
@@ -251,7 +251,7 @@
                                 </div>
                                 <div>
                                     <div class="font-semibold text-gray-900">#{{ venta.id_venta }}</div>
-                                    <div class="text-xs text-gray-500">{{ venta.fechaventa|date:"H:i" }}</div>
+                                    <div class="text-xs text-gray-500">{{ venta.fechaventa|date:"h:i A" }}</div>
                                 </div>
                             </div>
                         </td>
@@ -259,7 +259,7 @@
                             {% if venta.fechaventa %}
                             <div>
                                 <div class="font-medium text-gray-900">{{ venta.fechaventa|date:"d/m/Y" }}</div>
-                                <div class="text-sm text-gray-500">{{ venta.fechaventa|date:"H:i:s" }}</div>
+                                <div class="text-sm text-gray-500">{{ venta.fechaventa|date:"h:i:s A" }}</div>
                             </div>
                             {% else %}
                             <span class="text-gray-400">No especificada</span>
